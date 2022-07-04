@@ -1,0 +1,426 @@
+{% extends "template.jinja" %}
+{% block main %}
+
+{% include("category/category_script.jinja") %}
+{% include("category/category_style.jinja") %}
+
+{% set section_1 = page_dict["section_1"] %}
+{% set section_2 = page_dict["section_2"] %}
+{% set section_3 = page_dict["section_3"] %}
+{% set section_4 = page_dict["section_4"] %}
+{% set section_5 = page_dict["section_5"] %}
+
+<!-- Section 1 -->
+<div class="row">
+    <div class="col-12 col-md-12 col-lg-12 banner-box text-center">
+        <img src="/static/images/steps-mini.png" class="img-fluid" />
+    </div>
+</div>
+
+<!-- Section 2 -->
+<div class="container">
+    <div class="row my-5">
+        <div class="col-4 col-md-2 col-lg-2 text-center">
+            <a class="no-decoration" onclick="redirect_url('1')">
+            {% if age_group == "1" %}
+            <p class="group-1 py-3 selected-1">
+            {% else %}
+            <p class="group-1 py-3">
+            {% endif %}
+                0-2 Years
+            </p>
+            </a>
+        </div>
+        <div class="col-4 col-md-2 col-lg-2 text-center">
+            <a class="no-decoration" onclick="redirect_url('2')">
+            {% if age_group == "2" %}
+            <p class="group-2 py-3 selected-2">
+            {% else %}
+            <p class="group-2 py-3">
+            {% endif %}
+                3-5 Years
+            </p>
+            </a>
+        </div>
+        <div class="col-4 col-md-2 col-lg-2 text-center">
+            <a class="no-decoration" onclick="redirect_url('3')">
+            {% if age_group == "3" %}
+            <p class="group-3 py-3 selected-3">
+            {% else %}
+            <p class="group-3 py-3">
+            {% endif %}
+                6-8 Years
+            </p>
+            </a>
+        </div>
+        <div class="col-4 col-md-2 col-lg-2 text-center">
+            <a class="no-decoration" onclick="redirect_url('4')">
+            {% if age_group == "4" %}
+            <p class="group-4 py-3 selected-4">
+            {% else %}
+            <p class="group-4 py-3">
+            {% endif %}
+                9-11 Years
+            </p>
+            </a>
+        </div>
+        <div class="col-4 col-md-2 col-lg-2 text-center">
+            <a class="no-decoration" onclick="redirect_url('5')">
+            {% if age_group == "5" %}
+            <p class="group-5 py-3 selected-5">
+            {% else %}
+            <p class="group-5 py-3">
+            {% endif %}
+                12-14 Years
+            </p>
+            </a>
+        </div>
+        <div class="col-4 col-md-2 col-lg-2 text-center">
+            <a class="no-decoration" onclick="redirect_url('6')">
+            {% if age_group == "6" %}
+            <p class="group-6 py-3 selected-6">
+            {% else %}
+            <p class="group-6 py-3">
+            {% endif %}
+                15+ Years
+            </p>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Section 3 -->
+<div class="row pt-3 pt-md-5 pt-lg-5 mb-5">
+    <div class="col-12 col-md-12 col-lg-12 px-5 pt-3 description-box">
+        <a class="no-decoration" href="{{url_for('views.book_category')}}?type={{section_1['url_type']}}"><p class="gray-text ms-5 ps-5">{{section_1["title"]}}</p></a>
+    </div>
+</div>
+<div class="container">
+    <div id="section1-carousel" class="owl-carousel owl-theme">
+        {% if section_1["type"] == "single" %}
+            {% for obj in section_1["objs"] %}
+            <div class="book-box">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-lg-12 text-center">
+                        <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{obj.guid}}">
+                            <img src="{{obj.image}}" class="book-img" />
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-12 col-lg-12 pt-2">
+                        <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{obj.guid}}">
+                            {{obj.name}}
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-6">
+                        <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?guid={{obj.authors[0].guid}}&type={{section_1['url_type']}}"><p class="small-text">{{obj.authors[0].name}}</p></a>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-6 text-right">
+                        <p class="text-yellow"><i class="fa-solid fa-star"></i> {{obj.rating}}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            {% for obj in section_1["objs"] %}
+            <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?type={{section_1['url_type']}}&guid={{obj.guid}}">
+                <div class="series-box mt-4 pt-4">
+                    <div class="row position-relative series-container">
+                        <div class="col-6 col-md-6 col-lg-6 position-relative text-center">
+                            <img src="{{obj.books[0].image}}" class="series-img" />
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6 position-relative text-center">
+                            <img src="{{obj.books[1].image}}" class="series-img" />
+                        </div>
+                        <img src="{{obj.books[2].image}}" class="highlight-img position-absolute" />
+                        <div class="col-12 col-md-12 col-lg-12 mt-5">
+                            {{obj.name}}
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <p class="small-text">{{obj.books | length}} books</p>
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <p class="text-yellow"><i class="fa-solid fa-star"></i> 4.5</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Section 4 -->
+<div class="container">
+    <div id="carousel-category-control" class="carousel slide" data-bs-interval="false">
+        <div class="carousel-inner" id="category-carousel-container">
+            <!-- Renders Dynamically though JS -->
+        </div>
+        <button class="carousel-control-prev text-dark" type="button" data-bs-target="#carousel-category-control" data-bs-slide="prev">
+            <i class="fa-solid fa-arrow-left text-black"></i>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carousel-category-control" data-bs-slide="next">
+            <i class="fa-solid fa-arrow-right text-black"></i>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>
+
+<!-- Section 4 -->
+<div class="row pt-3 pt-md-5 pt-lg-5 mb-5">
+    <div class="col-12 col-md-12 col-lg-12 px-5 pt-3 description-box">
+        <a class="no-decoration" href="{{url_for('views.book_category')}}?type={{section_2['url_type']}}"><p class="gray-text ms-5 ps-5">{{section_2["title"]}}</p></a>
+    </div>
+</div>
+<div class="container">
+    <div id="section2-carousel" class="owl-carousel owl-theme">
+        {% if section_2["type"] == "single" %}
+            {% for obj in section_2["objs"] %}
+            <div class="book-box">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-lg-12 text-center">
+                        <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{obj.guid}}">
+                            <img src="{{obj.image}}" class="book-img" />
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-12 col-lg-12 pt-2">
+                        <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{obj.guid}}">
+                            {{obj.name}}
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-6">
+                        <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?guid={{obj.authors[0].guid}}&type={{section_2['url_type']}}"><p class="small-text">{{obj.authors[0].name}}</p></a>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-6 text-right">
+                        <p class="text-yellow"><i class="fa-solid fa-star"></i> {{obj.rating}}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            {% for obj in section_2["objs"] %}
+            <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?type={{section_2['url_type']}}&guid={{obj.guid}}">
+                <div class="series-box mt-4 pt-4">
+                    <div class="row position-relative series-container">
+                        <div class="col-6 col-md-6 col-lg-6 position-relative text-center">
+                            <img src="{{obj.books[0].image}}" class="series-img" />
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6 position-relative text-center">
+                            <img src="{{obj.books[1].image}}" class="series-img" />
+                        </div>
+                        <img src="{{obj.books[2].image}}" class="highlight-img position-absolute" />
+                        <div class="col-12 col-md-12 col-lg-12 mt-5">
+                            {{obj.name}}
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <p class="small-text">{{obj.books | length}} books</p>
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <p class="text-yellow"><i class="fa-solid fa-star"></i> 4.5</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Section 5 -->
+<div class="row pt-3 pt-md-5 pt-lg-5 mb-5">
+    <div class="col-12 col-md-12 col-lg-12 px-5 pt-3 description-box">
+        <a class="no-decoration" href="{{url_for('views.book_category')}}?type={{section_3['url_type']}}"><p class="gray-text ms-5 ps-5">{{section_3["title"]}}</p></a>
+    </div>
+</div>
+<div class="container">
+    <div id="section3-carousel" class="owl-carousel owl-theme">
+        {% if section_3["type"] == "single" %}
+            {% for obj in section_3["objs"] %}
+            <div class="book-box">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-lg-12 text-center">
+                        <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{obj.guid}}">
+                            <img src="{{obj.image}}" class="book-img" />
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-12 col-lg-12 pt-2">
+                        <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{obj.guid}}">
+                            {{obj.name}}
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-6">
+                        <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?guid={{obj.authors[0].guid}}&type={{section_3['url_type']}}"><p class="small-text">{{obj.authors[0].name}}</p></a>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-6 text-right">
+                        <p class="text-yellow"><i class="fa-solid fa-star"></i> {{obj.rating}}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            {% for obj in section_3["objs"] %}
+            <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?type={{section_3['url_type']}}&guid={{obj.guid}}">
+                <div class="series-box mt-4 pt-4">
+                    <div class="row position-relative series-container">
+                        <div class="col-6 col-md-6 col-lg-6 position-relative text-center">
+                            <img src="{{obj.books[0].image}}" class="series-img" />
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6 position-relative text-center">
+                            <img src="{{obj.books[1].image}}" class="series-img" />
+                        </div>
+                        <img src="{{obj.books[1].image}}" class="highlight-img position-absolute" />
+                        <div class="col-12 col-md-12 col-lg-12 mt-5">
+                            {{obj.name}}
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <p class="small-text">{{obj.books | length}} books</p>
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <p class="text-yellow"><i class="fa-solid fa-star"></i> 4.5</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Section 6 -->
+<div class="container">
+    <div id="carousel-type-control" class="carousel slide" data-bs-interval="false">
+        <div class="carousel-inner" id="type-carousel-container">
+            <!-- Renders Dynamically though JS -->
+        </div>
+        <button class="carousel-control-prev text-dark" type="button" data-bs-target="#carousel-type-control" data-bs-slide="prev">
+            <i class="fa-solid fa-arrow-left text-black"></i>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carousel-type-control" data-bs-slide="next">
+            <i class="fa-solid fa-arrow-right text-black"></i>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>
+
+<!-- Section 7 -->
+<div class="row pt-3 pt-md-5 pt-lg-5 mb-5">
+    <div class="col-12 col-md-12 col-lg-12 px-5 pt-3 description-box">
+        <a class="no-decoration" href="{{url_for('views.book_category')}}?type={{section_4['url_type']}}"><p class="gray-text ms-5 ps-5">{{section_4["title"]}}</p></a>
+    </div>
+</div>
+<div class="container">
+    <div id="section4-carousel" class="owl-carousel owl-theme">
+        {% if section_4["type"] == "single" %}
+            {% for obj in section_4["objs"] %}
+            <div class="book-box">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-lg-12 text-center">
+                        <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{obj.guid}}">
+                            <img src="{{obj.image}}" class="book-img" />
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-12 col-lg-12 pt-2">
+                        <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{obj.guid}}">
+                            {{obj.name}}
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-6">
+                        <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?guid={{obj.authors[0].guid}}&type={{section_4['url_type']}}"><p class="small-text">{{obj.authors[0].name}}</p></a>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-6 text-right">
+                        <p class="text-yellow"><i class="fa-solid fa-star"></i> {{obj.rating}}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            {% for obj in section_4["objs"] %}
+            <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?type={{section_4['url_type']}}&guid={{obj.guid}}">
+                <div class="series-box mt-4 pt-4">
+                    <div class="row position-relative series-container">
+                        <div class="col-6 col-md-6 col-lg-6 position-relative text-center">
+                            <img src="{{obj.books[0].image}}" class="series-img" />
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6 position-relative text-center">
+                            <img src="{{obj.books[1].image}}" class="series-img" />
+                        </div>
+                        <img src="{{obj.books[2].image}}" class="highlight-img position-absolute" />
+                        <div class="col-12 col-md-12 col-lg-12 mt-5">
+                            {{obj.name}}
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <p class="small-text">{{obj.books | length}} books</p>
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <p class="text-yellow"><i class="fa-solid fa-star"></i> 4.5</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Section 8 -->
+<div class="row pt-3 pt-md-5 pt-lg-5 mb-5">
+    <div class="col-12 col-md-12 col-lg-12 px-5 pt-3 description-box">
+        <a class="no-decoration" href="{{url_for('views.book_category')}}?type={{section_5['url_type']}}"><p class="gray-text ms-5 ps-5">{{section_5["title"]}}</p></a>
+    </div>
+</div>
+<div class="container">
+    <div id="section5-carousel" class="owl-carousel owl-theme">
+        {% if section_5["type"] == "single" %}
+            {% for obj in section_5["objs"] %}
+            <div class="book-box">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-lg-12 text-center">
+                        <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{obj.guid}}">
+                            <img src="{{obj.image}}" class="book-img" />
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-12 col-lg-12 pt-2">
+                        <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{obj.guid}}">
+                            {{obj.name}}
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-6">
+                        <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?guid={{obj.authors[0].guid}}&type={{section_5['url_type']}}"><p class="small-text">{{obj.authors[0].name}}</p></a>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-6 text-right">
+                        <p class="text-yellow"><i class="fa-solid fa-star"></i> {{obj.rating}}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            {% for obj in section_5["objs"] %}
+            <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?type={{section_5['url_type']}}&guid={{obj.guid}}">
+                <div class="series-box mt-4 pt-4">
+                    <div class="row position-relative series-container">
+                        <div class="col-6 col-md-6 col-lg-6 position-relative text-center">
+                            <img src="{{obj.books[0].image}}" class="series-img" />
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6 position-relative text-center">
+                            <img src="{{obj.books[1].image}}" class="series-img" />
+                        </div>
+                        <img src="{{obj.books[2].image}}" class="highlight-img position-absolute" />
+                        <div class="col-12 col-md-12 col-lg-12 mt-5">
+                            {{obj.name}}
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <p class="small-text">{{obj.books | length}} books</p>
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <p class="text-yellow"><i class="fa-solid fa-star"></i> 4.5</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
