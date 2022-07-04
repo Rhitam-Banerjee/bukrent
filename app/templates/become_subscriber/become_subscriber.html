@@ -1,0 +1,36 @@
+{% extends "template.jinja" %}
+{% block main %}
+
+{% include("become_subscriber/become_subscriber_script.jinja") %}
+{% include("become_subscriber/become_subscriber_style.jinja") %}
+
+<!-- Section 1 -->
+<div class="row pt-3 pt-md-5 pt-lg-5">
+    <div class="col-12 col-md-12 col-lg-12 text-center">
+        <h2 class="gray-text"><b>Become A Subscriber</b></h2>
+    </div>
+</div>
+<div class="row pb-3 p-3 pb-lg-0 pb-md-0" style="overflow-y: hidden;">
+    <div class="col-3 col-md-3 col-lg-3 p-1 p-md-5 p-lg-5">
+        <a href="{{url_for('views.step_1')}}?plan=1">
+            <img src="/static/images/subscription1.png" class="img-fluid banner-img" />
+        </a>
+    </div>
+    <div class="col-3 col-md-3 col-lg-3 p-1 p-md-5 p-lg-5">
+        <a href="{{url_for('views.step_1')}}?plan=2">
+            <img src="/static/images/subscription2.png" class="img-fluid banner-img" />
+        </a>
+    </div>
+    <div class="col-3 col-md-3 col-lg-3 p-1 p-md-5 p-lg-5">
+        <a href="{{url_for('views.step_1')}}?plan=3">
+            <img src="/static/images/subscription3.png" class="img-fluid banner-img" />
+        </a>
+    </div>
+    <div class="col-3 col-md-3 col-lg-3 p-1 p-md-5 p-lg-5">
+        <a href="{{url_for('views.step_1')}}?plan=4">
+            <img src="/static/images/subscription4.png" class="img-fluid banner-img" />
+        </a>
+    </div>
+</div>
+
+{% endblock %}

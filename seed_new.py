@@ -45,7 +45,7 @@ def seed():
         for line in csv_file:
             books.append(line)
 
-    books = books[1:10001]
+    books = books[1:1001]
 
     for book in books:
         book_dict[book[1]] = {}

@@ -1,0 +1,67 @@
+{% extends "template.jinja" %}
+{% block main %}
+
+{% include("step_1/step_1_script.jinja") %}
+{% include("step_1/step_1_style.jinja") %}
+
+<!-- Section 1 -->
+<div class="row">
+    <div class="col-12 col-md-12 col-lg-12 banner-box text-center mt-3 mt-md-4 mt-lg-4">
+        <img src="/static/images/steps-mini.png" class="img-fluid" />
+    </div>
+</div>
+
+<!-- Section 2 -->
+<div class="row pt-3 pt-md-5 pt-lg-5">
+    <div class="col-12 col-md-12 col-lg-12 text-center">
+        <h2 class="gray-text"><b>Plan Selected</b></h2>
+    </div>
+</div>
+
+<!-- Section 3 -->
+<div class="container">
+    <div class="row pt-3 pt-md-5 pt-lg-5 text-gray">
+        <div class="col-6 col-md-4 col-lg-4">
+            <b><p>Books / Week</p></b>
+        </div>
+        <div class="col-6 col-md-8 col-lg-8">
+            <p>{{weekly_books}}</p>
+        </div>
+        <div class="col-6 col-md-4 col-lg-4">
+            <b><p>Books / Month</p></b>
+        </div>
+        <div class="col-6 col-md-8 col-lg-8">
+            <p>{{monthly_books}}</p>
+        </div>
+        <div class="col-6 col-md-4 col-lg-4">
+            <b><p>Price / Month</p></b>
+        </div>
+        <div class="col-6 col-md-8 col-lg-8">
+            <p>Rs. {{price_month}}/-</p>
+        </div>
+        <div class="col-6 col-md-4 col-lg-4">
+            <b><p>Security Deposit</p></b>
+        </div>
+        <div class="col-6 col-md-8 col-lg-8">
+            <p>Rs. {{security_deposit}}/- <span class="text-red">(This amount will be refunded, once the books are returned)</span></p>
+        </div>
+        <div class="col-6 col-md-4 col-lg-4">
+            <b><p>Total Payable Amount</p></b>
+        </div>
+        <div class="col-6 col-md-8 col-lg-8">
+            <p>Rs. {{total_payable_amount}}/-</p>
+        </div>
+    </div>
+</div>
+
+<!-- Section 4 -->
+<div class="row">
+    <div class="col-6 col-md-6 col-lg-6 text-end">
+        <a class="no-decoration" href="{{url_for('views.become_a_subscriber')}}"><button class="wishlist-button m-2 py-3">Change Plan</button></a>
+    </div>
+    <div class="col-6 col-md-6 col-lg-6 text-start">
+        <a class="no-decoration" href="{{url_for('views.step_2')}}?plan={{plan}}"><button class="cart-button m-2 py-3">Next Step</button></a>
+    </div>
+</div>
+
+{% endblock %}

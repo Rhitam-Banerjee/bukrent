@@ -13,23 +13,26 @@ views = Blueprint('views', __name__, url_prefix="/")
 
 @views.route("/")
 def home():
-    bestseller_books = Detail.get_bestsellers()
-    bestsellers = [Book.query.filter_by(id=book_id).first() for book_id in bestseller_books]
+    # bestseller_books = Detail.get_bestsellers()
+    # bestsellers = [Book.query.filter_by(id=book_id).first() for book_id in bestseller_books]
 
-    series = Series.get_top_series()
+    # series = Series.get_top_series()
 
-    authors = Author.get_top_authors()
+    # authors = Author.get_top_authors()
 
-    categories = Category.get_top_categories()
+    # categories = Category.get_top_categories()
 
-    publishers = Publisher.get_top_publishers()
-    return render_template( 
-        "/home/home.html",
-        bestsellers=bestsellers,
-        series=series,
-        authors=authors,
-        categories=categories,
-        publishers=publishers
+    # publishers = Publisher.get_top_publishers()
+    # return render_template( 
+    #     "/home/home.html",
+    #     bestsellers=bestsellers,
+    #     series=series,
+    #     authors=authors,
+    #     categories=categories,
+    #     publishers=publishers
+    # )
+    return render_template(
+        "/launch/launch.html"
     )
 
 @views.route("/book-details")
@@ -1338,4 +1341,49 @@ def book_subcategory():
         age_group=age_group,
         page_dict=page_dict,
         main_obj=main_obj
+    )
+
+@views.route('/become-subscriber')
+def become_a_subscriber():
+    return render_template(
+        "/become_subscriber/become_subscriber.html"
+    )
+
+@views.route('/step-1')
+def step_1():
+    plan = request.args.get("plan")
+    if plan == "1":
+        weekly_books = 1
+        monthly_books = 4
+        price_month = 299
+    elif plan == "2":
+        weekly_books = 2
+        monthly_books = 8
+        price_month = 499
+    elif plan == "3":
+        weekly_books = 4
+        monthly_books = 16
+        price_month = 749
+    else:
+        weekly_books = 6
+        monthly_books = 24
+        price_month = 949
+    security_deposit = 500
+    total_payable_amount = price_month + security_deposit
+    return render_template(
+        "/step_1/step_1.html",
+        weekly_books=weekly_books,
+        monthly_books=monthly_books,
+        price_month=price_month,
+        security_deposit=security_deposit,
+        total_payable_amount=total_payable_amount,
+        plan=plan
+    )
+
+@views.route("/step-2")
+def step_2():
+    plan = request.args.get("plan")
+
+    return render_template(
+        "/step_2/step_2.html"
     )

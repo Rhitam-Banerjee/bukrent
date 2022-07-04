@@ -25,6 +25,10 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.css" integrity="sha512-OTcub78R3msOCtY3Tc6FzeDJ8N9qvQn1Ph49ou13xgA9VsH9+LRxoFU6EqLhW4+PKRfU+/HReXmSZXHEkpYoOA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js" integrity="sha512-bPs7Ae6pVvhOSiIcyUClR7/q2OAsRiovw4vAkX+zJbw3ShAeeqezq50RIIcIURq7Oa20rW2n2q+fyXBNcU9lrw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+        <!-- Sweet Alert -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.min.css">
+
         <style>
             .navbar {
                 background-color: #dd913e !important;
@@ -81,7 +85,7 @@
                 <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
                     <div class="container-fluid">
                         <a class="navbar-brand" href="https://bukrent.com" target="_blank">
-                            <img src="/static/images/logo.png" class="img-fluid" />
+                            <img src="/static/images/footer-logo.png" width="75px" class="img-fluid" />
                             <span class="navbar-heading text-white h1 align-middle">Bukrent</span>
                         </a>
                         <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#nav_toggler" aria-controls="nav_toggler" aria-expanded="false" aria-label="Toggle navigation">
@@ -105,7 +109,7 @@
                                     </a>
                                 </li> -->
                                 <li class="nav-item">
-                                    <a class="nav-link pe-4">
+                                    <a class="nav-link pe-4" href="{{url_for('views.become_a_subscriber')}}">
                                         <button class="nav-button"><b>Become a subscriber</b></button>
                                     </a>
                                 </li>
@@ -149,73 +153,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- <div class="col-6 col-md-3 col-lg-3">
-                        <div class="row">
-                            <div class="col-12 col-md-12 col-lg-12">
-                                <h5>Contact Us</h5>
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                Email
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                Phone Number
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3 col-lg-3">
-                        <div class="row">
-                            <div class="col-12 col-md-12 col-lg-12">
-                                <h5>About Us</h5>
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                About Bukrent
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                Media
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                Careers
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                Events
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3 col-lg-3 mt-5 mt-md-0 mt-lg-0">
-                        <div class="row">
-                            <div class="col-12 col-md-12 col-lg-12">
-                                <h5>Follow Us</h5>
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                Instagram
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                Facebook
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                Twitter
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                YouTube
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3 col-lg-3 mt-5 mt-md-0 mt-lg-0">
-                        <div class="row">
-                            <div class="col-12 col-md-12 col-lg-12">
-                                <h5>FAQs</h5>
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                Help
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                Customer Support
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                Raise Complaint
-                            </div>
-                        </div>
-                    </div> -->
                 </div>
                 <div class="row footer-branding">
                     <div class="col-12 col-md-12 col-lg-12 p-3">
