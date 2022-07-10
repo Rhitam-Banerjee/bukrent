@@ -13,26 +13,29 @@ views = Blueprint('views', __name__, url_prefix="/")
 
 @views.route("/")
 def home():
-    # bestseller_books = Detail.get_bestsellers()
-    # bestsellers = [Book.query.filter_by(id=book_id).first() for book_id in bestseller_books]
-
-    # series = Series.get_top_series()
-
-    # authors = Author.get_top_authors()
-
-    # categories = Category.get_top_categories()
-
-    # publishers = Publisher.get_top_publishers()
-    # return render_template( 
-    #     "/home/home.html",
-    #     bestsellers=bestsellers,
-    #     series=series,
-    #     authors=authors,
-    #     categories=categories,
-    #     publishers=publishers
-    # )
     return render_template(
         "/launch/launch.html"
+    )
+
+@views.route("test")
+def test():
+    bestseller_books = Detail.get_bestsellers()
+    bestsellers = [Book.query.filter_by(id=book_id).first() for book_id in bestseller_books]
+
+    series = Series.get_top_series()
+
+    authors = Author.get_top_authors()
+
+    categories = Category.get_top_categories()
+
+    publishers = Publisher.get_top_publishers()
+    return render_template( 
+        "/home/home.html",
+        bestsellers=bestsellers,
+        series=series,
+        authors=authors,
+        categories=categories,
+        publishers=publishers
     )
 
 @views.route("/book-details")
@@ -1349,8 +1352,8 @@ def become_a_subscriber():
         "/become_subscriber/become_subscriber.html"
     )
 
-@views.route('/step-1')
-def step_1():
+@views.route('/confirm-plan')
+def confirm_plan():
     plan = request.args.get("plan")
     if plan == "1":
         weekly_books = 1
@@ -1370,8 +1373,11 @@ def step_1():
         price_month = 949
     security_deposit = 500
     total_payable_amount = price_month + security_deposit
+
+    session["plan"] = plan
+
     return render_template(
-        "/step_1/step_1.html",
+        "/confirm_plan/confirm_plan.html",
         weekly_books=weekly_books,
         monthly_books=monthly_books,
         price_month=price_month,
@@ -1380,10 +1386,25 @@ def step_1():
         plan=plan
     )
 
-@views.route("/step-2")
-def step_2():
-    plan = request.args.get("plan")
-
+@views.route("/signup")
+def signup():
     return render_template(
-        "/step_2/step_2.html"
+        "/signup/signup.html"
+    )
+
+@views.route("/confirm-mobile")
+def confirm_mobile():
+    mobile_number = session.get("mobile_number")
+    return render_template(
+        "/confirm_mobile/confirm_mobile.html",
+        mobile_number=mobile_number
+    )
+
+@views.route("/subscribe")
+def subscribe():
+    selected_plan = session.get("plan")
+    if not selected_plan:
+        return redirect(url_for('views.become_a_subscriber'))
+    return render_template(
+        "/subscribe/subscribe.html"
     )

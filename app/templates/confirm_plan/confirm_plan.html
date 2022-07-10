@@ -1,8 +1,8 @@
 {% extends "template.jinja" %}
 {% block main %}
 
-{% include("step_1/step_1_script.jinja") %}
-{% include("step_1/step_1_style.jinja") %}
+{% include("confirm_plan/confirm_plan_script.jinja") %}
+{% include("confirm_plan/confirm_plan_style.jinja") %}
 
 <!-- Section 1 -->
 <div class="row">
@@ -60,7 +60,7 @@
         <a class="no-decoration" href="{{url_for('views.become_a_subscriber')}}"><button class="wishlist-button m-2 py-3">Change Plan</button></a>
     </div>
     <div class="col-6 col-md-6 col-lg-6 text-start">
-        <a class="no-decoration" href="{{url_for('views.step_2')}}?plan={{plan}}"><button class="cart-button m-2 py-3">Next Step</button></a>
+        <a class="no-decoration" href="{{url_for('views.signup')}}"><button class="cart-button m-2 py-3">Next Step</button></a>
     </div>
 </div>
 

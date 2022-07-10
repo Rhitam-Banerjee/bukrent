@@ -1,0 +1,27 @@
+<script>
+    $(function(){
+        $("#verify_button").click(function(){
+            let data = {
+                verification_code: $("#verification_code").val()
+            }
+
+            $.ajax({
+                url: "{{url_for('api.confirm_mobile')}}",
+                type: "post",
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function (result) {
+                    window.location.href = "{{url_for('views.subscribe')}}"
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                }
+            })
+        })
+    })
+</script>
