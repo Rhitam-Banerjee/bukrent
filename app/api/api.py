@@ -116,10 +116,9 @@ def generate_subscription_id():
 
     subscription_id = subscription.get("id")
     plan_id = subscription.get("plan_id")
-    customer_id = subscription.get("customer_id")
 
     current_user = User.query.filter_by(guid=session.get('current_user')).first()
-    current_user.add_subscription_details(plan, customer_id, plan_id, subscription_id)
+    current_user.add_subscription_details(plan, plan_id, subscription_id)
 
     return jsonify({
         "subscription_id": subscription_id,
@@ -128,6 +127,16 @@ def generate_subscription_id():
         "contact": f"+91{current_user.mobile_number}",
         "plan_desc": plan_desc
     }), 201
+
+@api.route("/payment-successful", methods=["POST"])
+def payment_successful():
+    current_user = User.query.filter_by(guid=session.get('current_user')).first()
+    client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
+    subscription = client.subscription.fetch(current_user.subscription_id)
+
+    current_user.add_customer_id(subscription.get("customer_id"))
+
+    return redirect(url_for("views.payment_successful"))
 
 @api.route("/launch", methods=["POST"])
 def launch():

@@ -33,10 +33,14 @@ class User(db.Model):
         db.session.add(user_obj)
         db.session.commit()
 
-    def add_subscription_details(self, plan, customer_id, plan_id, subscription_id):
+    def add_subscription_details(self, plan, plan_id, subscription_id):
         self.current_plan = plan
-        self.customer_id = customer_id
         self.plan_id = plan_id
         self.subscription_id = subscription_id
+        db.session.add(self)
+        db.session.commit()
+
+    def add_customer_id(self, customer_id):
+        self.customer_id = customer_id
         db.session.add(self)
         db.session.commit()

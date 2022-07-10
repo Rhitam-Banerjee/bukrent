@@ -1408,3 +1408,9 @@ def subscribe():
     return render_template(
         "/subscribe/subscribe.html"
     )
+
+@views.route("/payment-successful")
+def payment_successful():
+    return render_template(
+        "/payment_successful/payment_successful.html"
+    )

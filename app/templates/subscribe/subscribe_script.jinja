@@ -12,7 +12,7 @@
                     "name": "Bukrent",
                     "description": result.plan_desc,
                     "image": "/static/images/logo.png",
-                    "callback_url": "/test",
+                    "callback_url": "{{url_for('api.payment_successful')}}",
                     "prefill": {
                         "name": result.name,
                         "contact": result.contact
