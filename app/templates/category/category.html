@@ -89,6 +89,7 @@
     </div>
 </div>
 
+{% if section_1["url_type"] != "series" %}
 <!-- Section 3 -->
 <div class="row pt-3 pt-md-5 pt-lg-5 mb-5">
     <div class="col-12 col-md-12 col-lg-12 px-5 pt-3 description-box">
@@ -148,6 +149,7 @@
         {% endif %}
     </div>
 </div>
+{% endif %}
 
 <!-- Section 4 -->
 <div class="container">
@@ -166,6 +168,7 @@
     </div>
 </div>
 
+{% if section_2["url_type"] != "series" %}
 <!-- Section 4 -->
 <div class="row pt-3 pt-md-5 pt-lg-5 mb-5">
     <div class="col-12 col-md-12 col-lg-12 px-5 pt-3 description-box">
@@ -225,7 +228,9 @@
         {% endif %}
     </div>
 </div>
+{% endif %}
 
+{% if section_3["url_type"] != "series" %}
 <!-- Section 5 -->
 <div class="row pt-3 pt-md-5 pt-lg-5 mb-5">
     <div class="col-12 col-md-12 col-lg-12 px-5 pt-3 description-box">
@@ -285,6 +290,7 @@
         {% endif %}
     </div>
 </div>
+{% endif %}
 
 <!-- Section 6 -->
 <div class="container">
@@ -303,6 +309,7 @@
     </div>
 </div>
 
+{% if section_4["url_type"] != "series" %}
 <!-- Section 7 -->
 <div class="row pt-3 pt-md-5 pt-lg-5 mb-5">
     <div class="col-12 col-md-12 col-lg-12 px-5 pt-3 description-box">
@@ -362,7 +369,9 @@
         {% endif %}
     </div>
 </div>
+{% endif %}
 
+{% if section_5["url_type"] != "series" %}
 <!-- Section 8 -->
 <div class="row pt-3 pt-md-5 pt-lg-5 mb-5">
     <div class="col-12 col-md-12 col-lg-12 px-5 pt-3 description-box">
@@ -422,5 +431,6 @@
         {% endif %}
     </div>
 </div>
+{% endif %}
 
 {% endblock %}
