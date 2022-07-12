@@ -1,18 +1,18 @@
 <script>
     $(function(){
-        $("#verify_button").click(function(){
+        $("#login_button").click(function(){
             let data = {
-                verification_code: $("#verification_code").val()
+                mobile_number: $("#mobile_number").val()
             }
 
             $.ajax({
-                url: "{{url_for('api.confirm_mobile')}}",
+                url: "{{url_for('api.login')}}",
                 type: "post",
                 data: JSON.stringify(data),
                 dataType: 'json',
                 contentType: 'application/json',
                 success: function (result) {
-                    window.location.href = result.redirect;
+                    window.location.href = "{{url_for('views.confirm_mobile')}}"
                 },
                 error: function (result) {
                     Swal.fire(

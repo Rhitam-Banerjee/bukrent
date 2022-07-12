@@ -5,6 +5,9 @@ from app.models.annotations import Annotation
 from app.models.reviews import Review
 from app.models.details import Detail
 
+from app.models.cart import CartBook, WishlistBook
+from app.models.order import OrderBook
+
 class BookCategory(db.Model):
     __tablename__ = 'book_categories'
     id = db.Column(db.Integer, primary_key=True, index=True)
@@ -47,6 +50,10 @@ class Book(db.Model):
     categories = db.relationship('Category', secondary=BookCategory.__table__)
     authors = db.relationship('Author', secondary=BookAuthor.__table__)
     publishers = db.relationship('Publisher', secondary=BookPublisher.__table__)
+
+    carts = db.relationship('Cart', secondary=CartBook.__table__)
+    wishlists = db.relationship('Wishlist', secondary=WishlistBook.__table__)
+    orders = db.relationship('Order', secondary=OrderBook.__table__)
 
     @staticmethod
     def create(name, image, isbn, rating, review_count, book_format, language, price, description, series_id):

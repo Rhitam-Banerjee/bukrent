@@ -1,0 +1,132 @@
+<script>
+    function move_to_wishlist(book_guid) {
+        let data = {
+            guid: book_guid
+        }
+        $.ajax({
+            url: "{{url_for('api.move_to_wishlist')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                Swal.fire(
+                    'Done',
+                    "Book has been moved to your wishlist",
+                    'success'
+                )
+                window.location.reload();
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function delete_from_cart(book_guid) {
+        let data = {
+            guid: book_guid
+        }
+        $.ajax({
+            url: "{{url_for('api.delete_from_cart')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                Swal.fire(
+                    'Done',
+                    "Book has been deleted from your cart",
+                    'success'
+                )
+                window.location.reload();
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function delete_from_wishlist(book_guid) {
+        let data = {
+            guid: book_guid
+        }
+        $.ajax({
+            url: "{{url_for('api.delete_from_wishlist')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                Swal.fire(
+                    'Done',
+                    "Book has been deleted from your wishlist",
+                    'success'
+                )
+                window.location.reload();
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function move_to_cart(book_guid) {
+        let data = {
+            guid: book_guid
+        }
+        $.ajax({
+            url: "{{url_for('api.move_to_cart')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                Swal.fire(
+                    'Done',
+                    "Book has been moved to your cart",
+                    'success'
+                )
+                window.location.reload();
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function cart_checkout(){
+        $.ajax({
+            url: "{{url_for('api.cart_checkout')}}",
+            type: "post",
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                window.location.href = result.redirect;
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+</script>

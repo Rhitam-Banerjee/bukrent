@@ -1,0 +1,129 @@
+{% extends "template.jinja" %}
+{% block main %}
+
+{% include("cart/cart_script.jinja") %}
+{% include("cart/cart_style.jinja") %}
+
+<!-- Section 1 -->
+<div class="row">
+    <div class="col-12 col-md-12 col-lg-12 banner-box text-center mt-3 mt-md-4 mt-lg-4">
+        <img src="/static/images/steps-mini.png" class="img-fluid" />
+    </div>
+</div>
+
+<!-- Section 2 -->
+<div class="container">
+    <div class="row my-5">
+        <div class="col-12 col-md-12 col-lg-12">
+            <h1 class="gray-text">My Cart ({{cart | length}} Items)</h1>
+        </div>
+    </div>
+    <div class="row my-5">
+        {% if cart | length > 0 %}
+            {% for item in cart %}
+            <div class="col-12 col-md-12 col-lg-12 m-2 p-2 book-box">
+                <div class="row">
+                    <div class="col-3 col-md-3 col-lg-3 text-center">
+                        <img src="{{item.image}}" class="img-fluid cart-img" />
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-6 pt-0 pt-md-3 pt-lg-3">
+                        <div class="row">
+                            <div class="col-12 col-md-12 col-lg-12">
+                                <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{item.guid}}"><h2><b>{{item.name}}</b></h2></a>
+                            </div>
+                            <div class="col-12 col-md-12 col-lg-12">
+                                <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?guid={{item.authors[0].guid}}&type=author"><b>{{item.authors[0].name}}</b></a>
+                            </div>
+                            <div class="col-12 col-md-12 col-lg-12">
+                                <p class="text-yellow"><i class="fa-solid fa-star"></i> {{item.rating}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-3 col-md-3 col-lg-3 pt-3 pt-md-5 pt-lg-5">
+                        <div class="row">
+                            <div class="col-6 col-md-6 col-lg-6 text-center">
+                                <a onclick="move_to_wishlist('{{item.guid}}')">
+                                    <i class="fa-regular fa-heart text-yellow"></i>
+                                </a>
+                            </div>
+                            <div class="col-6 col-md-6 col-lg-6 text-center">
+                                <a onclick="delete_from_cart('{{item.guid}}')">
+                                    <i class="fa-regular fa-trash-can text-yellow"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="col-12 col-md-12 col-lg-12 text-center mt-5">
+                <a onclick="cart_checkout()"><button class="cart-button m-2 py-3">Checkout</button></a>
+            </div>
+        {% else %}
+        <div class="col-12 col-md-12 col-lg-12 text-center">
+            <h2>No Items In Cart</h2>
+        </div>
+        <div class="col-12 col-md-12 col-lg-12 text-center mt-5">
+            <a href="{{url_for('views.test')}}"><button class="cart-button m-2 py-3">Explore Now!</button></a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Section 3 -->
+<div class="container">
+    <div class="row my-5">
+        <div class="col-12 col-md-12 col-lg-12">
+            <h1 class="gray-text">My Wishlist ({{wishlist | length}} Items)</h1>
+        </div>
+    </div>
+    <div class="row my-5">
+        {% if wishlist | length > 0 %}
+            {% for item in wishlist %}
+            <div class="col-12 col-md-12 col-lg-12 m-2 p-2 book-box">
+                <div class="row">
+                    <div class="col-3 col-md-3 col-lg-3 text-center">
+                        <img src="{{item.image}}" class="img-fluid cart-img" />
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-6 pt-0 pt-md-3 pt-lg-3">
+                        <div class="row">
+                            <div class="col-12 col-md-12 col-lg-12">
+                                <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{item.guid}}"><h2><b>{{item.name}}</b></h2></a>
+                            </div>
+                            <div class="col-12 col-md-12 col-lg-12">
+                                <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?guid={{item.authors[0].guid}}&type=author"><b>{{item.authors[0].name}}</b></a>
+                            </div>
+                            <div class="col-12 col-md-12 col-lg-12">
+                                <p class="text-yellow"><i class="fa-solid fa-star"></i> {{item.rating}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-3 col-md-3 col-lg-3 pt-3 pt-md-5 pt-lg-5">
+                        <div class="row">
+                            <div class="col-6 col-md-6 col-lg-6 text-center">
+                                <a onclick="delete_from_wishlist('{{item.guid}}')">
+                                    <i class="fa-regular fa-trash-can text-yellow"></i>
+                                </a>
+                            </div>
+                            <div class="col-6 col-md-6 col-lg-6 text-center">
+                                <a onclick="move_to_cart('{{item.guid}}')">
+                                    <span class="text-yellow"><i class="fa fa-shopping-cart"></i></span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="col-12 col-md-12 col-lg-12 text-center">
+            <h2>No Items In Wishlist</h2>
+        </div>
+        <div class="col-12 col-md-12 col-lg-12 text-center mt-5">
+            <a href="{{url_for('views.test')}}"><button class="cart-button m-2 py-3">Explore Now!</button></a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "template.jinja" %}
+{% block main %}
+
+{% include("order_placed/order_placed_script.jinja") %}
+{% include("order_placed/order_placed_style.jinja") %}
+
+<!-- Section 1 -->
+<div class="row pt-3 pt-md-5 pt-lg-5">
+    <div class="col-12 col-md-12 col-lg-12 text-center">
+        <h2 class="gray-text"><b>Order Placed Successfully!</b></h2>
+    </div>
+</div>
+
+<!-- Section 2 -->
+<div class="row mt-5">
+    <div class="col-12 col-md-12 col-lg-12 text-center">
+        <p class="gray-text">The books will be delivered in 3-5 business days!</p>
+    </div>
+</div>
+
+{% endblock %}

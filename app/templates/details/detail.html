@@ -87,10 +87,10 @@
                 <div class="col-4 col-md-4 col-lg-4">
                     <div class="row">
                         <div class="col-12 col-md-12 col-lg-12 text-center">
-                            <button class="cart-button m-2 py-3">Add to cart</button>
+                            <button class="cart-button m-2 py-3" id="add_to_cart">Add to cart</button>
                         </div>
                         <div class="col-12 col-md-12 col-lg-12 text-center">
-                            <button class="wishlist-button m-2 py-3"><i class="fa-regular fa-heart"></i> Add to wishlist</button>
+                            <button class="wishlist-button m-2 py-3" id="add_to_wishlist"><i class="fa-regular fa-heart"></i> Add to wishlist</button>
                         </div>
                     </div>
                 </div>
@@ -346,7 +346,7 @@
     </div>
 </div>
 
-<!-- Section 8 -->
+<!-- Section 1 -->
 <div class="row pt-3 pt-md-5 pt-lg-5">
     <div class="col-12 col-md-12 col-lg-12 text-center">
         <h2 class="gray-text"><b>Become A Subscriber</b></h2>
@@ -354,16 +354,24 @@
 </div>
 <div class="row pb-3 p-3 pb-lg-0 pb-md-0" style="overflow-y: hidden;">
     <div class="col-3 col-md-3 col-lg-3 p-1 p-md-5 p-lg-5">
-        <img src="/static/images/subscription1.png" class="img-fluid banner-img" />
+        <a onclick="choose_plan(1)">
+            <img src="/static/images/subscription1.png" class="img-fluid banner-img" />
+        </a>
     </div>
     <div class="col-3 col-md-3 col-lg-3 p-1 p-md-5 p-lg-5">
-        <img src="/static/images/subscription2.png" class="img-fluid banner-img" />
+        <a onclick="choose_plan(2)">
+            <img src="/static/images/subscription2.png" class="img-fluid banner-img" />
+        </a>
     </div>
     <div class="col-3 col-md-3 col-lg-3 p-1 p-md-5 p-lg-5">
-        <img src="/static/images/subscription3.png" class="img-fluid banner-img" />
+        <a onclick="choose_plan(3)">
+            <img src="/static/images/subscription3.png" class="img-fluid banner-img" />
+        </a>
     </div>
     <div class="col-3 col-md-3 col-lg-3 p-1 p-md-5 p-lg-5">
-        <img src="/static/images/subscription4.png" class="img-fluid banner-img" />
+        <a onclick="choose_plan(4)">
+            <img src="/static/images/subscription4.png" class="img-fluid banner-img" />
+        </a>
     </div>
 </div>
 

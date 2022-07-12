@@ -1,6 +1,45 @@
 from app import db
 import uuid
 
+from app.models.cart import Cart, Wishlist
+from app.models.order import Order
+
+from sqlalchemy.ext.hybrid import hybrid_property
+
+class Address(db.Model):
+    __tablename__ = "address"
+    id = db.Column(db.Integer, primary_key=True)
+    guid = db.Column(db.String, nullable=False, unique=True)
+    house_number = db.Column(db.String)
+    area = db.Column(db.String)
+    city = db.Column(db.String)
+    pincode = db.Column(db.String)
+    country = db.Column(db.String)
+    landmark = db.Column(db.String)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    @staticmethod
+    def create(address_json, user_id):
+        if not all((address_json.get("house_number"), address_json.get("area"), address_json.get("city"), address_json.get("pincode"), address_json.get("country"))):
+            raise "House Number, Area, City, Country and Pin Code are required!"
+
+        address_dict = dict(
+            guid = str(uuid.uuid4()),
+            house_number = address_json.get("house_number"),
+            area = address_json.get("area"),
+            city = address_json.get("city"),
+            pincode = address_json.get("pincode"),
+            country = address_json.get("country"),
+            landmark = address_json.get("landmark") or "",
+            user_id = user_id
+        )
+        address_obj = Address(**address_dict)
+        db.session.add(address_obj)
+        db.session.commit()
+
+        return address_obj
+
 class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -10,15 +49,28 @@ class User(db.Model):
     mobile_number = db.Column(db.String, unique=True)
     newsletter = db.Column(db.Boolean)
     is_subscribed = db.Column(db.Boolean, default=False)
-    current_plan = db.Column(db.Integer)
     security_deposit = db.Column(db.Boolean, default=False)
     customer_id = db.Column(db.String)
     plan_id = db.Column(db.String)
     subscription_id = db.Column(db.String)
-    #Cart
-    #Wishlist
-    #Subscription
+
+    cart = db.relationship(Cart, lazy=True, uselist=False)
+    wishlist = db.relationship(Wishlist, lazy=True, uselist=False)
+
+    address = db.relationship(Address, lazy=True)
+    order = db.relationship(Order, lazy=True)
     #Orders
+
+    @hybrid_property
+    def books_per_week(self):
+        if self.plan_id == "plan_JqT58ugvJ14P4j":
+            return 1
+        elif self.plan_id == "plan_JqT5alH2kwnrdx":
+            return 2
+        elif self.plan_id == "plan_JqT63tUE0O641c":
+            return 4
+        elif self.plan_id == "plan_JqT6RvMZOgaWau":
+            return 6
 
     @staticmethod
     def create(first_name, last_name, mobile_number, newsletter):
@@ -33,8 +85,53 @@ class User(db.Model):
         db.session.add(user_obj)
         db.session.commit()
 
+        user_obj.add_cart_and_wishlist()
+
+    def add_cart_and_wishlist(self):
+        cart = Cart.create(self.id)
+        wishlist = Wishlist.create(self.id)
+        self.cart = cart
+        self.wishlist = wishlist
+        db.session.add(self)
+        db.session.commit()
+
+    def move_book_to_wishlist(self, book):
+        cart = self.cart
+        wishlist = self.wishlist
+
+        cart.books.remove(book)
+        db.session.add(cart)
+
+        wishlist.books.append(book)
+        db.session.add(wishlist)
+
+        db.session.commit()
+
+    def move_book_to_cart(self, book):
+        wishlist = self.wishlist
+        cart = self.cart
+
+        wishlist.books.remove(book)
+        db.session.add(wishlist)
+
+        cart.books.append(book)
+        db.session.add(cart)
+
+        db.session.commit()
+
+    def remove_book_from_cart(self, book):
+        cart = self.cart
+        cart.books.remove(book)
+        db.session.add(cart)
+        db.session.commit()
+
+    def remove_book_from_wishlist(self, book):
+        wishlist = self.wishlist
+        wishlist.books.remove(book)
+        db.session.add(wishlist)
+        db.session.commit()
+
     def add_subscription_details(self, plan, plan_id, subscription_id):
-        self.current_plan = plan
         self.plan_id = plan_id
         self.subscription_id = subscription_id
         db.session.add(self)
@@ -42,5 +139,20 @@ class User(db.Model):
 
     def add_customer_id(self, customer_id):
         self.customer_id = customer_id
+        self.is_subscribed = True
+        self.security_deposit = True
         db.session.add(self)
         db.session.commit()
+
+    def add_books_to_cart_and_wishlist(self, cart, wishlist):
+        from app.models.books import Book
+
+        for item in cart:
+            Cart.create(self.id)
+            book = Book.query.filter_by(guid=item).first()
+            self.cart.add_book(book)
+
+        for item in wishlist:
+            Wishlist.create(self.id)
+            book = Book.query.filter_by(guid=item).first()
+            self.wishlist.add_book(book)

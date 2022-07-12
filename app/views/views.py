@@ -8,6 +8,8 @@ from app.models.details import Detail
 from app.models.publishers import Publisher
 from app.models.reviews import Review
 from app.models.series import Series
+from app.models.user import User
+from app.models.cart import Cart, Wishlist
 
 views = Blueprint('views', __name__, url_prefix="/")
 
@@ -29,13 +31,16 @@ def test():
     categories = Category.get_top_categories()
 
     publishers = Publisher.get_top_publishers()
+
+    current_user = session.get("current_user")
     return render_template( 
         "/home/home.html",
         bestsellers=bestsellers,
         series=series,
         authors=authors,
         categories=categories,
-        publishers=publishers
+        publishers=publishers,
+        current_user=current_user
     )
 
 @views.route("/book-details")
@@ -44,10 +49,13 @@ def book_details():
     book = Book.query.filter_by(guid=guid).first()
 
     more_books = Book.get_more_books(book.details)
+
+    current_user = session.get("current_user")
     return render_template(
         "/details/detail.html",
         book=book,
-        more_books=more_books
+        more_books=more_books,
+        current_user=current_user
     )
 
 @views.route('/category')
@@ -1209,10 +1217,12 @@ def book_category():
                 page_dict["section_1"]["type"] = "multi"
                 page_dict["section_1"]["url_type"] = "publisher"
 
+    current_user = session.get("current_user")
     return render_template(
         "/category/category.html",
         age_group=age_group,
-        page_dict=page_dict
+        page_dict=page_dict,
+        current_user=current_user
     )
 
 @views.route('/sub-category')
@@ -1339,31 +1349,35 @@ def book_subcategory():
         page_dict["section_3"]["objs"] = publishers[2].books[:10]
         page_dict["section_4"]["objs"] = publishers[3].books[:10]
 
+    current_user = session.get("current_user")
     return render_template(
         "/sub_category/sub_category.html",
         age_group=age_group,
         page_dict=page_dict,
-        main_obj=main_obj
+        main_obj=main_obj,
+        current_user=current_user
     )
 
 @views.route('/become-subscriber')
 def become_a_subscriber():
+    current_user = session.get("current_user")
     return render_template(
-        "/become_subscriber/become_subscriber.html"
+        "/become_subscriber/become_subscriber.html",
+        current_user=current_user
     )
 
 @views.route('/confirm-plan')
 def confirm_plan():
-    plan = request.args.get("plan")
-    if plan == "1":
+    plan = session.get("plan")
+    if plan == 1:
         weekly_books = 1
         monthly_books = 4
         price_month = 299
-    elif plan == "2":
+    elif plan == 2:
         weekly_books = 2
         monthly_books = 8
         price_month = 499
-    elif plan == "3":
+    elif plan == 3:
         weekly_books = 4
         monthly_books = 16
         price_month = 749
@@ -1374,8 +1388,7 @@ def confirm_plan():
     security_deposit = 500
     total_payable_amount = price_month + security_deposit
 
-    session["plan"] = plan
-
+    current_user = session.get("current_user")
     return render_template(
         "/confirm_plan/confirm_plan.html",
         weekly_books=weekly_books,
@@ -1383,34 +1396,90 @@ def confirm_plan():
         price_month=price_month,
         security_deposit=security_deposit,
         total_payable_amount=total_payable_amount,
-        plan=plan
+        plan=plan,
+        current_user=current_user
     )
 
 @views.route("/signup")
 def signup():
+    if session.get("current_user"):
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if user.is_subscribed:
+            redirect(url_for('views.cart'))
+        else:
+            redirect(url_for(''))
+    current_user = session.get("current_user")
     return render_template(
-        "/signup/signup.html"
+        "/signup/signup.html",
+        current_user=current_user
+    )
+
+@views.route("/login")
+def login():
+    current_user = session.get("current_user")
+    return render_template(
+        "/login/login.html",
+        current_user=current_user
     )
 
 @views.route("/confirm-mobile")
 def confirm_mobile():
     mobile_number = session.get("mobile_number")
+    current_user = session.get("current_user")
     return render_template(
         "/confirm_mobile/confirm_mobile.html",
-        mobile_number=mobile_number
-    )
-
-@views.route("/subscribe")
-def subscribe():
-    selected_plan = session.get("plan")
-    if not selected_plan:
-        return redirect(url_for('views.become_a_subscriber'))
-    return render_template(
-        "/subscribe/subscribe.html"
+        mobile_number=mobile_number,
+        current_user=current_user
     )
 
 @views.route("/payment-successful")
 def payment_successful():
+    current_user = session.get("current_user")
     return render_template(
-        "/payment_successful/payment_successful.html"
+        "/payment_successful/payment_successful.html",
+        current_user=current_user
+    )
+
+@views.route("/cart")
+def cart():
+    current_user_guid = session.get('current_user')
+    if current_user_guid:
+        current_user = User.query.filter_by(guid=current_user_guid).first()
+        cart_objs = current_user.cart.books
+        wishlist_objs = current_user.wishlist.books
+    else:
+        cart = session.get("cart") or []
+        cart_objs = []
+        for item in cart:
+            cart_objs.append(Book.query.filter_by(guid=item).first())
+
+        wishlist = session.get("wishlist") or []
+        wishlist_objs = []
+        for item in wishlist:
+            wishlist_objs.append(Book.query.filter_by(guid=item).first())
+    current_user = session.get("current_user")
+    return render_template(
+        "/cart/cart.html",
+        cart = cart_objs,
+        wishlist = wishlist_objs,
+        current_user=current_user
+    )
+
+@views.route("/add-address")
+def add_address():
+    current_user = session.get("current_user")
+    user = User.query.filter_by(guid=current_user).first()
+
+    return render_template(
+        "/add_address/add_address.html",
+        current_user=current_user,
+        user=user
+    )
+
+@views.route("/order-placed")
+def order_placed():
+    current_user = session.get("current_user")
+    return render_template(
+        "/order_placed/order_placed.html",
+        current_user=current_user
     )

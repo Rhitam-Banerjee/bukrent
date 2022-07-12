@@ -1,3 +1,40 @@
 <script>
+    $(function(){
+        $("#checkout").click(function(){
+            $.ajax({
+                url: "{{url_for('api.generate_subscription_id')}}",
+                type: "post",
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function (result) {
+                    let options = {
+                        "key": result.key,
+                        "subscription_id": result.subscription_id,
+                        "name": "Bukrent",
+                        "description": result.plan_desc,
+                        "image": "/static/images/logo.png",
+                        "callback_url": "{{url_for('api.payment_successful')}}",
+                        "prefill": {
+                            "name": result.name,
+                            "contact": result.contact
+                        },
+                        "notes": {},
+                        "theme": {
+                            "color": "#dd913e"
+                        }
+                    }
 
+                    let rzp1 = new Razorpay(options);
+                    rzp1.open();
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                }
+            })
+        })
+    })
 </script>
