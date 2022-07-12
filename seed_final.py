@@ -351,6 +351,17 @@ def seed():
             data["total_books"]
         )
 
+    Author.create(
+        "Unknown",
+        "author",
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+    )
+
     #### Seeding Categories
     print("Seeding Categories")
 
@@ -531,16 +542,28 @@ def seed():
         
         authors = author_dict.get(book_isbn)
         if authors:
-            for item in authors["authors"]:
-                obj = Author.query.filter_by(name=item).first()
+            total_authors = len(authors["authors"]) + len(authors["illustrators"])
+            if total_authors == 0:
+                obj = Author.query.filter_by(name="Unknown").first()
                 obj.books.append(book_obj)
                 db.session.add(obj)
                 db.session.commit()
-            for item in authors["illustrators"]:
-                obj = Author.query.filter_by(name=item).first()
-                obj.books.append(book_obj)
-                db.session.add(obj)
-                db.session.commit()
+            else:
+                for item in authors["authors"]:
+                    obj = Author.query.filter_by(name=item).first()
+                    obj.books.append(book_obj)
+                    db.session.add(obj)
+                    db.session.commit()
+                for item in authors["illustrators"]:
+                    obj = Author.query.filter_by(name=item).first()
+                    obj.books.append(book_obj)
+                    db.session.add(obj)
+                    db.session.commit()
+        else:
+            obj = Author.query.filter_by(name="Unknown").first()
+            obj.books.append(book_obj)
+            db.session.add(obj)
+            db.session.commit()
 
     #### Seeding Annotations
     print("Seeding Annotations")
