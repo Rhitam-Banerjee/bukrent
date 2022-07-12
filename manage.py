@@ -3,7 +3,7 @@ from app import create_app, db
 from flask import current_app
 
 # from seed import *
-from seed_new import *
+from seed_final import *
 
 from app.models.annotations import Annotation
 from app.models.author import Author

@@ -33,6 +33,7 @@ def test():
     publishers = Publisher.get_top_publishers()
 
     current_user = session.get("current_user")
+
     return render_template( 
         "/home/home.html",
         bestsellers=bestsellers,
