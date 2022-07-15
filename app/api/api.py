@@ -482,6 +482,19 @@ def get_publisher_books():
         "status": "success"
     }), 200
 
+@api.route("/search", methods=["POST"])
+def search():
+    search = request.json.get("search")
+    all_books = Book.query.filter(Book.name.like(f"%{search}%")).all()
+    all_authors = Author.query.filter(Author.name.like(f"%{search}%")).all()
+    all_publishers = Publisher.query.filter(Publisher.name.like(f"%{search}%")).all()
+    return jsonify({
+        "books": all_books,
+        "authors": all_authors,
+        "publishers": all_publishers,
+        "status": "success"
+    }), 200
+
 @api.route("/launch", methods=["POST"])
 def launch():
     parent_name = request.json.get("parent_name")

@@ -64,7 +64,7 @@
             }
 
             main {
-                margin-top: 6vh;
+                margin-top: 7vh;
                 min-height: 50vh
             }
 
@@ -75,7 +75,12 @@
 
             @media (max-width:480px) {
                 main {
-                    margin-top: 10vh;
+                    margin-top: 20vh;
+                }
+
+                .navbar {
+                    background-color: #dd913e !important;
+                    padding: 0px !important;
                 }
             }
         </style>
@@ -91,28 +96,32 @@
                         <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#nav_toggler" aria-controls="nav_toggler" aria-expanded="false" aria-label="Toggle navigation">
                             <i class="fa-solid fa-bars text-white"></i>
                         </button>
+                        <div class="d-flex flex-grow-1 pt-3 pb-2">
+                            <input id="search" class="form-control me-2" type="search" placeholder="Book, Author, Publisher" aria-label="Search">
+                            <button class="nav-button" onclick="search();"><b>Search</b></button>
+                        </div>
                         <div class="collapse navbar-collapse" id="nav_toggler">
                             <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
                                 {% if current_user %}
                                     <li class="nav-item">
-                                        <a class="nav-link px-4 pt-4" onclick="logout_user()">
-                                            Logout
+                                        <a class="nav-link pe-4" onclick="logout_user()">
+                                            <button class="nav-button"><b>Logout</b></button>
                                         </a>
                                     </li>
                                 {% else %}
                                     <li class="nav-item">
-                                        <a class="nav-link px-4 pt-4" href="{{url_for('views.login')}}">
-                                            Login
+                                        <a class="nav-link pe-4" href="{{url_for('views.login')}}">
+                                            <button class="nav-button"><b>Login</b></button>
                                         </a>
                                     </li>
                                 {% endif %}
                                 <!-- <li class="nav-item">
-                                    <a class="nav-link px-4 pt-4" href="{{url_for('views.home')}}">
+                                    <a class="nav-link pe-4" href="{{url_for('views.home')}}">
                                         Browse Books
                                     </a>
                                 </li> -->
                                 <!-- <li class="nav-item">
-                                    <a class="nav-link ps-4">
+                                    <a class="nav-link pe-4">
                                         <button class="nav-button"><b>Surprise Me</b></button>
                                     </a>
                                 </li> -->
@@ -188,6 +197,11 @@
                         )
                     }
                 })
+            }
+
+            function search() {
+                let url = "{{url_for('views.search_result')}}"+`?query=${$("#search").val()}`
+                window.location.href = url
             }
         </script>
     </body>

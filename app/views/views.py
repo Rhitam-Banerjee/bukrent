@@ -1490,3 +1490,19 @@ def order_placed():
         "/order_placed/order_placed.html",
         current_user=current_user
     )
+
+@views.route("/search-result")
+def search_result():
+    search = request.args.get("query")
+    all_books = Book.query.filter(Book.name.ilike(f"%{search}%")).all()
+    all_authors = Author.query.filter(Author.name.like(f"%{search}%")).all()
+    all_publishers = Publisher.query.filter(Publisher.name.like(f"%{search}%")).all()
+    current_user = session.get("current_user")
+    return render_template(
+        "/search_result/search_result.html",
+        current_user = current_user,
+        all_books = all_books,
+        all_authors = all_authors,
+        all_publishers = all_publishers,
+        query = search
+    )

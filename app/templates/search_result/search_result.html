@@ -1,0 +1,55 @@
+{% extends "template.jinja" %}
+{% block main %}
+
+{% include("search_result/search_result_script.jinja") %}
+{% include("search_result/search_result_style.jinja") %}
+
+{% set query = query or "" %}
+
+<div class="container">
+    <div class="row mt-5 pt-5">
+        <div class="col-9 col-md-9 col-lg-9 pt-2">
+            <input class="form-control" id="search" placeholder="Book, Author, Publisher" value="{{query}}" />
+        </div>
+        <div class="col-3 col-md-3 col-lg-3">
+            <button class="cart-button m-2 py-2" id="search">Search</button>
+        </div>
+    </div>
+
+    <!-- Displaying Book Results -->
+    <div class="row my-3">
+        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
+            <p class="section-title">Books</p>
+        </div>
+    </div>
+    {% if all_books | length > 0 %}
+    <div id="books-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
+        {% for book in all_books %}
+        <div class="book-box">
+            <div class="row">
+                <div class="col-12 col-md-12 col-lg-12">
+                    <img src="{{book.image}}" class="img-fluid book-img" />
+                </div>
+                <div class="col-12 col-md-12 col-lg-12 mt-2">
+                    <p class="book-name">{{book.name}}</p>
+                </div>
+                <div class="col-6 col-md-6 col-lg-6">
+                    <p class="book-author-name">{{book.authors[0].name}}</p>
+                </div>
+                <div class="col-6 col-md-6 col-lg-6">
+                    <p class="book-rating"><i class="fa-solid fa-star"></i> {{book.rating}}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row my-3">
+        <div class="col-12 col-md-12 col-lg-12 text-center">
+            <h3>No Results Found</h3>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
