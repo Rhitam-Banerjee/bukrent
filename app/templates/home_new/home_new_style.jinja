@@ -1,0 +1,239 @@
+<style>
+    .no-desktop {
+        display: none;
+    }
+
+    .no-mobile {
+        display: block;
+    }
+
+    .title-box {
+        background-color: #ffedd6;
+        font-size: 2rem;
+        font-weight: 900;
+    }
+
+    .big-title-text {
+        color: #ffa142;
+        font-size: 4rem;
+        font-weight: 900;
+    }
+
+    .title-box2 {
+        background-color: #fdccf6;
+        font-size: 2rem;
+        font-weight: 900;
+    }
+
+    .big-title-text2 {
+        color: #c783b7;
+        font-size: 4rem;
+        font-weight: 900;
+    }
+
+    .title-box3 {
+        background-color: #ccfe8e;
+        font-size: 2rem;
+        font-weight: 900;
+    }
+
+    .big-title-text3 {
+        color: #8ace38;
+        font-size: 4rem;
+        font-weight: 900;
+    }
+
+    .section-title-box {
+        position: relative;
+        display: flex;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 900;
+        display: inline-block;
+        padding: 0rem 1rem;
+    }
+
+    .section-title-box::before,
+    .section-title-box::after {
+        border-top: 1px solid black;
+        display: block;
+        height: 1px;
+        content: " ";
+        flex-grow: 1;
+        margin-top: 1.5rem;
+    }
+
+    .age-box {
+        border-radius: 1rem;
+    }
+
+    .age-1 {
+        background-color: #ff7c73;
+    }
+
+    .age-2 {
+        background-color: #ffa142;
+    }
+
+    .age-3 {
+        background-color: #f4c91a;
+    }
+
+    .age-4 {
+        background-color: #8ace38;
+    }
+
+    .age-5 {
+        background-color: #74c7ff;
+    }
+
+    .age-6 {
+        background-color: #cb85c2;
+    }
+
+    .age-text-big {
+        color: white;
+        font-weight: 900;
+        font-size: 4rem;
+    }
+
+    .age-text-small {
+        color: white;
+        font-size: 2rem;
+    }
+
+    .book-name {
+        color: #636363;
+        font-size: 1rem;
+    }
+
+    .book-author-name {
+        color: #636363;
+        font-size: 0.75rem;
+    }
+
+    .book-rating {
+        color: #dd913e;
+        font-size: 0.75rem;
+    }
+
+    .book-img {
+        min-height: 30vh;
+        max-height: 30vh;
+    }
+
+    .amazon-authors-box {
+        background-color: #eaeaea;
+        border-radius: 1rem;
+        position: relative;
+    }
+
+    .amazon-publishers-box {
+        background-color: #eaeaea;
+        border-radius: 1rem;
+    }
+
+    .box-color-0 {
+        border: 3px solid #ffa142;
+    }
+
+    .box-color-1 {
+        border: 3px solid #ff7c72;
+    }
+
+    .box-color-2 {
+        border: 3px solid #8ace38;
+    }
+
+    .box-color-3 {
+        border: 3px solid #74c7ff;
+    }
+
+    .author-img {
+        position: relative;
+    }
+
+    .author-name-container {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        color: white;
+        font-weight: 900;
+    }
+
+    .text-container-color-0 {
+        background-color: #ffa142;
+    }
+
+    .text-container-color-1 {
+        background-color: #ff7c72;
+    }
+
+    .text-container-color-2 {
+        background-color: #8ace38;
+    }
+
+    .text-container-color-3 {
+        background-color: #74c7ff;
+    }
+
+    @media (max-width:480px) {
+        .no-mobile {
+            display: none;
+        }
+
+        .no-desktop {
+            display: block;
+        }
+
+        .age-text-big {
+            color: white;
+            font-weight: 900;
+            font-size: 2rem;
+        }
+
+        .age-text-small {
+            color: white;
+            font-size: 1rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 900;
+            display: inline-block;
+            padding: 0rem 0.5rem;
+        }
+
+        .section-title-box::before,
+        .section-title-box::after {
+            border-top: 1px solid black;
+            display: block;
+            height: 1px;
+            content: " ";
+            flex-grow: 1;
+            margin-top: 0.75rem;
+        }
+
+        .book-name {
+            color: #636363;
+            font-size: 0.75rem;
+        }
+
+        .book-author-name {
+            color: #636363;
+            font-size: 0.5rem;
+        }
+
+        .book-rating {
+            color: #dd913e;
+            font-size: 0.5rem;
+        }
+
+        .book-img {
+            min-height: 15vh;
+            max-height: 15vh;
+        }
+    }
+</style>

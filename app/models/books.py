@@ -78,23 +78,102 @@ class Book(db.Model):
         db.session.commit()
 
     @staticmethod
+    def get_most_borrowed(age_group):
+        from app.models.category import Category
+
+        books = Category.query.filter_by(name="Most Borrowed").first().books
+        final_books = []
+        category = None
+
+        if age_group == 1:
+            category = Category.query.filter_by(name="Zero - Two").first()
+        elif age_group == 2:
+            category = Category.query.filter_by(name="Three to Five").first()
+        elif age_group == 3:
+            category = Category.query.filter_by(name="Six to Eight").first()
+        elif age_group == 4:
+            category = Category.query.filter_by(name="Nine to Twelve").first()
+        elif age_group == 5 or age_group == 6:
+            category = Category.query.filter_by(name="Twelve to Sixteen").first()
+
+        if category:
+            for book in books:
+                if category in book.categories:
+                    final_books.append(book.to_json())
+        else:
+            for book in books:
+                final_books.append(book.to_json())
+        return final_books
+
+    @staticmethod
+    def get_author_books(author):
+        from app.models.author import Author
+
+        books = Author.query.filter_by(name=author).first().books
+        final_books = []
+
+        for book in books:
+            final_books.append(book.to_json())
+
+        return final_books
+
+    @staticmethod
+    def get_publisher_books(publisher):
+        from app.models.publishers import Publisher
+
+        books = Publisher.query.filter_by(name=publisher).first().books
+        final_books = []
+
+        for book in books:
+            final_books.append(book.to_json())
+
+        return final_books
+
+    @staticmethod
+    def get_amazon_bestsellers(age_group):
+        from app.models.category import Category
+
+        books = Category.query.filter_by(name="Amazon Bestseller").first().books
+        final_books = []
+        category = None
+
+        if age_group == 1:
+            category = Category.query.filter_by(name="Zero - Two").first()
+        elif age_group == 2:
+            category = Category.query.filter_by(name="Three to Five").first()
+        elif age_group == 3:
+            category = Category.query.filter_by(name="Six to Eight").first()
+        elif age_group == 4:
+            category = Category.query.filter_by(name="Nine to Twelve").first()
+        elif age_group == 5 or age_group == 6:
+            category = Category.query.filter_by(name="Twelve to Sixteen").first()
+        
+        if category:
+            for book in books:
+                if category in book.categories:
+                    final_books.append(book.to_json())
+        else:
+            for book in books:
+                final_books.append(book.to_json())
+
+        return final_books
+
+    @staticmethod
     def get_more_books(detail):
         objs = Detail.query.filter_by(age_group=detail.age_group).order_by(Detail.bestseller_rank.asc()).limit(10).all()
         return [Book.query.filter_by(id=obj.book_id).first() for obj in objs]
 
-    # def to_json(self):
-    #     return {
-    #         "name": self.name,
-    #         "image": self.image,
-    #         "rating": self.rating,
-    #         "review_count": self.review_count,
-    #         "book_format": self.book_format,
-    #         "language": self.language,
-    #         "price": self.price,
-    #         "description": self.description,
-    #         "details": self.details.to_json(),
-    #         "annotations": self.annotation.to_json() if self.annotation else {},
-    #         "reviews": self.reviews.to_json() if self.reviews else {},
-    #         "categories": [category.name for category in self.categories],
-    #         "authors": [author.name for author in self.authors]
-    #     }
+    def to_json(self):
+        return {
+            "name": self.name,
+            "image": self.image,
+            "rating": self.rating,
+            "review_count": self.review_count,
+            "book_format": self.book_format,
+            "language": self.language,
+            "price": self.price,
+            "description": self.description,
+            "categories": [category.name for category in self.categories],
+            "authors": [author.name for author in self.authors],
+            "publishers": [publisher.name for publisher in self.publishers]
+        }

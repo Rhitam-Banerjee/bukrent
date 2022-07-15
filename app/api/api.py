@@ -450,6 +450,38 @@ def place_order():
             "status": "error"
         }), 400
 
+@api.route("/get-amazon-bestsellers", methods=["POST"])
+def get_amazon_bestsellers():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Book.get_amazon_bestsellers(age_group),
+        "status": "success"
+    }), 200
+
+@api.route("/get-most-borrowed", methods=["POST"])
+def get_most_borrowed():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Book.get_most_borrowed(age_group),
+        "status": "success"
+    }), 200
+
+@api.route("/get-author-books", methods=["POST"])
+def get_author_books():
+    author = request.json.get("author")
+    return jsonify({
+        "data": Book.get_author_books(author),
+        "status": "success"
+    }), 200
+
+@api.route("/get-publisher-books", methods=["POST"])
+def get_publisher_books():
+    publisher = request.json.get("publisher")
+    return jsonify({
+        "data": Book.get_publisher_books(publisher),
+        "status": "success"
+    }), 200
+
 @api.route("/launch", methods=["POST"])
 def launch():
     parent_name = request.json.get("parent_name")

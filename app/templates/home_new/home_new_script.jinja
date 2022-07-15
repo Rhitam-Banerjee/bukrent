@@ -1,0 +1,422 @@
+<script>
+    let age_group = null;
+
+    $(document).ready(function() {
+        $("#age-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            responsive:{
+                0:{
+                    items:3
+                },
+                480:{
+                    items:6
+                }
+            }
+        });
+
+        $("#next-steps-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            responsive:{
+                0:{
+                    items:1
+                }
+            }
+        });
+
+        get_amazon_bestsellers(age_group);
+        get_most_borrowed(age_group);
+    })
+
+    function text_short(text) {
+        if(text.length > 30) {
+            return text.substring(0, 27) + "...";
+        }
+        return text
+    }
+
+    function text_short_author(text) {
+        if(text.length > 15) {
+            return text.substring(0, 12) + "...";
+        }
+        return text
+    }
+
+    function change_age_group(new_age_group) {
+        age_group = new_age_group;
+
+        get_amazon_bestsellers(age_group);
+        get_most_borrowed(age_group);
+    }
+
+    function get_publisher_books(publisher) {
+        let data = {
+            publisher: publisher
+        };
+
+        $.ajax({
+            url: "{{url_for('api.get_publisher_books')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                $("#book-by-publisher").html(`${publisher} Books`)
+                $("#publisher-books-carousel").empty();
+                
+                for (let i = 0; i < result.data.length; i++) {
+                    let html = `
+                        <div class="publisher-books-box">
+                            <div class="row">
+                                <div class="col-12 col-md-12 col-lg-12">
+                                    <img src="${result.data[i].image}" class="img-fluid book-img" />
+                                </div>
+                                <div class="col-12 col-md-12 col-lg-12 mt-2">
+                                    <p class="book-name">${text_short(result.data[i].name)}</p>
+                                </div>
+                                <div class="col-6 col-md-6 col-lg-6">
+                                    <p class="book-author-name">${result.data[i].authors[0]}</p>
+                                </div>
+                                <div class="col-6 col-md-6 col-lg-6">
+                                    <p class="book-rating"><i class="fa-solid fa-star"></i> ${result.data[i].rating}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `
+
+                    $("#publisher-books-carousel").append(html);
+                }
+
+                $("#publisher-books-carousel").owlCarousel("destroy")
+
+                $("#publisher-books-carousel").owlCarousel({
+                    responsiveClass:true,
+                    margin:25,
+                    nav: true,
+                    dots: false,
+                    responsive:{
+                        0:{
+                            items:3
+                        },
+                        480:{
+                            items:6
+                        }
+                    }
+                });
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function get_author_books(author) {
+        let data = {
+            author: author
+        };
+
+        $.ajax({
+            url: "{{url_for('api.get_author_books')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                $("#book-by-author").html(`${author} Books`)
+                $("#author-books-carousel").empty();
+                
+                for (let i = 0; i < result.data.length; i++) {
+                    let html = `
+                        <div class="author-books-box">
+                            <div class="row">
+                                <div class="col-12 col-md-12 col-lg-12">
+                                    <img src="${result.data[i].image}" class="img-fluid book-img" />
+                                </div>
+                                <div class="col-12 col-md-12 col-lg-12 mt-2">
+                                    <p class="book-name">${text_short(result.data[i].name)}</p>
+                                </div>
+                                <div class="col-6 col-md-6 col-lg-6">
+                                    <p class="book-author-name">${result.data[i].authors[0]}</p>
+                                </div>
+                                <div class="col-6 col-md-6 col-lg-6">
+                                    <p class="book-rating"><i class="fa-solid fa-star"></i> ${result.data[i].rating}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `
+
+                    $("#author-books-carousel").append(html);
+                }
+
+                $("#author-books-carousel").owlCarousel("destroy")
+
+                $("#author-books-carousel").owlCarousel({
+                    responsiveClass:true,
+                    margin:25,
+                    nav: true,
+                    dots: false,
+                    responsive:{
+                        0:{
+                            items:3
+                        },
+                        480:{
+                            items:6
+                        }
+                    }
+                });
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function get_most_borrowed(age_group) {
+        let data = {
+            age_group: age_group
+        };
+        
+        $.ajax({
+            url: "{{url_for('api.get_most_borrowed')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                $("#most-borrowed-carousel").empty();
+
+                for (let i = 0; i < result.data.length; i++) {
+                    let html = `
+                        <div class="most-borrowed-box">
+                            <div class="row">
+                                <div class="col-12 col-md-12 col-lg-12">
+                                    <img src="${result.data[i].image}" class="img-fluid book-img" />
+                                </div>
+                                <div class="col-12 col-md-12 col-lg-12 mt-2">
+                                    <p class="book-name">${text_short(result.data[i].name)}</p>
+                                </div>
+                                <div class="col-6 col-md-6 col-lg-6">
+                                    <p class="book-author-name">${result.data[i].authors[0]}</p>
+                                </div>
+                                <div class="col-6 col-md-6 col-lg-6">
+                                    <p class="book-rating"><i class="fa-solid fa-star"></i> ${result.data[i].rating}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `
+
+                    $("#most-borrowed-carousel").append(html);
+                }
+
+                $("#most-borrowed-carousel").owlCarousel("destroy")
+
+                $("#most-borrowed-carousel").owlCarousel({
+                    responsiveClass:true,
+                    margin:25,
+                    nav: true,
+                    dots: false,
+                    responsive:{
+                        0:{
+                            items:3
+                        },
+                        480:{
+                            items:6
+                        }
+                    }
+                });
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function get_amazon_bestsellers(age_group) {
+        let data = {
+            age_group: age_group
+        };
+
+        $.ajax({
+            url: "{{url_for('api.get_amazon_bestsellers')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                $("#amazon-bestseller-carousel").empty();
+
+                for (let i = 0; i < result.data.length; i++) {
+                    let html = `
+                        <div class="amazon-bestseller-box">
+                            <div class="row">
+                                <div class="col-12 col-md-12 col-lg-12">
+                                    <img src="${result.data[i].image}" class="img-fluid book-img" />
+                                </div>
+                                <div class="col-12 col-md-12 col-lg-12 mt-2">
+                                    <p class="book-name">${text_short(result.data[i].name)}</p>
+                                </div>
+                                <div class="col-6 col-md-6 col-lg-6">
+                                    <p class="book-author-name">${result.data[i].authors[0]}</p>
+                                </div>
+                                <div class="col-6 col-md-6 col-lg-6">
+                                    <p class="book-rating"><i class="fa-solid fa-star"></i> ${result.data[i].rating}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `
+
+                    $("#amazon-bestseller-carousel").append(html);
+                }
+
+                $("#amazon-bestseller-carousel").owlCarousel("destroy")
+
+                $("#amazon-bestseller-carousel").owlCarousel({
+                    responsiveClass:true,
+                    margin:25,
+                    nav: true,
+                    dots: false,
+                    responsive:{
+                        0:{
+                            items:3
+                        },
+                        480:{
+                            items:6
+                        }
+                    }
+                });
+
+                generate_amazon_bestselling_authors(result.data);
+                generate_amazon_bestselling_publishers(result.data);
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function generate_amazon_bestselling_publishers(data) {
+        $("#amazon-publications-carousel").empty();
+
+        let publishers = []
+        for (let i = 0; i < data.length; i++) {
+            for (let j = 0; j < data[i].publishers.length; j++) {
+                if (publishers.includes(data[i].publishers[j])) {
+                    ;
+                } else {
+                    publishers.push(data[i].publishers[j])
+                }
+            }
+        }
+
+        for (let i = 0; i < publishers.length; i++) {
+            let item_number = i % 4;
+            let html = `
+                        <a onclick="get_publisher_books('${publishers[i]}')">
+                            <div class="amazon-publishers-box box-color-${item_number} text-center">
+                                <div class="row">
+                                    <div class="col-12 col-md-12 col-lg-12 py-5">
+                                        ${publishers[i]}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    `
+
+            $("#amazon-publications-carousel").append(html)
+        }
+
+        $("#amazon-publications-carousel").owlCarousel("destroy")
+
+        $("#amazon-publications-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            responsive:{
+                0:{
+                    items:2
+                },
+                480:{
+                    items:4
+                }
+            }
+        });
+
+        get_publisher_books(publishers[0])
+    }
+
+    function generate_amazon_bestselling_authors(data) {
+        $("#amazon-authors-carousel").empty();
+
+        let authors = [];
+        for (let i = 0; i < data.length; i++) {
+            for (let j = 0; j < data[i].authors.length; j++) {
+                if (authors.includes(data[i].authors[j])) {
+                    ;
+                } else {
+                    authors.push(data[i].authors[j])
+                }
+            }
+        }
+        
+        for (let i = 0; i < authors.length; i++) {
+            let item_number = i % 4;
+            let html = `
+                        <a onclick="get_author_books('${authors[i]}')">
+                            <div class="amazon-authors-box px-2 pt-2 px-md-3 pt-md-3 px-lg-4 pt-lg-4 box-color-${item_number}">
+                                <div class="row">
+                                    <div class="col-12 col-md-12 col-lg-12">
+                                        <img src="/static/images/demo_author.png" class="img-fluid author-img" />
+                                    </div>
+                                    <div class="text-center author-name-container text-container-color-${item_number}">
+                                        ${text_short_author(authors[i])}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    `
+            
+            $("#amazon-authors-carousel").append(html);
+        }
+
+        $("#amazon-authors-carousel").owlCarousel("destroy")
+
+        $("#amazon-authors-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            responsive:{
+                0:{
+                    items:2
+                },
+                480:{
+                    items:4
+                }
+            }
+        });
+
+        get_author_books(authors[0])
+    }
+</script>

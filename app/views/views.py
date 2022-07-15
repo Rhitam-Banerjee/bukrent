@@ -44,6 +44,12 @@ def test():
         current_user=current_user
     )
 
+@views.route("/test-new")
+def index():
+    return render_template(
+        "/home_new/home_new.html"
+    )
+
 @views.route("/book-details")
 def book_details():
     guid = request.args.get("guid")
