@@ -3,7 +3,9 @@
         $("#submit_button").click(function() {
             let data = {
                 name: $("#name").val(),
-                mobile_number: $("#mobile_number").val()
+                mobile_number: $("#mobile_number").val(),
+                child_name: $("#child_name").val(),
+                age: $("#age").val()
             }
 
             $.ajax({

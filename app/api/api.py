@@ -53,10 +53,12 @@ def login():
 def signup():
     name = request.json.get("name")
     mobile_number = request.json.get("mobile_number")
+    age = request.json.get("age")
+    child_name = request.json.get("child_name")
 
-    if not all((name, mobile_number)):
+    if not all((name, mobile_number, age, child_name)):
         return jsonify({
-            "message": "Name and Mobile Number are mandatory fields!",
+            "message": "All fields are mandatory!",
             "status": "error"
         }), 400
 
@@ -75,6 +77,8 @@ def signup():
     
     session["name"] = name
     session["mobile_number"] = mobile_number
+    session["child_name"] = child_name
+    session["age"] = age
 
     account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
@@ -151,11 +155,13 @@ def confirm_mobile():
     verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{session.get('mobile_number')}", code=verification_code)
 
     if verification_check.status == "approved":
-        User.create(session.get("name"), session.get("mobile_number"))
+        User.create(session.get("name"), session.get("mobile_number"), session.get("child_name"), session.get("age"))
         user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
 
         session["name"] = None
         session["mobile_number"] = None
+        session["child_name"] = None
+        session["age"] = None
 
         session["mobile_confirmed"] = True
         session["current_user"] = user.guid
