@@ -1,0 +1,61 @@
+{% extends "testing/template.jinja" %}
+{% block main %}
+
+{% include("testing/add_address/add_address_script.jinja") %}
+{% include("testing/add_address/add_address_style.jinja") %}
+
+<!-- Registration -->
+<div class="row mt-5">
+    <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-5">
+        <p class="section-title">Registration</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <b>Flat, House Number, Building</b>
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <input class="form-control form-input" id="house_number" />
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <b>Area</b>
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <input class="form-control form-input" id="area" />
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <b>Landmark</b>
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <input class="form-control form-input" id="landmark" />
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <b>City</b>
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <input class="form-control form-input" id="city" />
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <b>Country</b>
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <input class="form-control form-input" id="country" value="India" />
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <b>Pincode</b>
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <input class="form-control form-input" id="pincode" />
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12 col-md-4 col-lg-4 offset-md-4 offset-lg-4">
+            <button class="cart-button m-2 py-3" id="submit_button">Select Plan</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

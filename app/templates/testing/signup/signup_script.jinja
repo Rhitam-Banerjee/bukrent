@@ -1,0 +1,28 @@
+<script>
+    $(function(){
+        $("#submit_button").click(function() {
+            let data = {
+                name: $("#name").val(),
+                mobile_number: $("#mobile_number").val()
+            }
+
+            $.ajax({
+                url: "{{url_for('api.signup')}}",
+                type: "post",
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function (result) {
+                    window.location.href = "{{url_for('views.confirm_mobile')}}"
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                }
+            })
+        })
+    })
+</script>

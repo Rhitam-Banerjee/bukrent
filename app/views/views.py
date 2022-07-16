@@ -13,10 +13,56 @@ from app.models.cart import Cart, Wishlist
 
 views = Blueprint('views', __name__, url_prefix="/")
 
+# @views.route("/")
+# def home():
+#     return render_template(
+#         "/launch/launch.html"
+#     )
+
 @views.route("/")
 def home():
     return render_template(
-        "/launch/launch.html"
+        "/testing/signup/signup.html"
+    )
+
+@views.route("/confirm-mobile")
+def confirm_mobile():
+    name = session.get("name")
+    mobile_number = session.get("mobile_number")
+
+    if not all((name, mobile_number)):
+        return redirect(url_for('views.home'))
+
+    return render_template(
+        "/testing/confirm_mobile/confirm_mobile.html",
+        name = name,
+        mobile_number = mobile_number
+    )
+
+@views.route("/add-address")
+def add_address():
+    if session.get("mobile_confirmed"):
+        return render_template(
+            "/testing/add_address/add_address.html"
+        )
+    else:
+        return redirect(url_for('views.confirm_mobile'))
+
+@views.route("/select-plan")
+def select_plan():
+    if session.get("address_added"):
+        return render_template(
+            "/testing/select_plan/select_plan.html"
+        )
+    else:
+        return redirect(url_for('views.add_address'))
+
+@views.route("/congratulations")
+def congratulations():
+    subscription_id = session.get("subscription_id")
+    return render_template(
+        "/testing/congratulations/congratulations.html",
+        subscription_id=subscription_id
     )
 
 @views.route("test")
@@ -1365,47 +1411,47 @@ def book_subcategory():
         current_user=current_user
     )
 
-@views.route('/become-subscriber')
-def become_a_subscriber():
-    current_user = session.get("current_user")
-    return render_template(
-        "/become_subscriber/become_subscriber.html",
-        current_user=current_user
-    )
+# @views.route('/become-subscriber')
+# def become_a_subscriber():
+#     current_user = session.get("current_user")
+#     return render_template(
+#         "/become_subscriber/become_subscriber.html",
+#         current_user=current_user
+#     )
 
-@views.route('/confirm-plan')
-def confirm_plan():
-    plan = session.get("plan")
-    if plan == 1:
-        weekly_books = 1
-        monthly_books = 4
-        price_month = 299
-    elif plan == 2:
-        weekly_books = 2
-        monthly_books = 8
-        price_month = 499
-    elif plan == 3:
-        weekly_books = 4
-        monthly_books = 16
-        price_month = 749
-    else:
-        weekly_books = 6
-        monthly_books = 24
-        price_month = 949
-    security_deposit = 500
-    total_payable_amount = price_month + security_deposit
+# @views.route('/confirm-plan')
+# def confirm_plan():
+#     plan = session.get("plan")
+#     if plan == 1:
+#         weekly_books = 1
+#         monthly_books = 4
+#         price_month = 299
+#     elif plan == 2:
+#         weekly_books = 2
+#         monthly_books = 8
+#         price_month = 499
+#     elif plan == 3:
+#         weekly_books = 4
+#         monthly_books = 16
+#         price_month = 749
+#     else:
+#         weekly_books = 6
+#         monthly_books = 24
+#         price_month = 949
+#     security_deposit = 500
+#     total_payable_amount = price_month + security_deposit
 
-    current_user = session.get("current_user")
-    return render_template(
-        "/confirm_plan/confirm_plan.html",
-        weekly_books=weekly_books,
-        monthly_books=monthly_books,
-        price_month=price_month,
-        security_deposit=security_deposit,
-        total_payable_amount=total_payable_amount,
-        plan=plan,
-        current_user=current_user
-    )
+#     current_user = session.get("current_user")
+#     return render_template(
+#         "/confirm_plan/confirm_plan.html",
+#         weekly_books=weekly_books,
+#         monthly_books=monthly_books,
+#         price_month=price_month,
+#         security_deposit=security_deposit,
+#         total_payable_amount=total_payable_amount,
+#         plan=plan,
+#         current_user=current_user
+#     )
 
 @views.route("/signup")
 def signup():
@@ -1429,15 +1475,15 @@ def login():
         current_user=current_user
     )
 
-@views.route("/confirm-mobile")
-def confirm_mobile():
-    mobile_number = session.get("mobile_number")
-    current_user = session.get("current_user")
-    return render_template(
-        "/confirm_mobile/confirm_mobile.html",
-        mobile_number=mobile_number,
-        current_user=current_user
-    )
+# @views.route("/confirm-mobile")
+# def confirm_mobile():
+#     mobile_number = session.get("mobile_number")
+#     current_user = session.get("current_user")
+#     return render_template(
+#         "/confirm_mobile/confirm_mobile.html",
+#         mobile_number=mobile_number,
+#         current_user=current_user
+#     )
 
 @views.route("/payment-successful")
 def payment_successful():
@@ -1472,16 +1518,16 @@ def cart():
         current_user=current_user
     )
 
-@views.route("/add-address")
-def add_address():
-    current_user = session.get("current_user")
-    user = User.query.filter_by(guid=current_user).first()
+# @views.route("/add-address")
+# def add_address():
+#     current_user = session.get("current_user")
+#     user = User.query.filter_by(guid=current_user).first()
 
-    return render_template(
-        "/add_address/add_address.html",
-        current_user=current_user,
-        user=user
-    )
+#     return render_template(
+#         "/add_address/add_address.html",
+#         current_user=current_user,
+#         user=user
+#     )
 
 @views.route("/order-placed")
 def order_placed():

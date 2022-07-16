@@ -1,0 +1,49 @@
+<script>
+    $(function(){
+        $("#submit_button").click(function(){
+            let data = {
+                code: $("#otp").val()
+            }
+
+            $.ajax({
+                url: "{{url_for('api.confirm_mobile')}}",
+                type: "post",
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function (result) {
+                    window.location.href = "{{url_for('views.add_address')}}"
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                }
+            })
+        })
+    })
+    function resend_otp() {
+        $.ajax({
+                url: "{{url_for('api.resend_otp')}}",
+                type: "post",
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function (result) {
+                    Swal.fire(
+                        'Sent!',
+                        "We've sent you another OTP",
+                        'success'
+                    )
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                }
+            })
+    }
+</script>

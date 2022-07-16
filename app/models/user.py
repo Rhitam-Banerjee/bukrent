@@ -44,8 +44,7 @@ class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     guid = db.Column(db.String, nullable=False, unique=True)
-    first_name = db.Column(db.String)
-    last_name = db.Column(db.String)
+    name = db.Column(db.String)
     mobile_number = db.Column(db.String, unique=True)
     newsletter = db.Column(db.Boolean)
     is_subscribed = db.Column(db.Boolean, default=False)
@@ -73,13 +72,11 @@ class User(db.Model):
             return 6
 
     @staticmethod
-    def create(first_name, last_name, mobile_number, newsletter):
+    def create(name, mobile_number):
         user_dict = dict(
             guid = str(uuid.uuid4()),
-            first_name = first_name,
-            last_name = last_name,
-            mobile_number = mobile_number,
-            newsletter = newsletter
+            name = name,
+            mobile_number = mobile_number
         )
         user_obj = User(**user_dict)
         db.session.add(user_obj)

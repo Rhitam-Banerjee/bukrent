@@ -1,0 +1,46 @@
+{% extends "testing/template.jinja" %}
+{% block main %}
+
+{% include("testing/confirm_mobile/confirm_mobile_script.jinja") %}
+{% include("testing/confirm_mobile/confirm_mobile_style.jinja") %}
+
+<!-- Registration -->
+<div class="row mt-5">
+    <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-5">
+        <p class="section-title">Registration</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <b>Name</b>
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <input class="form-control form-input" id="name" value="{{name}}" readonly />
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <b>Mobile Number</b>
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <input class="form-control form-input" id="mobile_number" value="{{mobile_number}}" readonly />
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <b>OTP</b>
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2">
+            <input class="form-control form-input" id="otp" />
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 mt-2 offset-6 text-end">
+            <a style="font-size: 0.75rem; color: #60abd7;" onclick="resend_otp();">Resend OTP</a>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12 col-md-4 col-lg-4 offset-md-4 offset-lg-4">
+            <button class="cart-button m-2 py-3" id="submit_button">Confirm</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

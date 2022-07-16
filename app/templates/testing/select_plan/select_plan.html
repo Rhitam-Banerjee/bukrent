@@ -1,0 +1,30 @@
+{% extends "testing/template.jinja" %}
+{% block main %}
+
+{% include("testing/select_plan/select_plan_script.jinja") %}
+{% include("testing/select_plan/select_plan_style.jinja") %}
+
+<script src = "https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<!-- Registration -->
+<div class="row mt-5">
+    <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-5">
+        <p class="section-title">Select a Plan</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-4 col-md-4 col-lg-4">
+            <a onclick="make_payment(1)"><img src="/static/images/subscription1.png" class="img-fluid" /></a>
+        </div>
+        <div class="col-4 col-md-4 col-lg-4">
+            <a onclick="make_payment(2)"><img src="/static/images/subscription2.png" class="img-fluid" /></a>
+        </div>
+        <div class="col-4 col-md-4 col-lg-4">
+            <a onclick="make_payment(3)"><img src="/static/images/subscription3.png" class="img-fluid" /></a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

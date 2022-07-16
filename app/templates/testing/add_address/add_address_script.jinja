@@ -1,0 +1,32 @@
+<script>
+    $(function(){
+        $("#submit_button").click(function(){
+            let data = {
+                house_number: $("#house_number").val(),
+                area: $("#area").val(),
+                landmark: $("#landmark").val(),
+                city: $("#city").val(),
+                country: $("#country").val(),
+                pincode: $("#pincode").val()
+            }
+
+            $.ajax({
+                url: "{{url_for('api.add_address')}}",
+                type: "post",
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function (result) {
+                    window.location.href = "{{url_for('views.select_plan')}}"
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                }
+            })
+        })
+    })
+</script>
