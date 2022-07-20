@@ -6,6 +6,8 @@ from app.models.order import Order
 
 from sqlalchemy.ext.hybrid import hybrid_property
 
+import os
+
 class Address(db.Model):
     __tablename__ = "address"
     id = db.Column(db.Integer, primary_key=True)
@@ -48,7 +50,7 @@ class User(db.Model):
     age = db.Column(db.String)
     child_name = db.Column(db.String)
     mobile_number = db.Column(db.String, unique=True)
-    newsletter = db.Column(db.Boolean)
+    newsletter = db.Column(db.Boolean, default=False)
     is_subscribed = db.Column(db.Boolean, default=False)
     security_deposit = db.Column(db.Boolean, default=False)
     customer_id = db.Column(db.String)
@@ -64,11 +66,11 @@ class User(db.Model):
 
     @hybrid_property
     def books_per_week(self):
-        if self.plan_id == "plan_JqT58ugvJ14P4j":
+        if self.plan_id == os.environ.get("RZP_PLAN_1_ID"):
             return 1
-        elif self.plan_id == "plan_JqT5alH2kwnrdx":
+        elif self.plan_id == os.environ.get("RZP_PLAN_2_ID"):
             return 2
-        elif self.plan_id == "plan_JqT63tUE0O641c":
+        elif self.plan_id == os.environ.get("RZP_PLAN_3_ID"):
             return 4
         else:
             return 0
@@ -87,6 +89,8 @@ class User(db.Model):
         db.session.commit()
 
         user_obj.add_cart_and_wishlist()
+
+        return user_obj
 
     def add_cart_and_wishlist(self):
         cart = Cart.create(self.id)

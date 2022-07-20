@@ -10,6 +10,7 @@ from app.models.details import Detail
 from app.models.publishers import Publisher
 from app.models.reviews import Review
 from app.models.series import Series
+from app.models.user import User, Address
 
 import time
 
@@ -619,3 +620,63 @@ def seed():
             )
 
     print(time.process_time() - start)
+
+    ################################## Seeding Users
+    print("Seeding Users")
+    users = []
+    with open("data.csv", mode="r") as file:
+        csv_file = csv.reader(file)
+        for line in csv_file:
+            users.append(line)
+
+    users = users[1:]
+
+    for user in users:
+        user_obj = User(
+            guid=user[1],
+            name=user[2],
+            age=user[3],
+            child_name=user[4],
+            mobile_number=user[5],
+            newsletter=True if user[6] == "True" else False,
+            is_subscribed=False if user[7] == "False" else True,
+            security_deposit=False if user[8] == "False" else True,
+            customer_id=user[9],
+            plan_id=user[10],
+            subscription_id=user[11]
+        )
+        db.session.add(user_obj)
+        db.session.commit()
+
+        user_obj.add_cart_and_wishlist()
+
+        if user[12] == "True":
+            address = Address(
+                guid=user[14],
+                house_number=user[15],
+                area=user[16],
+                city=user[17],
+                pincode=user[18],
+                country=user[19],
+                landmark=user[20],
+                user_id=user_obj.id
+            )
+            db.session.add(address)
+            db.session.commit()
+
+    import uuid
+
+    user = User(
+        guid=str(uuid.uuid4()),
+        name="Dipti Tahillani",
+        mobile_number="9871690468",
+        is_subscribed=True,
+        security_deposit=True,
+        plan_id="plan_Jtpm0zD8KO3kyg",
+        subscription_id="sub_Jtw91SWDhVxk0L"
+    )
+
+    db.session.add(user)
+    db.session.commit()
+
+    user.add_cart_and_wishlist()
