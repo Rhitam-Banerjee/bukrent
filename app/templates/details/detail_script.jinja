@@ -1,89 +1,52 @@
 <script>
     $(document).ready(function(){
-        $("#book-carousel").owlCarousel({
-            responsiveClass:true,
-            margin:25,
-            nav: true,
-            dots: false,
-            responsive:{
-                0:{
-                    items:2
-                },
-                480:{
-                    items:6
-                }
-            }
-        })
+        get_similar_books();
     })
 
-    $(function(){
-        $("#add_to_cart").click(function(){
-            let data = {
-                "guid": "{{book.guid}}"
-            }
-            $.ajax({
-                url: "{{url_for('api.add_to_cart')}}",
-                type: "post",
-                data: JSON.stringify(data),
-                dataType: 'json',
-                contentType: 'application/json',
-                success: function (result) {
-                    Swal.fire(
-                        'Added',
-                        "Book has been added to your cart",
-                        'success'
-                    )
-                },
-                error: function (result) {
-                    Swal.fire(
-                        'Uh Oh!',
-                        result.responseJSON.message,
-                        'error'
-                    )
-                }
-            })
-        })
-        $("#add_to_wishlist").click(function(){
-            let data = {
-                "guid": "{{book.guid}}"
-            }
-            $.ajax({
-                url: "{{url_for('api.add_to_wishlist')}}",
-                type: "post",
-                data: JSON.stringify(data),
-                dataType: 'json',
-                contentType: 'application/json',
-                success: function (result) {
-                    Swal.fire(
-                        'Added',
-                        "Book has been added to your wishlist",
-                        'success'
-                    )
-                },
-                error: function (result) {
-                    Swal.fire(
-                        'Uh Oh!',
-                        result.responseJSON.message,
-                        'error'
-                    )
-                }
-            })
-        })
-    })
-
-    function choose_plan(plan) {
+    function get_similar_books() {
         let data = {
-            plan: plan
+            age_group: "{{age_group}}"
         }
 
         $.ajax({
-            url: "{{url_for('api.choose_plan')}}",
+            url: "{{url_for('api.get_similar_books')}}",
             type: "post",
             data: JSON.stringify(data),
             dataType: 'json',
             contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
             success: function (result) {
-                window.location.href = result.redirect;
+                $("#similar-carousel").empty();
+                
+                for (let i = 0; i < result.data.length; i++) {
+                    let html = create_book_html(result.data[i])
+
+                    $("#similar-carousel").append(html);
+                }
+
+                $("#similar-carousel").owlCarousel("destroy")
+
+                $("#similar-carousel").owlCarousel({
+                    responsiveClass:true,
+                    margin:25,
+                    nav: true,
+                    dots: false,
+                    responsive:{
+                        0:{
+                            items:3
+                        },
+                        480:{
+                            items:5
+                        },
+                        1024:{
+                            items:6
+                        }
+                    }
+                });
             },
             error: function (result) {
                 Swal.fire(
@@ -91,7 +54,21 @@
                     result.responseJSON.message,
                     'error'
                 )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
             }
         })
     }
+
+    $(function(){
+        $("#add_to_cart").click(function(){
+            add_to_cart("{{book.guid}}")
+        })
+        $("#add_to_wishlist").click(function(){
+            add_to_wishlist("{{book.guid}}")
+        })
+    })
 </script>

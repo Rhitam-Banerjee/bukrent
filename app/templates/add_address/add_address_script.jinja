@@ -5,6 +5,11 @@
             type: "post",
             dataType: 'json',
             contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
             success: function (result) {
                 ;
             },
@@ -14,6 +19,11 @@
                     result.responseJSON.message,
                     'error'
                 )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
             }
         })
     })
@@ -102,6 +112,11 @@
             data: JSON.stringify(data),
             dataType: 'json',
             contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
             success: function (result) {
                 window.location.href = "{{url_for('views.order_placed')}}"
             },
@@ -111,6 +126,11 @@
                     result.responseJSON.message,
                     'error'
                 )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
             }
         })
     }

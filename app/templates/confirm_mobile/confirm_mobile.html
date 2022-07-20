@@ -4,29 +4,29 @@
 {% include("confirm_mobile/confirm_mobile_script.jinja") %}
 {% include("confirm_mobile/confirm_mobile_style.jinja") %}
 
-<!-- Section 1 -->
-<div class="row pt-3 pt-md-5 pt-lg-5 text-gray">
-    <div class="col-12 col-md-12 col-lg-12 text-center">
-        <h2 class="gray-text"><b>Confirm OTP</b></h2>
+<div class="container">
+    <div class="row my-3">
+        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-0 mt-md-1 mt-lg-5">
+            <p class="section-title">Confirm OTP</p>
+        </div>
     </div>
-</div>
 
-<!-- Section 2 -->
-<div class="container text-gray">
-    <div class="row py-3 py-md-5 py-lg-5">
+    <div class="row">
         <div class="col-12 col-md-12 col-lg-12 text-center mt-3">
             <p>We've sent a 6 digit OTP on {{mobile_number}}. Please confirm to verify your mobile number!</p>
         </div>
         <div class="col-12 col-md-12 col-lg-12 text-center mt-3">
             <input type="text" name="verification_code" id="verification_code" class="form-control" placeholder="6 Digit OTP" />
         </div>
+        <div class="col-12 col-md-12 col-lg-12 text-end">
+            <a style="font-size: 0.75rem; color: #60abd7;" onclick="resend_otp();">Resend OTP</a>
+        </div>
     </div>
-</div>
 
-<!-- Section 3 -->
-<div class="row">
-    <div class="col-12 col-md-12 col-lg-12 text-center">
-        <button class="cart-button m-2 py-3" id="verify_button">Verify Mobile</button>
+    <div class="row">
+        <div class="col-12 col-md-12 col-lg-12 text-center">
+            <button class="cart-button m-2 py-3" id="verify_button">Verify Mobile</button>
+        </div>
     </div>
 </div>
 

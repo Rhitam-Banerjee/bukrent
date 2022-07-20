@@ -33,6 +33,28 @@ class Category(db.Model):
         db.session.commit()
 
     @staticmethod
+    def get_genres(age_group):
+        if age_group:
+            if age_group == 1:
+                genres = Category.query.order_by(Category.age1_books.desc()).limit(10).all()
+            elif age_group == 2:
+                genres = Category.query.order_by(Category.age2_books.desc()).limit(10).all()
+            elif age_group == 3:
+                genres = Category.query.order_by(Category.age3_books.desc()).limit(10).all()
+            elif age_group == 4:
+                genres = Category.query.order_by(Category.age4_books.desc()).limit(10).all()
+            else:
+                genres = Category.query.order_by(Category.age5_books.desc()).limit(10).all()
+        else:
+            genres = Category.query.order_by(Category.total_books.desc()).limit(10).all()
+        
+        return [{
+            "name": genre.name,
+            "image_1": genre.books[0].image,
+            "image_2": genre.books[1].image
+        } for genre in genres]
+
+    @staticmethod
     def get_top_categories():
         return Category.query.order_by(Category.total_books.desc()).limit(10).all()
 

@@ -7,84 +7,31 @@
         width: 100%;
     }
 
-    .section-title-box {
-        position: relative;
-        display: flex;
+    .cart-button-submit {
+        background-color: #dd913e;
+        color: white;
+        border: 2px solid #dd913e;
+        border-radius: 1em;
+        width: 40%;
     }
 
-    .section-title {
-        font-size: 2rem;
-        font-weight: 900;
-        display: inline-block;
-        padding: 0rem 1rem;
-    }
-
-    .section-title-box::before,
-    .section-title-box::after {
-        border-top: 1px solid black;
-        display: block;
-        height: 1px;
-        content: " ";
-        flex-grow: 1;
-        margin-top: 1.5rem;
-    }
-
-    .book-name {
-        color: #636363;
-        font-size: 1rem;
-    }
-
-    .book-author-name {
-        color: #636363;
-        font-size: 0.75rem;
-    }
-
-    .book-rating {
-        color: #dd913e;
-        font-size: 0.75rem;
-    }
-
-    .book-img {
-        min-height: 30vh;
-        max-height: 30vh;
+    @media (max-width: 1024px) {
+        .cart-button-submit {
+            background-color: #dd913e;
+            color: white;
+            border: 2px solid #dd913e;
+            border-radius: 1em;
+            width: 60%;
+        }
     }
 
     @media (max-width:480px) {
-        .section-title {
-            font-size: 1rem;
-            font-weight: 900;
-            display: inline-block;
-            padding: 0rem 0.5rem;
-        }
-
-        .section-title-box::before,
-        .section-title-box::after {
-            border-top: 1px solid black;
-            display: block;
-            height: 1px;
-            content: " ";
-            flex-grow: 1;
-            margin-top: 0.75rem;
-        }
-
-        .book-name {
-            color: #636363;
-            font-size: 0.75rem;
-        }
-
-        .book-author-name {
-            color: #636363;
-            font-size: 0.5rem;
-        }
-
-        .book-rating {
-            color: #dd913e;
-            font-size: 0.5rem;
-        }
-
-        .book-img {
-            min-height: 15vh;
-            max-height: 15vh;
+        .cart-button-submit {
+            background-color: #dd913e;
+            color: white;
+            border: 2px solid #dd913e;
+            border-radius: 1em;
+            width: 80%;
         }
     }
 </style>

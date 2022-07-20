@@ -34,8 +34,25 @@ class Series(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_top_series():
-        return Series.query.order_by(Series.total_books.desc()).limit(10).all()
+    def get_series(age_group):
+        if age_group:
+            if age_group == 1:
+                series = Series.query.order_by(Series.age1_books.desc()).limit(10).all()
+            elif age_group == 2:
+                series = Series.query.order_by(Series.age2_books.desc()).limit(10).all()
+            elif age_group == 3:
+                series = Series.query.order_by(Series.age3_books.desc()).limit(10).all()
+            elif age_group == 4:
+                series = Series.query.order_by(Series.age4_books.desc()).limit(10).all()
+            else:
+                series = Series.query.order_by(Series.age5_books.desc()).limit(10).all()
+        else:
+            series = Series.query.order_by(Series.total_books.desc()).limit(10).all()
+        return [serie.name for serie in series]
+
+    # @staticmethod
+    # def get_top_series():
+    #     return Series.query.order_by(Series.total_books.desc()).limit(10).all()
 
     # @staticmethod
     # def get_top_series():

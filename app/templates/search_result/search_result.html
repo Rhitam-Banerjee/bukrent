@@ -9,10 +9,10 @@
 <div class="container">
     <div class="row mt-5 pt-5">
         <div class="col-9 col-md-9 col-lg-9 pt-2">
-            <input class="form-control" id="search" placeholder="Book, Author, Publisher" value="{{query}}" />
+            <input class="form-control" id="search_bar" placeholder="Book, Author, Publisher" value="{{query}}" />
         </div>
-        <div class="col-3 col-md-3 col-lg-3">
-            <button class="cart-button m-2 py-2" id="search">Search</button>
+        <div class="col-3 col-md-3 col-lg-3" onclick="search_books()">
+            <button class="cart-button m-2 py-2" id="search-btn">Search</button>
         </div>
     </div>
 
@@ -25,13 +25,18 @@
     {% if all_books | length > 0 %}
     <div id="books-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
         {% for book in all_books %}
+        {% if book.name | length > 30 %}
+            {% set name = book.name[:27] + "..." %}
+        {% else %}
+            {% set name = book.name %}
+        {% endif %}
         <div class="book-box">
             <div class="row">
                 <div class="col-12 col-md-12 col-lg-12">
                     <img src="{{book.image}}" class="img-fluid book-img" />
                 </div>
                 <div class="col-12 col-md-12 col-lg-12 mt-2">
-                    <p class="book-name">{{book.name}}</p>
+                    <p class="book-name">{{name}}</p>
                 </div>
                 <div class="col-6 col-md-6 col-lg-6">
                     <p class="book-author-name">{{book.authors[0].name}}</p>
@@ -46,7 +51,31 @@
     {% else %}
     <div class="row my-3">
         <div class="col-12 col-md-12 col-lg-12 text-center">
-            <h3>No Results Found</h3>
+            <h3>Looks like we don't have what you're looking for</h3>
+        </div>
+        {% if user %}
+        <div class="col-12 col-md-6 col-lg-6 mt-2">
+            <input type="text" name="name" id="name" class="form-control" placeholder="Name" value="{{user.name}}" readonly />
+        </div>
+        <div class="col-12 col-md-6 col-lg-6 mt-2">
+            <input type="number" name="mobile_number" id="mobile_number" class="form-control" placeholder="Mobile Number" value="{{user.mobile_number}}" readonly />
+        </div>
+        {% else %}
+        <div class="col-12 col-md-6 col-lg-6 mt-2">
+            <input type="text" name="name" id="name" class="form-control" placeholder="Name" />
+        </div>
+        <div class="col-12 col-md-6 col-lg-6 mt-2">
+            <input type="number" name="mobile_number" id="mobile_number" class="form-control" placeholder="Mobile Number" />
+        </div>
+        {% endif %}
+        <div class="col-12 col-md-6 col-lg-6 mt-2">
+            <input type="text" name="book_name" id="book_name" class="form-control" placeholder="Book's Name" />
+        </div>
+        <div class="col-12 col-md-6 col-lg-6 mt-2">
+            <input type="text" name="book_link" id="book_link" class="form-control" placeholder="Book's Purchasable Link" />
+        </div>
+        <div class="col-12 col-md-12 col-lg-12 text-center mt-5">
+            <button class="cart-button-submit m-2 py-3" onclick="submit_form()">Submit</button>
         </div>
     </div>
     {% endif %}

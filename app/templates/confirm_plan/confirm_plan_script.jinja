@@ -6,6 +6,11 @@
                 type: "post",
                 dataType: 'json',
                 contentType: 'application/json',
+                beforeSend: function(){
+                    $('.main-container').addClass('blur');
+                    $(':button').prop('disabled', true);
+                    $("#loader").show();
+                },
                 success: function (result) {
                     let options = {
                         "key": result.key,
@@ -33,6 +38,11 @@
                         result.responseJSON.message,
                         'error'
                     )
+                },
+                complete:function(data){
+                    $('.main-container').removeClass('blur');
+                    $(':button').prop('disabled', false);
+                    $("#loader").hide();
                 }
             })
         })

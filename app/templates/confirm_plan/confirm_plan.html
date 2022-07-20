@@ -7,21 +7,19 @@
 <script src = "https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <!-- Section 1 -->
-<div class="row">
-    <div class="col-12 col-md-12 col-lg-12 banner-box text-center mt-3 mt-md-4 mt-lg-4">
+<div class="row no-mobile">
+    <div class="col-12 col-md-12 col-lg-12 banner-box text-center">
         <img src="/static/images/steps-mini.png" class="img-fluid" />
     </div>
 </div>
 
-<!-- Section 2 -->
-<div class="row pt-3 pt-md-5 pt-lg-5">
-    <div class="col-12 col-md-12 col-lg-12 text-center">
-        <h2 class="gray-text"><b>Plan Selected</b></h2>
-    </div>
-</div>
-
-<!-- Section 3 -->
 <div class="container">
+    <div class="row my-3">
+        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-0 mt-md-1 mt-lg-2">
+            <p class="section-title">Plan Selected</p>
+        </div>
+    </div>
+
     <div class="row pt-3 pt-md-5 pt-lg-5 text-gray">
         <div class="col-6 col-md-4 col-lg-4">
             <b><p>Books / Week</p></b>
@@ -54,15 +52,14 @@
             <p>Rs. {{total_payable_amount}}/-</p>
         </div>
     </div>
-</div>
 
-<!-- Section 4 -->
-<div class="row">
-    <div class="col-6 col-md-6 col-lg-6 text-end">
-        <a class="no-decoration" href="{{url_for('views.become_a_subscriber')}}"><button class="wishlist-button m-2 py-3">Change Plan</button></a>
-    </div>
-    <div class="col-6 col-md-6 col-lg-6 text-start">
-        <button class="cart-button m-2 py-3" id="checkout">Checkout</button>
+    <div class="row">
+        <div class="col-6 col-md-6 col-lg-6 text-end">
+            <a class="no-decoration" href="{{url_for('views.become_a_subscriber')}}"><button class="wishlist-button m-2 py-3">Change Plan</button></a>
+        </div>
+        <div class="col-6 col-md-6 col-lg-6 text-start">
+            <button class="cart-button m-2 py-3" id="checkout">Checkout</button>
+        </div>
     </div>
 </div>
 

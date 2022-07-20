@@ -4,17 +4,17 @@
 {% include("payment_successful/payment_successful_script.jinja") %}
 {% include("payment_successful/payment_successful_style.jinja") %}
 
-<!-- Section 1 -->
-<div class="row pt-3 pt-md-5 pt-lg-5">
-    <div class="col-12 col-md-12 col-lg-12 text-center">
-        <h2 class="gray-text"><b>Subscribed Successfully!</b></h2>
+<div class="container">
+    <div class="row my-3">
+        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-0 mt-md-1 mt-lg-5">
+            <p class="section-title">Successfully Subscribed!</p>
+        </div>
     </div>
-</div>
 
-<!-- Section 2 -->
-<div class="row mt-5">
-    <div class="col-12 col-md-12 col-lg-12 text-center">
-        <a href="{{url_for('views.test')}}"><button class="cart-button m-2 py-3">Start Exploring!</button></a>
+    <div class="row mt-5">
+        <div class="col-12 col-md-12 col-lg-12 text-center">
+            <a href="{{url_for('views.home')}}"><button class="cart-button m-2 py-3">Start Exploring!</button></a>
+        </div>
     </div>
 </div>
 

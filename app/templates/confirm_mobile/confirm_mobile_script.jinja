@@ -11,6 +11,11 @@
                 data: JSON.stringify(data),
                 dataType: 'json',
                 contentType: 'application/json',
+                beforeSend: function(){
+                    $('.main-container').addClass('blur');
+                    $(':button').prop('disabled', true);
+                    $("#loader").show();
+                },
                 success: function (result) {
                     window.location.href = result.redirect;
                 },
@@ -20,8 +25,45 @@
                         result.responseJSON.message,
                         'error'
                     )
+                },
+                complete:function(data){
+                    $('.main-container').removeClass('blur');
+                    $(':button').prop('disabled', false);
+                    $("#loader").hide();
                 }
             })
         })
     })
+    function resend_otp() {
+        $.ajax({
+            url: "{{url_for('api.resend_otp')}}",
+            type: "post",
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                Swal.fire(
+                    'Sent!',
+                    "We've sent you another OTP",
+                    'success'
+                )
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
 </script>

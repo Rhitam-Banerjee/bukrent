@@ -30,9 +30,17 @@ class Cart(db.Model):
         return cart_obj
 
     def add_book(self, book):
-        self.books.append(book)
-        db.session.add(self)
-        db.session.commit()
+        from app.models.user import User
+        user = User.query.filter_by(id=self.user_id).first()
+
+        if book in self.books:
+            raise ValueError("Book is already in cart!")
+        elif book in user.wishlist.books:
+            user.move_book_to_cart(book)
+        else:
+            self.books.append(book)
+            db.session.add(self)
+            db.session.commit()
 
 class Wishlist(db.Model):
     __tablename__ = "wishlist"
@@ -51,6 +59,14 @@ class Wishlist(db.Model):
         return wishlist_obj
 
     def add_book(self, book):
-        self.books.append(book)
-        db.session.add(self)
-        db.session.commit()
+        from app.models.user import User
+        user = User.query.filter_by(id=self.user_id).first()
+
+        if book in self.books:
+            raise ValueError("Book is already in wishlist!")
+        elif book in user.cart.books:
+            user.move_book_to_wishlist(book)
+        else:
+            self.books.append(book)
+            db.session.add(self)
+            db.session.commit()

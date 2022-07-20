@@ -1,6 +1,6 @@
 <script>
     $(document).ready(function(){
-        $("#book-carousel").owlCarousel({
+        $("#books-carousel").owlCarousel({
             responsiveClass:true,
             margin:25,
             nav: true,
@@ -15,4 +15,50 @@
             }
         });
     })
+
+    function search_books() {
+        let url = "{{url_for('views.search_result')}}"+`?query=${$("#search_bar").val()}`
+        window.location.href = url
+    }
+
+    function submit_form() {
+        let data = {
+            name: $("#name").val(),
+            mobile_number: $("#mobile_number").val(),
+            book_name: $("#book_name").val(),
+            book_link: $("#book_link").val(),
+        }
+
+        $.ajax({
+            url: "{{url_for('api.submit_search_form')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                Swal.fire(
+                    'Submitted!',
+                    'We will let you know when we have the book.',
+                    'success'
+                )
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
 </script>

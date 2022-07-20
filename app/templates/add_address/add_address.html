@@ -4,15 +4,13 @@
 {% include("add_address/add_address_script.jinja") %}
 {% include("add_address/add_address_style.jinja") %}
 
-<!-- Section 1 -->
-<div class="row pt-3 pt-md-5 pt-lg-5">
-    <div class="col-12 col-md-12 col-lg-12 text-center">
-        <h2 class="gray-text"><b>Confirm Address</b></h2>
+<div class="container">
+    <div class="row my-3">
+        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-0 mt-md-1 mt-lg-5">
+            <p class="section-title">Confirm Address</p>
+        </div>
     </div>
-</div>
 
-<!-- Section 2 -->
-<div class="container gray-text">
     <div class="row pt-3 pt-md-5 pt-lg-5">
         <!-- Billing Address -->
         <div class="col-12 col-md-6 col-lg-6">
@@ -127,17 +125,13 @@
             <textarea name="gift_message" id="gift_message" class="form-control"></textarea>
         </div>
     </div>
-</div>
 
-<!-- Section 3 -->
-<div class="row pt-3 pt-md-5 pt-lg-5">
-    <div class="col-12 col-md-12 col-lg-12 text-center">
-        <h2 class="gray-text"><b>Choose Books ({{user.books_per_week}})</b></h2>
+    <div class="row pt-3 pt-md-5 pt-lg-5">
+        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-0 mt-md-1 mt-lg-2">
+            <p class="section-title">Choose Books ({{user.books_per_week}})</p>
+        </div>
     </div>
-</div>
 
-<!-- Section 4 -->
-<div class="container gray-text">
     <div class="row">
         {% for book in user.cart.books %}
             <div class="col-12 col-md-12 col-lg-12 book-box p-2 m-2">
@@ -165,12 +159,11 @@
             </div>
         {% endfor %}
     </div>
-</div>
 
-<!-- Section 5 -->
-<div class="row mb-5">
-    <div class="col-12 col-md-12 col-lg-12 text-center">
-        <button class="cart-button m-2 py-3" onclick="place_order()">Confirm Order</button>
+    <div class="row mb-5">
+        <div class="col-12 col-md-12 col-lg-12 text-center">
+            <button class="cart-button m-2 py-3" onclick="place_order()">Confirm Order</button>
+        </div>
     </div>
 </div>
 

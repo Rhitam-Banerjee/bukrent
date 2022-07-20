@@ -240,28 +240,4 @@
             $("#type-carousel-container").append(finalHtml + endHtml)
         }
     }
-
-    function choose_plan(plan) {
-        let data = {
-            plan: plan
-        }
-
-        $.ajax({
-            url: "{{url_for('api.choose_plan')}}",
-            type: "post",
-            data: JSON.stringify(data),
-            dataType: 'json',
-            contentType: 'application/json',
-            success: function (result) {
-                window.location.href = result.redirect;
-            },
-            error: function (result) {
-                Swal.fire(
-                    'Uh Oh!',
-                    result.responseJSON.message,
-                    'error'
-                )
-            }
-        })
-    }
 </script>

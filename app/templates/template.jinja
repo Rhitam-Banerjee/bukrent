@@ -65,12 +65,211 @@
 
             main {
                 margin-top: 7vh;
-                min-height: 50vh
+                min-height: 60vh
             }
 
             .no-decoration {
-                color: #636363;
+                color: black;
                 text-decoration: none;
+            }
+
+            .section-title-box {
+                position: relative;
+                display: flex;
+            }
+
+            .section-title {
+                font-size: 2rem;
+                font-weight: 900;
+                display: inline-block;
+                padding: 0rem 1rem;
+            }
+
+            .section-title-box::before,
+            .section-title-box::after {
+                border-top: 1px solid black;
+                display: block;
+                height: 1px;
+                content: " ";
+                flex-grow: 1;
+                margin-top: 1.5rem;
+            }
+
+            .book-img {
+                min-height: 30vh;
+                max-height: 30vh;
+                position: relative;
+            }
+
+            .book-name {
+                color: #636363;
+                font-size: 1rem;
+            }
+
+            .book-author-name {
+                color: #636363;
+                font-size: 0.75rem;
+            }
+
+            .book-rating {
+                color: #dd913e;
+                font-size: 0.75rem;
+            }
+
+            .book-img-container {
+                position: relative;
+            }
+
+            .overlay {
+                position: absolute;
+                bottom: 0;
+                background: rgb(0, 0, 0);
+                background: rgba(0, 0, 0, 0.5);
+                width: 90%;
+                height: 100%;
+                transition: .5s ease;
+            }
+
+            .hidden-overlay {
+                display: none;
+            }
+
+            .add-to-wishlist {
+                background-color: #ffcb45;
+                color: white;
+                width: 30%;
+                font-size: 1.5rem;
+                position: absolute;
+                border: none;
+                left: 0;
+            }
+
+            .show-details {
+                background-color: white;
+                color: black;
+                width: 30%;
+                font-size: 1.5rem;
+                right: 0;
+                position: absolute;
+                border: none;
+            }
+
+            .add-to-cart {
+                background-color: #ffa142;
+                color: white;
+                position: absolute;
+                font-size: 1rem;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                border: none;
+            }
+
+            .blur {
+                filter: blur(5px);
+                -webkit-filter: blur(5px);
+                -moz-filter: blur(5px);
+                -o-filter: blur(5px);
+                -ms-filter: blur(5px);
+            }
+
+            #loader {
+                position: fixed;
+                display: none;
+                align-items: center;
+                width: 50%;
+                top: 30%;
+                left: 35%;
+                z-index: 999;
+            }
+
+            .loading-gif {
+                width: 50%;
+                height: auto;
+            }
+
+            @media (max-width: 1024px) {
+                .navbar {
+                    background-color: #dd913e !important;
+                    padding: 0px !important;
+                }
+
+                .book-img {
+                    min-height: 15vh;
+                    max-height: 15vh;
+                    position: relative;
+                }
+
+                .book-name {
+                    color: #636363;
+                    font-size: 1rem;
+                }
+
+                .book-author-name {
+                    color: #636363;
+                    font-size: 0.75rem;
+                }
+
+                .book-rating {
+                    color: #dd913e;
+                    font-size: 0.75rem;
+                }
+
+                .overlay {
+                    position: absolute;
+                    bottom: 0;
+                    background: rgb(0, 0, 0);
+                    background: rgba(0, 0, 0, 0.5);
+                    width: 84%;
+                    height: 100%;
+                    transition: .5s ease;
+                }
+
+                .add-to-wishlist {
+                    background-color: #ffcb45;
+                    color: white;
+                    width: 30%;
+                    font-size: 1rem;
+                    position: absolute;
+                    border: none;
+                    left: 0;
+                }
+
+                .show-details {
+                    background-color: white;
+                    color: black;
+                    width: 30%;
+                    font-size: 1rem;
+                    right: 0;
+                    position: absolute;
+                    border: none;
+                }
+
+                .add-to-cart {
+                    background-color: #ffa142;
+                    color: white;
+                    position: absolute;
+                    font-size: 0.75rem;
+                    bottom: 0;
+                    left: 0;
+                    width: 100%;
+                    border: none;
+                }
+
+                #loader {
+                    position: fixed;
+                    display: none;
+                    align-items: center;
+                    width: 80%;
+                    top: 30%;
+                    left: 25%;
+                    z-index: 999;
+                }
+
+                .loading-gif {
+                    width: 60%;
+                    height: auto;
+                }
             }
 
             @media (max-width:480px) {
@@ -82,11 +281,105 @@
                     background-color: #dd913e !important;
                     padding: 0px !important;
                 }
+
+                .section-title {
+                    font-size: 1rem;
+                    font-weight: 900;
+                    display: inline-block;
+                    padding: 0rem 0.5rem;
+                }
+
+                .section-title-box::before,
+                .section-title-box::after {
+                    border-top: 1px solid black;
+                    display: block;
+                    height: 1px;
+                    content: " ";
+                    flex-grow: 1;
+                    margin-top: 0.75rem;
+                }
+
+                .book-img {
+                    min-height: 15vh;
+                    max-height: 15vh;
+                    position: relative;
+                }
+
+                .book-name {
+                    color: #636363;
+                    font-size: 0.75rem;
+                }
+
+                .book-author-name {
+                    color: #636363;
+                    font-size: 0.5rem;
+                }
+
+                .book-rating {
+                    color: #dd913e;
+                    font-size: 0.5rem;
+                }
+
+                .overlay {
+                    position: absolute;
+                    bottom: 0;
+                    background: rgb(0, 0, 0);
+                    background: rgba(0, 0, 0, 0.5);
+                    width: 82%;
+                    height: 100%;
+                    transition: .5s ease;
+                }
+
+                .add-to-wishlist {
+                    background-color: #ffcb45;
+                    color: white;
+                    width: 30%;
+                    font-size: 1rem;
+                    position: absolute;
+                    border: none;
+                    left: 0;
+                }
+
+                .show-details {
+                    background-color: white;
+                    color: black;
+                    width: 30%;
+                    font-size: 1rem;
+                    right: 0;
+                    position: absolute;
+                    border: none;
+                }
+
+                .add-to-cart {
+                    background-color: #ffa142;
+                    color: white;
+                    position: absolute;
+                    font-size: 0.75rem;
+                    bottom: 0;
+                    left: 0;
+                    width: 100%;
+                    border: none;
+                }
+
+                #loader {
+                    position: fixed;
+                    display: none;
+                    align-items: center;
+                    width: 100%;
+                    top: 30%;
+                    left: 10%;
+                    z-index: 999;
+                }
+
+                .loading-gif {
+                    width: 80%;
+                    height: auto;
+                }
             }
         </style>
     </head>
     <body>
-        <div class="container-fluid p-0 overflow-hidden">
+        <div class="container-fluid p-0 overflow-hidden main-container">
             <header>
                 <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
                     <div class="container-fluid">
@@ -178,6 +471,9 @@
                 </div>
             </footer>
         </div>
+        <div id="loader">
+            <img src="/static/images/loading.gif" class="loading-gif">
+        </div>
 
         <script>
             function logout_user() {
@@ -186,6 +482,11 @@
                     type: "post",
                     dataType: 'json',
                     contentType: 'application/json',
+                    beforeSend: function(){
+                        $('.main-container').addClass('blur');
+                        $(':button').prop('disabled', true);
+                        $("#loader").show();
+                    },
                     success: function (result) {
                         window.location.reload();
                     },
@@ -195,6 +496,11 @@
                             result.responseJSON.message,
                             'error'
                         )
+                    },
+                    complete:function(data){
+                        $('.main-container').removeClass('blur');
+                        $(':button').prop('disabled', false);
+                        $("#loader").hide();
                     }
                 })
             }
@@ -202,6 +508,165 @@
             function search() {
                 let url = "{{url_for('views.search_result')}}"+`?query=${$("#search").val()}`
                 window.location.href = url
+            }
+
+            function create_book_html(book)  {
+                let html = `
+                            <a onclick="book_clicked('${book.guid}')">
+                                <div class="books-box" id="${book.guid}">
+                                    <div class="row">
+                                        <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
+                                            <img src="${book.image}" class="img-fluid book-img" />
+                                            <div class="overlay hidden-overlay">
+                                                <button class="add-to-wishlist p-2" onclick="add_to_wishlist('${book.guid}')">
+                                                    <i class="fa-regular fa-heart" aria-hidden="true"></i>
+                                                </button>
+                                                <button class="show-details p-2" onclick="show_details('${book.guid}')">
+                                                    <i class="fa fa-info-circle" aria-hidden="true"></i>
+                                                </button>
+                                            <button class="add-to-cart p-2" onclick="add_to_cart('${book.guid}')">
+                                                    <i class="fa fa-shopping-cart" aria-hidden="true"></i> Add to Cart
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 mt-2">
+                                            <p class="book-name">${text_short(book.name)}</p>
+                                        </div>
+                                        <div class="col-6 col-md-6 col-lg-6">
+                                            <p class="book-author-name">${book.authors[0]}</p>
+                                        </div>
+                                        <div class="col-6 col-md-6 col-lg-6">
+                                            <p class="book-rating"><i class="fa-solid fa-star"></i> ${book.rating}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                            `
+
+                return html
+            }
+
+            function book_clicked(guid) {
+                let book_box = $(`#${guid}`).find("div.overlay").toggleClass("hidden-overlay")
+            }
+
+            function add_to_cart(guid) {
+                let data = {
+                    "guid": guid
+                }
+                $.ajax({
+                    url: "{{url_for('api.add_to_cart')}}",
+                    type: "post",
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    beforeSend: function(){
+                        $('.main-container').addClass('blur');
+                        $(':button').prop('disabled', true);
+                        $("#loader").show();
+                    },
+                    success: function (result) {
+                        Swal.fire(
+                            'Added',
+                            "Book has been added to your cart",
+                            'success'
+                        )
+                    },
+                    error: function (result) {
+                        Swal.fire(
+                            'Uh Oh!',
+                            result.responseJSON.message,
+                            'error'
+                        )
+                    },
+                    complete:function(data){
+                        $('.main-container').removeClass('blur');
+                        $(':button').prop('disabled', false);
+                        $("#loader").hide();
+                    }
+                })
+            }
+
+            function add_to_wishlist(guid) {
+                let data = {
+                    "guid": guid
+                }
+                $.ajax({
+                    url: "{{url_for('api.add_to_wishlist')}}",
+                    type: "post",
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    beforeSend: function(){
+                        $('.main-container').addClass('blur');
+                        $(':button').prop('disabled', true);
+                        $("#loader").show();
+                    },
+                    success: function (result) {
+                        Swal.fire(
+                            'Added',
+                            "Book has been added to your wishlist",
+                            'success'
+                        )
+                    },
+                    error: function (result) {
+                        Swal.fire(
+                            'Uh Oh!',
+                            result.responseJSON.message,
+                            'error'
+                        )
+                    },
+                    complete:function(data){
+                        $('.main-container').removeClass('blur');
+                        $(':button').prop('disabled', false);
+                        $("#loader").hide();
+                    }
+                })
+            }
+
+            function show_details(guid) {
+                window.location.href=`{{url_for('views.book_details')}}?guid=${guid}`
+            }
+
+            function choose_plan(plan) {
+                let data = {
+                    plan: plan
+                }
+
+                $.ajax({
+                    url: "{{url_for('api.choose_plan')}}",
+                    type: "post",
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    beforeSend: function(){
+                        $('.main-container').addClass('blur');
+                        $(':button').prop('disabled', true);
+                        $("#loader").show();
+                    },
+                    success: function (result) {
+                        window.location.href = result.redirect;
+                    },
+                    error: function (result) {
+                        Swal.fire(
+                            'Uh Oh!',
+                            result.responseJSON.message,
+                            'error'
+                        )
+                    },
+                    complete:function(data){
+                        $('.main-container').removeClass('blur');
+                        $(':button').prop('disabled', false);
+                        $("#loader").hide();
+                    }
+                })
+            }
+
+            function text_short(text) {
+                if(text.length > 30) {
+                    return text.substring(0, 27) + "...";
+                }
+                return text
             }
         </script>
     </body>

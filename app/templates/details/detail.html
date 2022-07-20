@@ -5,15 +5,15 @@
 {% include("details/detail_style.jinja") %}
 
 <!-- Section 1 -->
-<div class="row">
-    <div class="col-12 col-md-12 col-lg-12 banner-box text-center mt-3 mt-md-4 mt-lg-4">
+<div class="row no-mobile">
+    <div class="col-12 col-md-12 col-lg-12 banner-box text-center">
         <img src="/static/images/steps-mini.png" class="img-fluid" />
     </div>
 </div>
 
 <!-- Section 2 -->
 <div class="container">
-    <div class="row py-5">
+    <div class="row py-0 py-md-5 py-lg-5">
         <div class="col-12 col-md-12 col-lg-12">
             <b>Age {{book.details.display_age_group}} Years</b> | {{book.categories[0].name}} | {{book.name}}
         </div>
@@ -23,13 +23,13 @@
 <!-- Section 3 -->
 <div class="container gray-text">
     <div class="row pb-5">
-        <div class="col-12 col-md-4 col-lg-4">
+        <div class="col-12 col-md-4 col-lg-4 text-center text-md-start text-lg-start">
             <img src="{{book.image}}" class="img-fluid" />
         </div>
         <div class="col-12 col-md-8 col-lg-8">
             <div class="row">
                 <div class="col-12 col-md-12 col-lg-12">
-                    <b><h1>{{book.name}}</h1></b>
+                    <b style="color: black;"><h1>{{book.name}}</h1></b>
                 </div>
                 <div class="col-12 col-md-12 col-lg-12">
                     <p class="text-yellow"><i class="fa-solid fa-star"></i> {{book.rating}}</p>
@@ -44,10 +44,10 @@
                     <span class="text-yellow"><i class="fas fa-comments"></i></span> <span class="small-text">{{book.review_count}}</span>
                 </div>
                 <div class="col-4 col-md-4 col-lg-4">
-                    <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?guid={{book.authors[0].guid}}&type=author"><b>{{book.authors[0].name}}</b></a>
+                    <a class="no-decoration"><b>{{book.authors[0].name}}</b></a>
                 </div>
                 <div class="col-4 col-md-4 col-lg-4">
-                    <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?guid={{book.publishers[0].guid}}&type=publisher"></a><b>{{book.details.publisher}}</b>
+                    <a class="no-decoration"></a><b>{{book.details.publisher}}</b>
                 </div>
                 <div class="col-4 col-md-4 col-lg-4"></div>
                 <div class="col-8 col-md-8 col-lg-8 pt-5">
@@ -160,42 +160,16 @@
     </div>
 </div>
 
-<!-- Section 4 -->
+<!-- Similar Books -->
 <div class="container">
-    <div class="row gray-text mb-5">
-        <div class="col-12 col-md-12 col-lg-12 px-5 pt-3 description-box">
-            <p>More like this</p>
+    <div class="row">
+        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
+            <p class="section-title">Login</p>
         </div>
     </div>
-</div>
 
-<!-- Section 5 -->
-<div class="container">
-    <div id="book-carousel" class="owl-carousel owl-theme">
-        {% for book in more_books %}
-        {% if book.authors | length > 0 %}
-        <div class="book-box">
-            <div class="row">
-                <div class="col-12 col-md-12 col-lg-12 text-center">
-                    <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{book.guid}}">
-                        <img src="{{book.image}}" class="book-img" />
-                    </a>
-                </div>
-                <div class="col-12 col-md-12 col-lg-12 pt-2">
-                    <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{book.guid}}">
-                        {{book.name}}
-                    </a>
-                </div>
-                <div class="col-6 col-md-6 col-lg-6">
-                    <p class="small-text">{{book.authors[0].name}}</p>
-                </div>
-                <div class="col-6 col-md-6 col-lg-6 text-right">
-                    <p class="text-yellow"><i class="fa-solid fa-star"></i> {{book.rating}}</p>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        {% endfor %}
+    <div id="similar-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
+        
     </div>
 </div>
 
@@ -207,8 +181,8 @@
         </div>
         <div class="col-12 col-md-12 col-lg-12">
             <div class="row">
-                <div class="col-12 col-md-4 col-lg-4">
-                    <div class="row detail-box p-3">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="row detail-box p-3 max-height">
                         <div class="col-4 col-md-4 col-lg-4">
                             <b><p>Book Title</p></b>
                         </div>
@@ -217,8 +191,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-4 col-lg-4">
-                    <div class="row detail-box p-3">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="row detail-box p-3 max-height">
                         <div class="col-4 col-md-4 col-lg-4">
                             <b><p>Book Format</p></b>
                         </div>
@@ -227,8 +201,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-4 col-lg-4">
-                    <div class="row detail-box p-3">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="row detail-box p-3 max-height">
                         <div class="col-4 col-md-4 col-lg-4">
                             <b><p>For Ages</p></b>
                         </div>
@@ -238,8 +212,8 @@
                     </div>
                 </div>
                 {% if book.authors | length > 0 %}
-                <div class="col-12 col-md-4 col-lg-4">
-                    <div class="row detail-box p-3">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="row detail-box p-3 max-height">
                         <div class="col-4 col-md-4 col-lg-4">
                             <b><p>Author</p></b>
                         </div>
@@ -249,8 +223,8 @@
                     </div>
                 </div>
                 {% endif %}
-                <div class="col-12 col-md-4 col-lg-4">
-                    <div class="row detail-box p-3">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="row detail-box p-3 max-height">
                         <div class="col-4 col-md-4 col-lg-4">
                             <b><p>Language</p></b>
                         </div>
@@ -259,8 +233,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-4 col-lg-4">
-                    <div class="row detail-box p-3">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="row detail-box p-3 max-height">
                         <div class="col-4 col-md-4 col-lg-4">
                             <b><p>Edition</p></b>
                         </div>
@@ -269,8 +243,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-4 col-lg-4">
-                    <div class="row detail-box p-3">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="row detail-box p-3 max-height">
                         <div class="col-4 col-md-4 col-lg-4">
                             <b><p>Publisher</p></b>
                         </div>
@@ -279,8 +253,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-4 col-lg-4">
-                    <div class="row detail-box p-3">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="row detail-box p-3 max-height">
                         <div class="col-4 col-md-4 col-lg-4">
                             <b><p>Page(s)</p></b>
                         </div>
@@ -289,16 +263,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-4 col-lg-4">
-                    <div class="row detail-box p-3">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="row detail-box p-3 max-height">
                         <div class="col-4 col-md-4 col-lg-4">
                             <b><p>Tags</p></b>
                         </div>
                         <div class="col-8 col-md-8 col-lg-8">
-                            {% for category in book.categories %}
+                            {% for category in book.categories[:3] %}
                             <span class="book-tag p-1">{{category.name}}</span> 
                             {% endfor %}
-                            <span class="book-tag p-1">{{book.details.age_group}}</span> 
                         </div>
                     </div>
                 </div>
@@ -346,33 +319,34 @@
     </div>
 </div>
 
-<!-- Section 1 -->
-<div class="row pt-3 pt-md-5 pt-lg-5">
-    <div class="col-12 col-md-12 col-lg-12 text-center">
-        <h2 class="gray-text"><b>Become A Subscriber</b></h2>
+{% if user %}
+{% if user.is_subscribed %}
+<!-- Become A Subscriber -->
+<div class="container">
+    <div class="row my-3">
+        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
+            <p class="section-title">Become a subscriber</p>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-4 col-md-4 col-lg-4">
+            <a onclick="choose_plan(1)">
+                <img src="/static/images/subscription1.png" class="img-fluid banner-img" />
+            </a>
+        </div>
+        <div class="col-4 col-md-4 col-lg-4">
+            <a onclick="choose_plan(2)">
+                <img src="/static/images/subscription2.png" class="img-fluid banner-img" />
+            </a>
+        </div>
+        <div class="col-4 col-md-4 col-lg-4">
+            <a onclick="choose_plan(3)">
+                <img src="/static/images/subscription3.png" class="img-fluid banner-img" />
+            </a>
+        </div>
     </div>
 </div>
-<div class="row pb-3 p-3 pb-lg-0 pb-md-0" style="overflow-y: hidden;">
-    <div class="col-3 col-md-3 col-lg-3 p-1 p-md-5 p-lg-5">
-        <a onclick="choose_plan(1)">
-            <img src="/static/images/subscription1.png" class="img-fluid banner-img" />
-        </a>
-    </div>
-    <div class="col-3 col-md-3 col-lg-3 p-1 p-md-5 p-lg-5">
-        <a onclick="choose_plan(2)">
-            <img src="/static/images/subscription2.png" class="img-fluid banner-img" />
-        </a>
-    </div>
-    <div class="col-3 col-md-3 col-lg-3 p-1 p-md-5 p-lg-5">
-        <a onclick="choose_plan(3)">
-            <img src="/static/images/subscription3.png" class="img-fluid banner-img" />
-        </a>
-    </div>
-    <div class="col-3 col-md-3 col-lg-3 p-1 p-md-5 p-lg-5">
-        <a onclick="choose_plan(4)">
-            <img src="/static/images/subscription4.png" class="img-fluid banner-img" />
-        </a>
-    </div>
-</div>
+{% endif %}
+{% endif %}
 
 {% endblock %}

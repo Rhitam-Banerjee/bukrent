@@ -4,35 +4,39 @@
 {% include("signup/signup_script.jinja") %}
 {% include("signup/signup_style.jinja") %}
 
-<!-- Section 1 -->
-<div class="row pt-3 pt-md-5 pt-lg-5 text-gray">
-    <div class="col-12 col-md-12 col-lg-12 text-center">
-        <h2 class="gray-text"><b>Signup</b></h2>
+<div class="container">
+    <div class="row my-3">
+        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-0 mt-md-1 mt-lg-5">
+            <p class="section-title">Signup</p>
+        </div>
     </div>
-</div>
 
-<!-- Section 2 -->
-<div class="container text-gray">
     <div class="row py-3 py-md-5 py-lg-5">
         <div class="col-12 col-md-6 col-lg-6 text-center mt-3">
-            <input type="text" name="first_name" id="first_name" class="form-control" placeholder="First Name" />
-        </div>
-        <div class="col-12 col-md-6 col-lg-6 text-center mt-3">
-            <input type="text" name="last_name" id="last_name" class="form-control" placeholder="Last Name" />
+            <input type="text" name="name" id="name" class="form-control" placeholder="Name" />
         </div>
         <div class="col-12 col-md-6 col-lg-6 text-center mt-3">
             <input type="number" name="mobile_number" id="mobile_number" class="form-control" placeholder="Mobile Number" />
         </div>
-        <div class="col-12 col-md-6 col-lg-6 mt-3 pt-2">
-            <input type="checkbox" name="newsletter" id="newsletter" value="newsletter" />
-            <label for="newsletter">Subscribe to our newsletter</label>
+        <div class="col-12 col-md-6 col-lg-6 text-center mt-3">
+            <input type="text" name="child_name" id="child_name" class="form-control" placeholder="Child Name" />
+        </div>
+        <div class="col-12 col-md-6 col-lg-6 text-center mt-3">
+            <select class="form-control form-input" id="age">
+                <option value="0-2">0-2 Years</option>
+                <option value="3-5">3-5 Years</option>
+                <option value="6-8">6-8 Years</option>
+                <option value="9-11">9-11 Years</option>
+                <option value="12-14">12-14 Years</option>
+                <option value="15+">15+ Years</option>
+            </select>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-12 col-md-12 col-lg-12 text-center">
-        <button class="cart-button m-2 py-3" id="signup_button">Signup</button>
+    <div class="row">
+        <div class="col-12 col-md-12 col-lg-12 text-center">
+            <button class="cart-button m-2 py-3" id="signup_button">Signup</button>
+        </div>
     </div>
 </div>
 

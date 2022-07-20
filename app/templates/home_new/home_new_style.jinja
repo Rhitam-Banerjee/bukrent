@@ -43,26 +43,16 @@
         font-weight: 900;
     }
 
-    .section-title-box {
-        position: relative;
-        display: flex;
-    }
-
-    .section-title {
+    .title-box4 {
+        background-color: #ffc3be;
         font-size: 2rem;
         font-weight: 900;
-        display: inline-block;
-        padding: 0rem 1rem;
     }
 
-    .section-title-box::before,
-    .section-title-box::after {
-        border-top: 1px solid black;
-        display: block;
-        height: 1px;
-        content: " ";
-        flex-grow: 1;
-        margin-top: 1.5rem;
+    .big-title-text4 {
+        color: #ff7c72;
+        font-size: 4rem;
+        font-weight: 900;
     }
 
     .age-box {
@@ -96,7 +86,7 @@
     .age-text-big {
         color: white;
         font-weight: 900;
-        font-size: 4rem;
+        font-size: 3rem;
     }
 
     .age-text-small {
@@ -104,24 +94,9 @@
         font-size: 2rem;
     }
 
-    .book-name {
-        color: #636363;
-        font-size: 1rem;
-    }
-
-    .book-author-name {
-        color: #636363;
-        font-size: 0.75rem;
-    }
-
-    .book-rating {
-        color: #dd913e;
-        font-size: 0.75rem;
-    }
-
-    .book-img {
-        min-height: 30vh;
-        max-height: 30vh;
+    .book-img-small {
+        min-height: 15vh;
+        max-height: 15vh;
     }
 
     .amazon-authors-box {
@@ -130,7 +105,18 @@
         position: relative;
     }
 
+    .amazon-genres-box {
+        background-color: #eaeaea;
+        border-radius: 1rem;
+        position: relative;
+    }
+
     .amazon-publishers-box {
+        background-color: #eaeaea;
+        border-radius: 1rem;
+    }
+
+    .amazon-series-box {
         background-color: #eaeaea;
         border-radius: 1rem;
     }
@@ -155,7 +141,20 @@
         position: relative;
     }
 
+    .genre-img-1,
+    .genre-img-2 {
+        position: relative;
+    }
+
     .author-name-container {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        color: white;
+        font-weight: 900;
+    }
+
+    .genre-name-container {
         position: absolute;
         bottom: 0;
         left: 0;
@@ -179,6 +178,72 @@
         background-color: #74c7ff;
     }
 
+    @media (max-width: 1024px) {
+        .age-text-big {
+            color: white;
+            font-weight: 900;
+            font-size: 2rem;
+        }
+
+        .age-text-small {
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .book-img-small {
+            min-height: 7.5vh;
+            max-height: 7.5vh;
+        }
+
+        .title-box {
+            background-color: #ffedd6;
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .big-title-text {
+            color: #ffa142;
+            font-size: 3rem;
+            font-weight: 900;
+        }
+
+        .title-box2 {
+            background-color: #fdccf6;
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .big-title-text2 {
+            color: #c783b7;
+            font-size: 3rem;
+            font-weight: 900;
+        }
+
+        .title-box3 {
+            background-color: #ccfe8e;
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .big-title-text3 {
+            color: #8ace38;
+            font-size: 3rem;
+            font-weight: 900;
+        }
+
+        .title-box4 {
+            background-color: #ffc3be;
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .big-title-text4 {
+            color: #ff7c72;
+            font-size: 3rem;
+            font-weight: 900;
+        }
+    }
+
     @media (max-width:480px) {
         .no-mobile {
             display: none;
@@ -199,41 +264,9 @@
             font-size: 1rem;
         }
 
-        .section-title {
-            font-size: 1rem;
-            font-weight: 900;
-            display: inline-block;
-            padding: 0rem 0.5rem;
-        }
-
-        .section-title-box::before,
-        .section-title-box::after {
-            border-top: 1px solid black;
-            display: block;
-            height: 1px;
-            content: " ";
-            flex-grow: 1;
-            margin-top: 0.75rem;
-        }
-
-        .book-name {
-            color: #636363;
-            font-size: 0.75rem;
-        }
-
-        .book-author-name {
-            color: #636363;
-            font-size: 0.5rem;
-        }
-
-        .book-rating {
-            color: #dd913e;
-            font-size: 0.5rem;
-        }
-
-        .book-img {
-            min-height: 15vh;
-            max-height: 15vh;
+        .book-img-small {
+            min-height: 7.5vh;
+            max-height: 7.5vh;
         }
     }
 </style>

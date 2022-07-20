@@ -4,6 +4,7 @@ from flask import current_app
 
 # from seed import *
 from seed_final import *
+from export import *
 
 from app.models.annotations import Annotation
 from app.models.author import Author
@@ -29,6 +30,10 @@ def recreate_db():
 @cli.command()
 def seed_db():
     seed()
+
+@cli.command()
+def export():
+    export()
 
 if __name__ == '__main__':
     cli()

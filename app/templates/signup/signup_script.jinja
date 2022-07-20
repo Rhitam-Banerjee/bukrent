@@ -2,10 +2,10 @@
     $(function(){
         $("#signup_button").click(function(){
             let data = {
-                first_name: $("#first_name").val(),
-                last_name: $("#last_name").val(),
+                name: $("#name").val(),
                 mobile_number: $("#mobile_number").val(),
-                newsletter: $("#newsletter").is(":checked") ? true : false
+                child_name: $("#child_name").val(),
+                age: $("#age").val()
             }
 
             $.ajax({
@@ -14,6 +14,11 @@
                 data: JSON.stringify(data),
                 dataType: 'json',
                 contentType: 'application/json',
+                beforeSend: function(){
+                    $('.main-container').addClass('blur');
+                    $(':button').prop('disabled', true);
+                    $("#loader").show();
+                },
                 success: function (result) {
                     window.location.href = "{{url_for('views.confirm_mobile')}}"
                 },
@@ -23,6 +28,11 @@
                         result.responseJSON.message,
                         'error'
                     )
+                },
+                complete:function(data){
+                    $('.main-container').removeClass('blur');
+                    $(':button').prop('disabled', false);
+                    $("#loader").hide();
                 }
             })
         })

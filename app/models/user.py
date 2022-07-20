@@ -22,7 +22,7 @@ class Address(db.Model):
     @staticmethod
     def create(address_json, user_id):
         if not all((address_json.get("house_number"), address_json.get("area"), address_json.get("city"), address_json.get("pincode"), address_json.get("country"))):
-            raise "House Number, Area, City, Country and Pin Code are required!"
+            raise ValueError("House Number, Area, City, Country and Pin Code are required!")
 
         address_dict = dict(
             guid = str(uuid.uuid4()),
@@ -44,8 +44,9 @@ class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     guid = db.Column(db.String, nullable=False, unique=True)
-    first_name = db.Column(db.String)
-    last_name = db.Column(db.String)
+    name = db.Column(db.String)
+    age = db.Column(db.String)
+    child_name = db.Column(db.String)
     mobile_number = db.Column(db.String, unique=True)
     newsletter = db.Column(db.Boolean)
     is_subscribed = db.Column(db.Boolean, default=False)
@@ -69,17 +70,17 @@ class User(db.Model):
             return 2
         elif self.plan_id == "plan_JqT63tUE0O641c":
             return 4
-        elif self.plan_id == "plan_JqT6RvMZOgaWau":
-            return 6
+        else:
+            return 0
 
     @staticmethod
-    def create(first_name, last_name, mobile_number, newsletter):
+    def create(name, age, child_name, mobile_number):
         user_dict = dict(
             guid = str(uuid.uuid4()),
-            first_name = first_name,
-            last_name = last_name,
-            mobile_number = mobile_number,
-            newsletter = newsletter
+            name = name,
+            age = age,
+            child_name = child_name,
+            mobile_number = mobile_number
         )
         user_obj = User(**user_dict)
         db.session.add(user_obj)
@@ -102,7 +103,7 @@ class User(db.Model):
         cart.books.remove(book)
         db.session.add(cart)
 
-        wishlist.books.append(book)
+        wishlist.add_book(book)
         db.session.add(wishlist)
 
         db.session.commit()
@@ -114,7 +115,7 @@ class User(db.Model):
         wishlist.books.remove(book)
         db.session.add(wishlist)
 
-        cart.books.append(book)
+        cart.add_book(book)
         db.session.add(cart)
 
         db.session.commit()

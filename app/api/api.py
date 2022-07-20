@@ -1,10 +1,13 @@
 from flask import Blueprint, jsonify, request, render_template, redirect, session, url_for
 
+from app.models.category import Category
 from app.models.launch import Launch
 from app.models.books import Book
 from app.models.user import User, Address
+from app.models.series import Series
 from app.models.order import Order
 from app.models.cart import Cart, Wishlist
+from app.models.search import Search
 
 import os
 from twilio.rest import Client
@@ -51,14 +54,14 @@ def login():
 
 @api.route("/signup", methods=["POST"])
 def signup():
-    first_name = request.json.get("first_name")
-    last_name = request.json.get("last_name")
+    name = request.json.get("name")
+    child_name = request.json.get("child_name")
     mobile_number = request.json.get("mobile_number")
-    newsletter = request.json.get("newsletter")
+    age = request.json.get("age")
 
-    if not all((first_name, last_name, mobile_number)):
+    if not all((name, name, mobile_number)):
         return jsonify({
-            "message": "First Name, Last Name and Mobile Number are mandatory fields!",
+            "message": "Name and Mobile Number are mandatory fields!",
             "status": "error"
         }), 400
     
@@ -72,10 +75,10 @@ def signup():
     if user:
         session["mobile_number"] = mobile_number
     else:
-        session["first_name"] = first_name
-        session["last_name"] = last_name
+        session["name"] = name
+        session["child_name"] = child_name
         session["mobile_number"] = mobile_number
-        session["newsletter"] = newsletter
+        session["age"] = age
 
     account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
@@ -87,6 +90,19 @@ def signup():
         "message": "OTP Sent!",
         "status": "success"
     }), 201
+
+@api.route("/resend-otp", methods=["POST"])
+def resend_otp():
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
+
+    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{session.get('mobile_number')}", channel="sms")
+
+    return jsonify({
+        "message": "OTP Sent!",
+        "status": "success"
+    }), 201    
 
 @api.route("/confirm-mobile", methods=["POST"])
 def confirm_mobile():
@@ -101,12 +117,12 @@ def confirm_mobile():
     if verification_check.status == "approved":
         user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
         if not user:
-            User.create(session.get("first_name"), session.get("last_name"), session.get("mobile_number"), session.get("newsletter"))
+            User.create(session.get("name"), session.get("age"), session.get("child_name"), session.get("mobile_number"))
             user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
 
-            session["first_name"] = None
-            session["last_name"] = None
-            session["newsletter"] = None
+            session["name"] = None
+            session["child_name"] = None
+            session["age"] = None
             session["mobile_number"] = None
 
             session["current_user"] = user.guid
@@ -120,7 +136,7 @@ def confirm_mobile():
 
         if user.is_subscribed:
             return jsonify({
-                "redirect": url_for('views.test'),
+                "redirect": url_for('views.home'),
                 "status": "success"
             }), 201
         else:
@@ -193,7 +209,7 @@ def choose_plan():
     if current_user:
         if user.is_subscribed:
             return jsonify({
-                "redirect": url_for('views.test'),
+                "redirect": url_for('views.home'),
                 "status": "success"
             }), 201
         else:
@@ -229,9 +245,6 @@ def generate_subscription_id():
     elif plan == 3:
         plan_id = os.environ.get("RZP_PLAN_3_ID")
         plan_desc = "Get 4 Books Per Week"
-    else:
-        plan_id = os.environ.get("RZP_PLAN_4_ID")
-        plan_desc = "Get 6 Books Per Week"
 
     subscription = client.subscription.create({
         'plan_id': plan_id,
@@ -256,7 +269,7 @@ def generate_subscription_id():
     return jsonify({
         "subscription_id": subscription_id,
         "key": os.environ.get("RZP_KEY_ID"),
-        "name": f"{current_user.first_name} {current_user.last_name}",
+        "name": f"{current_user.name}",
         "contact": f"+91{current_user.mobile_number}",
         "plan_desc": plan_desc
     }), 201
@@ -278,127 +291,163 @@ def payment_successful():
 
 @api.route("/add-to-cart", methods=["POST"])
 def add_to_cart():
-    book_guid = request.json.get("guid")
-    book = Book.query.filter_by(guid=book_guid).first()
-    current_user_guid = session.get("current_user")
-    if current_user_guid:
-        current_user = User.query.filter_by(guid=session.get("current_user")).first()
-        cart = Cart.query.filter_by(user_id=current_user.id).first()
-        cart.add_book(book)
-    else:
-        if session.get("cart"):
-            cart = session.get("cart")
-            cart.append(book.guid)
-            session["cart"] = cart
+    try:
+        book_guid = request.json.get("guid")
+        book = Book.query.filter_by(guid=book_guid).first()
+        current_user_guid = session.get("current_user")
+        if current_user_guid:
+            current_user = User.query.filter_by(guid=session.get("current_user")).first()
+            cart = Cart.query.filter_by(user_id=current_user.id).first()
+            cart.add_book(book)
         else:
-            session["cart"] = [book.guid]
+            if session.get("cart"):
+                cart = session.get("cart")
+                cart.append(book.guid)
+                session["cart"] = cart
+            else:
+                session["cart"] = [book.guid]
 
-    return jsonify({
-        "message": "Added",
-        "status": "success"
-    }), 201
+        return jsonify({
+            "message": "Added",
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/add-to-wishlist", methods=["POST"])
 def add_to_wishlist():
-    book_guid = request.json.get("guid")
-    book = Book.query.filter_by(guid=book_guid).first()
-    current_user_guid = session.get("current_user")
-    if current_user_guid:
-        current_user = User.query.filter_by(guid=session.get("current_user")).first()
-        wishlist = Wishlist.query.filter_by(user_id=current_user.id).first()
-        wishlist.add_book(book)
-    else:
-        if session.get("wishlist"):
-            wishlist = session.get("wishlist")
-            wishlist.append(book.guid)
-            session["wishlist"] = wishlist
+    try:
+        book_guid = request.json.get("guid")
+        book = Book.query.filter_by(guid=book_guid).first()
+        current_user_guid = session.get("current_user")
+        if current_user_guid:
+            current_user = User.query.filter_by(guid=session.get("current_user")).first()
+            wishlist = Wishlist.query.filter_by(user_id=current_user.id).first()
+            wishlist.add_book(book)
         else:
-            session["wishlist"] = [book.guid]
+            if session.get("wishlist"):
+                wishlist = session.get("wishlist")
+                wishlist.append(book.guid)
+                session["wishlist"] = wishlist
+            else:
+                session["wishlist"] = [book.guid]
 
-    return jsonify({
-        "message": "Added",
-        "status": "success"
-    }), 201
+        return jsonify({
+            "message": "Added",
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/move-to-wishlist", methods=["POST"])
 def move_to_wishlist():
-    book_guid = request.json.get('guid')
-    book = Book.query.filter_by(guid=book_guid).first()
-    current_user_guid = session.get("current_user")
-    if current_user_guid:
-        current_user = User.query.filter_by(guid=current_user_guid).first()
-        current_user.move_book_to_wishlist(book)
-    else:
-        cart = session.get("cart")
-        cart.remove(book_guid)
-        session["cart"] = cart
-        if session.get("wishlist"):
-            wishlist = session.get("wishlist")
-            wishlist.append(book_guid)
-            session["wishlist"] = wishlist
+    try:
+        book_guid = request.json.get('guid')
+        book = Book.query.filter_by(guid=book_guid).first()
+        current_user_guid = session.get("current_user")
+        if current_user_guid:
+            current_user = User.query.filter_by(guid=current_user_guid).first()
+            current_user.move_book_to_wishlist(book)
         else:
-            session["wishlist"] = [book_guid]
-    return jsonify({
-        "message": "Moved",
-        "status": "success"
-    }), 201
+            cart = session.get("cart")
+            cart.remove(book_guid)
+            session["cart"] = cart
+            if session.get("wishlist"):
+                wishlist = session.get("wishlist")
+                wishlist.append(book_guid)
+                session["wishlist"] = wishlist
+            else:
+                session["wishlist"] = [book_guid]
+        return jsonify({
+            "message": "Moved",
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/move-to-cart", methods=["POST"])
 def move_to_cart():
-    book_guid = request.json.get('guid')
-    book = Book.query.filter_by(guid=book_guid).first()
-    current_user_guid = session.get("current_user")
-    if current_user_guid:
-        current_user = User.query.filter_by(guid=current_user_guid).first()
-        current_user.move_book_to_cart(book)
-    else:
-        wishlist = session.get("wishlist")
-        wishlist.remove(book_guid)
-        session["wishlist"] = wishlist
-        if session.get("cart"):
-            cart = session.get("cart")
-            cart.append(book_guid)
-            session["cart"] = cart
+    try:
+        book_guid = request.json.get('guid')
+        book = Book.query.filter_by(guid=book_guid).first()
+        current_user_guid = session.get("current_user")
+        if current_user_guid:
+            current_user = User.query.filter_by(guid=current_user_guid).first()
+            current_user.move_book_to_cart(book)
         else:
-            session["cart"] = [book_guid]
-    return jsonify({
-        "message": "Moved",
-        "status": "success"
-    }), 201
+            wishlist = session.get("wishlist")
+            wishlist.remove(book_guid)
+            session["wishlist"] = wishlist
+            if session.get("cart"):
+                cart = session.get("cart")
+                cart.append(book_guid)
+                session["cart"] = cart
+            else:
+                session["cart"] = [book_guid]
+        return jsonify({
+            "message": "Moved",
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/delete-from-cart", methods=["POST"])
 def delete_from_cart():
-    book_guid = request.json.get('guid')
-    book = Book.query.filter_by(guid=book_guid).first()
-    current_user_guid = session.get("current_user")
-    if current_user_guid:
-        current_user = User.query.filter_by(guid=current_user_guid).first()
-        current_user.remove_book_from_cart(book)
-    else:
-        cart = session.get("cart")
-        cart.remove(book_guid)
-        session["cart"] = cart
-    return jsonify({
-        "message": "Moved",
-        "status": "success"
-    }), 201
+    try:
+        book_guid = request.json.get('guid')
+        book = Book.query.filter_by(guid=book_guid).first()
+        current_user_guid = session.get("current_user")
+        if current_user_guid:
+            current_user = User.query.filter_by(guid=current_user_guid).first()
+            current_user.remove_book_from_cart(book)
+        else:
+            cart = session.get("cart")
+            cart.remove(book_guid)
+            session["cart"] = cart
+        return jsonify({
+            "message": "Moved",
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/delete-from-wishlist", methods=["POST"])
 def delete_from_wishlist():
-    book_guid = request.json.get('guid')
-    book = Book.query.filter_by(guid=book_guid).first()
-    current_user_guid = session.get("current_user")
-    if current_user_guid:
-        current_user = User.query.filter_by(guid=current_user_guid).first()
-        current_user.remove_book_from_wishlist(book)
-    else:
-        wishlist = session.get("wishlist")
-        wishlist.remove(book_guid)
-        session["wishlist"] = wishlist
-    return jsonify({
-        "message": "Moved",
-        "status": "success"
-    }), 201
+    try:
+        book_guid = request.json.get('guid')
+        book = Book.query.filter_by(guid=book_guid).first()
+        current_user_guid = session.get("current_user")
+        if current_user_guid:
+            current_user = User.query.filter_by(guid=current_user_guid).first()
+            current_user.remove_book_from_wishlist(book)
+        else:
+            wishlist = session.get("wishlist")
+            wishlist.remove(book_guid)
+            session["wishlist"] = wishlist
+        return jsonify({
+            "message": "Moved",
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/check-books", methods=["POST"])
 def check_books():
@@ -482,6 +531,46 @@ def get_publisher_books():
         "status": "success"
     }), 200
 
+@api.route("/get-series-books", methods=["POST"])
+def get_series_books():
+    series = request.json.get("series")
+    return jsonify({
+        "data": Book.get_series_books(series),
+        "status": "success"
+    }), 200
+
+@api.route("/get-series", methods=["POST"])
+def get_series():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Series.get_series(age_group),
+        "status": "success"
+    }), 200
+
+@api.route("/get-genres", methods=["POST"])
+def get_genres():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Category.get_genres(age_group),
+        "status": "success"
+    }), 200
+
+@api.route("/get-genres-books", methods=["POST"])
+def get_genres_books():
+    genres = request.json.get("genres")
+    return jsonify({
+        "data": Book.get_genres_books(genres),
+        "status": "success"
+    }), 200
+
+@api.route("/get-similar-books", methods=["POST"])
+def get_similar_books():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Book.get_similar_books(age_group),
+        "status": "success"
+    }), 200
+
 @api.route("/search", methods=["POST"])
 def search():
     search = request.json.get("search")
@@ -494,6 +583,26 @@ def search():
         "publishers": all_publishers,
         "status": "success"
     }), 200
+
+@api.route("/submit-search-form", methods=["POST"])
+def submit_search_form():
+    name = request.json.get("name")
+    mobile_number = request.json.get("mobile_number")
+    book_name = request.json.get("book_name")
+    book_link = request.json.get("book_link")
+
+    if not all((name, mobile_number, book_name, book_link)):
+        return jsonify({
+            "message": "All fields are mandatory!",
+            "status": "error"
+        }), 400
+
+    Search.create(name, mobile_number, book_name, book_link)
+
+    return jsonify({
+        "message": "Submitted",
+        "status": "success"
+    }), 201
 
 @api.route("/launch", methods=["POST"])
 def launch():

@@ -81,35 +81,37 @@ class Book(db.Model):
     def get_most_borrowed(age_group):
         from app.models.category import Category
 
-        books = Category.query.filter_by(name="Most Borrowed").first().books
-        final_books = []
-        category = None
+        if age_group:
+            if age_group == 1:
+                books = Category.query.filter_by(name="Zero - Two").first().books
+            elif age_group == 2:
+                books = Category.query.filter_by(name="Three to Five").first().books
+            elif age_group == 3:
+                books = Category.query.filter_by(name="Six to Eight").first().books
+            elif age_group == 4:
+                books = Category.query.filter_by(name="Nine to Twelve").first().books
+            elif age_group == 5 or age_group == 6:
+                books = Category.query.filter_by(name="Twelve to Sixteen").first().books
+            category = Category.query.filter_by(name="Most Borrowed").first()
 
-        if age_group == 1:
-            category = Category.query.filter_by(name="Zero - Two").first()
-        elif age_group == 2:
-            category = Category.query.filter_by(name="Three to Five").first()
-        elif age_group == 3:
-            category = Category.query.filter_by(name="Six to Eight").first()
-        elif age_group == 4:
-            category = Category.query.filter_by(name="Nine to Twelve").first()
-        elif age_group == 5 or age_group == 6:
-            category = Category.query.filter_by(name="Twelve to Sixteen").first()
-
-        if category:
+            final_books = []
             for book in books:
                 if category in book.categories:
                     final_books.append(book.to_json())
+
         else:
+            books = Category.query.filter_by(name="Most Borrowed").first().books[:10]
+            final_books = []
             for book in books:
                 final_books.append(book.to_json())
+
         return final_books
 
     @staticmethod
     def get_author_books(author):
         from app.models.author import Author
 
-        books = Author.query.filter_by(name=author).first().books
+        books = Author.query.filter_by(name=author).first().books[:10]
         final_books = []
 
         for book in books:
@@ -121,7 +123,31 @@ class Book(db.Model):
     def get_publisher_books(publisher):
         from app.models.publishers import Publisher
 
-        books = Publisher.query.filter_by(name=publisher).first().books
+        books = Publisher.query.filter_by(name=publisher).first().books[:10]
+        final_books = []
+
+        for book in books:
+            final_books.append(book.to_json())
+
+        return final_books
+
+    @staticmethod
+    def get_series_books(series):
+        from app.models.series import Series
+
+        books = Series.query.filter_by(name=series).first().books
+        final_books = []
+
+        for book in books:
+            final_books.append(book.to_json())
+
+        return final_books
+
+    @staticmethod
+    def get_genres_books(genres):
+        from app.models.category import Category
+
+        books = Category.query.filter_by(name=genres).first().books[:10]
         final_books = []
 
         for book in books:
@@ -133,28 +159,22 @@ class Book(db.Model):
     def get_amazon_bestsellers(age_group):
         from app.models.category import Category
 
-        books = Category.query.filter_by(name="Amazon Bestseller").first().books
+        books = Category.query.filter_by(name="Amazon Bestseller").first().books[:10]
         final_books = []
-        category = None
 
         if age_group == 1:
-            category = Category.query.filter_by(name="Zero - Two").first()
+            books = Category.query.filter_by(name="Zero - Two").first().books[:10]
         elif age_group == 2:
-            category = Category.query.filter_by(name="Three to Five").first()
+            books = Category.query.filter_by(name="Three to Five").first().books[:10]
         elif age_group == 3:
-            category = Category.query.filter_by(name="Six to Eight").first()
+            books = Category.query.filter_by(name="Six to Eight").first().books[:10]
         elif age_group == 4:
-            category = Category.query.filter_by(name="Nine to Twelve").first()
+            books = Category.query.filter_by(name="Nine to Twelve").first().books[:10]
         elif age_group == 5 or age_group == 6:
-            category = Category.query.filter_by(name="Twelve to Sixteen").first()
-        
-        if category:
-            for book in books:
-                if category in book.categories:
-                    final_books.append(book.to_json())
-        else:
-            for book in books:
-                final_books.append(book.to_json())
+            books = Category.query.filter_by(name="Twelve to Sixteen").first().books[:10]
+
+        for book in books:
+            final_books.append(book.to_json())
 
         return final_books
 
@@ -163,8 +183,15 @@ class Book(db.Model):
         objs = Detail.query.filter_by(age_group=detail.age_group).order_by(Detail.bestseller_rank.asc()).limit(10).all()
         return [Book.query.filter_by(id=obj.book_id).first() for obj in objs]
 
+    @staticmethod
+    def get_similar_books(age_group):
+        detail_objs = Detail.query.filter_by(age_group=age_group).order_by(Detail.bestseller_rank.asc()).limit(10).all()
+        books = [Book.query.filter_by(id=obj.book_id).first() for obj in detail_objs]
+        return [book.to_json() for book in books]
+
     def to_json(self):
         return {
+            "guid": self.guid,
             "name": self.name,
             "image": self.image,
             "rating": self.rating,
