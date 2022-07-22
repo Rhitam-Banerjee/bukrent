@@ -104,6 +104,9 @@
             .book-name {
                 color: #636363;
                 font-size: 1rem;
+                min-height: 48px;
+                max-height: 48px;
+                overflow-y: hidden;
             }
 
             .book-author-name {
@@ -203,6 +206,9 @@
                 .book-name {
                     color: #636363;
                     font-size: 1rem;
+                    min-height: 48px;
+                    max-height: 48px;
+                    overflow-y: hidden;
                 }
 
                 .book-author-name {
@@ -315,6 +321,9 @@
                 .book-name {
                     color: #636363;
                     font-size: 1rem;
+                    min-height: 48px;
+                    max-height: 48px;
+                    overflow-y: hidden;
                 }
 
                 .book-author-name {
@@ -546,7 +555,7 @@
                                             </div>
                                         </div>
                                         <div class="col-12 col-md-12 col-lg-12 mt-2">
-                                            <p class="book-name">${text_short(book.name)}</p>
+                                            <p class="book-name">${book.name}</p>
                                         </div>
                                         <div class="col-6 col-md-6 col-lg-6">
                                             <p class="book-author-name">${book.authors[0]}</p>
