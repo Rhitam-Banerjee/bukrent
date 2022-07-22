@@ -638,6 +638,8 @@ def seed():
             age=user[3],
             child_name=user[4],
             mobile_number=user[5],
+            email="",
+            password=user[2],
             newsletter=True if user[6] == "True" else False,
             is_subscribed=False if user[7] == "False" else True,
             security_deposit=False if user[8] == "False" else True,
@@ -672,8 +674,8 @@ def seed():
         mobile_number="9871690468",
         is_subscribed=True,
         security_deposit=True,
-        plan_id="plan_Jtpm0zD8KO3kyg",
-        subscription_id="sub_Jtw91SWDhVxk0L"
+        plan_id="plan_JqT7G4WA26Ludy",
+        subscription_id="sub_JuiD9BjYhUKsEz"
     )
 
     db.session.add(user)
