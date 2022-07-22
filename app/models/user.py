@@ -50,6 +50,8 @@ class User(db.Model):
     age = db.Column(db.String)
     child_name = db.Column(db.String)
     mobile_number = db.Column(db.String, unique=True)
+    email = db.Column(db.String)
+    password = db.Column(db.String)
     newsletter = db.Column(db.Boolean, default=False)
     is_subscribed = db.Column(db.Boolean, default=False)
     security_deposit = db.Column(db.Boolean, default=False)
@@ -76,13 +78,15 @@ class User(db.Model):
             return 0
 
     @staticmethod
-    def create(name, age, child_name, mobile_number):
+    def create(name, age, child_name, mobile_number, email, password):
         user_dict = dict(
             guid = str(uuid.uuid4()),
             name = name,
             age = age,
             child_name = child_name,
-            mobile_number = mobile_number
+            mobile_number = mobile_number,
+            email = email,
+            password = password
         )
         user_obj = User(**user_dict)
         db.session.add(user_obj)

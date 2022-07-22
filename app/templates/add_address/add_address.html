@@ -145,7 +145,7 @@
                                 <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{book.guid}}"><h2 class="big-text"><b>{{book.name}}</b></h2></a>
                             </div>
                             <div class="col-12 col-md-12 col-lg-12">
-                                <a class="no-decoration" href="{{url_for('views.book_subcategory')}}?guid={{book.authors[0].guid}}&type=author"><b>{{book.authors[0].name}}</b></a>
+                                <a class="no-decoration"><b>{{book.authors[0].name}}</b></a>
                             </div>
                             <div class="col-12 col-md-12 col-lg-12">
                                 <p class="text-yellow"><i class="fa-solid fa-star"></i> {{book.rating}}</p>

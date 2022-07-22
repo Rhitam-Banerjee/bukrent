@@ -108,6 +108,19 @@ class Book(db.Model):
         return final_books
 
     @staticmethod
+    def get_all_most_borrowed(age_group):
+        from app.models.category import Category
+
+        if not age_group:
+            books = Category.query.filter_by(name="Most Borrowed").first().books[10:]
+            final_books = []
+            for book in books:
+                final_books.append(book.to_json())
+        else:
+            return []
+        return final_books
+
+    @staticmethod
     def get_author_books(author):
         from app.models.author import Author
 
@@ -179,14 +192,41 @@ class Book(db.Model):
         return final_books
 
     @staticmethod
+    def get_all_amazon_bestsellers(age_group):
+        from app.models.category import Category
+
+        books = Category.query.filter_by(name="Amazon Bestseller").first().books[10:]
+        final_books = []
+
+        if age_group == 1:
+            books = Category.query.filter_by(name="Zero - Two").first().books[10:]
+        elif age_group == 2:
+            books = Category.query.filter_by(name="Three to Five").first().books[10:]
+        elif age_group == 3:
+            books = Category.query.filter_by(name="Six to Eight").first().books[10:]
+        elif age_group == 4:
+            books = Category.query.filter_by(name="Nine to Twelve").first().books[10:]
+        elif age_group == 5 or age_group == 6:
+            books = Category.query.filter_by(name="Twelve to Sixteen").first().books[10:]
+
+        for book in books:
+            final_books.append(book.to_json())
+
+        return final_books
+
+    @staticmethod
     def get_more_books(detail):
         objs = Detail.query.filter_by(age_group=detail.age_group).order_by(Detail.bestseller_rank.asc()).limit(10).all()
         return [Book.query.filter_by(id=obj.book_id).first() for obj in objs]
 
     @staticmethod
     def get_similar_books(age_group):
-        detail_objs = Detail.query.filter_by(age_group=age_group).order_by(Detail.bestseller_rank.asc()).limit(10).all()
-        books = [Book.query.filter_by(id=obj.book_id).first() for obj in detail_objs]
+        if age_group != "None":
+            detail_objs = Detail.query.filter_by(age_group=age_group).order_by(Detail.bestseller_rank.asc()).limit(10).all()
+            books = [Book.query.filter_by(id=obj.book_id).first() for obj in detail_objs]
+        else:
+            detail_objs = Detail.query.order_by(Detail.bestseller_rank.asc()).limit(10).all()
+            books = [Book.query.filter_by(id=obj.book_id).first() for obj in detail_objs]
         return [book.to_json() for book in books]
 
     def to_json(self):

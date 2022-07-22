@@ -19,10 +19,11 @@ api = Blueprint('api', __name__, url_prefix="/api")
 @api.route("/login", methods=["POST"])
 def login():
     mobile_number = request.json.get("mobile_number")
+    password = request.json.get("password")
 
-    if not mobile_number:
+    if not all((mobile_number, password)):
         return jsonify({
-            "message": "No Mobile Number Added!",
+            "message": "Both fields are mandatory!",
             "status": "error"
         }), 400
 
@@ -33,24 +34,37 @@ def login():
         }), 400
 
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user:
+
+    if user:
+        if user.password == password:
+            session["current_user"] = user.guid
+
+            if user.is_subscribed:
+                return jsonify({
+                    "redirect": url_for('views.home'),
+                    "status": "success"
+                }), 201
+            else:
+                if session.get("plan"):
+                    return jsonify({
+                        "redirect": url_for('views.confirm_plan'),
+                        "status": "success"
+                    }), 201
+                else:
+                    return jsonify({
+                        "redirect": url_for('views.become_a_subscriber'),
+                        "status": "success"
+                    }), 201            
+        else:
+            return jsonify({
+                "message": "Incorrect Password!",
+                "status": "error"
+            }), 400
+    else:
         return jsonify({
             "message": "No User with that mobile number exists!",
             "status": "error"
         }), 400
-
-    session["mobile_number"] = mobile_number
-
-    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-    client = Client(account_sid, auth_token)
-
-    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
-
-    return jsonify({
-        "message": "OTP Sent!",
-        "status": "success"
-    }), 201
 
 @api.route("/signup", methods=["POST"])
 def signup():
@@ -58,10 +72,12 @@ def signup():
     child_name = request.json.get("child_name")
     mobile_number = request.json.get("mobile_number")
     age = request.json.get("age")
+    email = request.json.get("email")
+    password = request.json.get("password")
 
-    if not all((name, name, mobile_number)):
+    if not all((name, mobile_number, email, password)):
         return jsonify({
-            "message": "Name and Mobile Number are mandatory fields!",
+            "message": "Name, Mobile Number, Email and Password are mandatory fields!",
             "status": "error"
         }), 400
     
@@ -79,6 +95,8 @@ def signup():
         session["child_name"] = child_name
         session["mobile_number"] = mobile_number
         session["age"] = age
+        session["email"] = email
+        session["password"] = password
 
     account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
@@ -115,45 +133,32 @@ def confirm_mobile():
     verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{session.get('mobile_number')}", code=verification_code)
 
     if verification_check.status == "approved":
+        User.create(session.get("name"), session.get("age"), session.get("child_name"), session.get("mobile_number"), session.get("email"), session.get("password"))
         user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
-        if not user:
-            User.create(session.get("name"), session.get("age"), session.get("child_name"), session.get("mobile_number"))
-            user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
 
-            session["name"] = None
-            session["child_name"] = None
-            session["age"] = None
-            session["mobile_number"] = None
+        session["name"] = None
+        session["child_name"] = None
+        session["age"] = None
+        session["mobile_number"] = None
+        session["email"] = None
+        session["password"] = None
 
-            session["current_user"] = user.guid
-        else:
-            session["mobile_number"] = None
-            session["current_user"] = user.guid
+        session["current_user"] = user.guid
         
         user.add_books_to_cart_and_wishlist(session.get("cart") or [], session.get("wishlist") or [])
         session["cart"] = None
         session["wishlist"] = None
 
-        if user.is_subscribed:
+        if session.get("plan"):
             return jsonify({
-                "redirect": url_for('views.home'),
+                "redirect": url_for('views.confirm_plan'),
                 "status": "success"
             }), 201
         else:
-            if session.get("plan"):
-                return jsonify({
-                    "redirect": url_for('views.confirm_plan'),
-                    "status": "success"
-                }), 201
-            else:
-                return jsonify({
-                    "redirect": url_for('views.become_a_subscriber'),
-                    "status": "success"
-                }), 201
-        return jsonify({
-            "message": "Success!",
-            "status": "success"
-        }), 201
+            return jsonify({
+                "redirect": url_for('views.become_a_subscriber'),
+                "status": "success"
+            }), 201
         
     else:
         return jsonify({
@@ -507,6 +512,20 @@ def get_amazon_bestsellers():
         "status": "success"
     }), 200
 
+@api.route("/get-all-amazon-bestsellers", methods=["POST"])
+def get_all_amazon_bestsellers():
+    try:
+        age_group = request.json.get("age_group")
+        return jsonify({
+            "data": Book.get_all_amazon_bestsellers(age_group),
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "data": [],
+            "status": "success"
+        }), 200
+
 @api.route("/get-most-borrowed", methods=["POST"])
 def get_most_borrowed():
     age_group = request.json.get("age_group")
@@ -514,6 +533,20 @@ def get_most_borrowed():
         "data": Book.get_most_borrowed(age_group),
         "status": "success"
     }), 200
+
+@api.route("/get-all-most-borrowed", methods=["POST"])
+def get_all_most_borrowed():
+    try:
+        age_group = request.json.get("age_group")
+        return jsonify({
+            "data": Book.get_all_most_borrowed(age_group),
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "data": [],
+            "status": "success"
+        }), 200
 
 @api.route("/get-author-books", methods=["POST"])
 def get_author_books():

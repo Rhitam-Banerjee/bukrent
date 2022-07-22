@@ -1,6 +1,22 @@
 <script>
     let age_group = null;
 
+    let bestseller_title = "Amazon Bestsellers";
+    let borrowed_title = "Most Borrowed Books";
+    let authors_title = "Amazon Bestselling Authors";
+    let publisher_title = "Amazon Bestselling Publications";
+    let series_title = "Amazon Bestselling Series";
+    let genres_title = "Genres";
+
+    let age_groups = {
+        1: "0-2",
+        2: "3-5",
+        3: "6-8",
+        4: "9-11",
+        5: "12-14",
+        6: "15+"
+    }
+
     $(document).ready(function() {
         $("#age-carousel").owlCarousel({
             responsiveClass:true,
@@ -47,13 +63,62 @@
     }
 
     function change_age_group(new_age_group) {
+        if (age_group) {
+            if (age_group == 1) {
+                $(".age-1").css("background-color", "#FF7C72")
+            }
+            if (age_group == 2) {
+                $(".age-2").css("background-color", "#FFA142")
+            }
+            if (age_group == 3) {
+                $(".age-3").css("background-color", "#FFD631")
+            }
+            if (age_group == 4) {
+                $(".age-4").css("background-color", "#8ACE38")
+            }
+            if (age_group == 5) {
+                $(".age-5").css("background-color", "#74C7FF")
+            }
+            if (age_group == 6) {
+                $(".age-6").css("background-color", "#CB85C2")
+            }
+        }
+
         age_group = new_age_group;
+
+        if (age_group == 1) {
+            $(".age-1").css("background-color", "#D7665A")
+        }
+        if (age_group == 2) {
+            $(".age-2").css("background-color", "#DD832A")
+        }
+        if (age_group == 3) {
+            $(".age-3").css("background-color", "#C8A102")
+        }
+        if (age_group == 4) {
+            $(".age-4").css("background-color", "#75A040")
+        }
+        if (age_group == 5) {
+            $(".age-5").css("background-color", "#499FD2")
+        }
+        if (age_group == 6) {
+            $(".age-6").css("background-color", "#7A4172")
+        }
 
         get_amazon_bestsellers(age_group);
         get_most_borrowed(age_group);
+
+        $(".bestseller-title").html(`${bestseller_title} (${age_groups[age_group]})`)
+        $(".borrowed-title").html(`${borrowed_title} (${age_groups[age_group]})`)
+        $(".authors-title").html(`${authors_title} (${age_groups[age_group]})`)
+        $(".publisher-title").html(`${publisher_title} (${age_groups[age_group]})`)
+        $(".series-title").html(`${series_title} (${age_groups[age_group]})`)
+        $(".genres-title").html(`${genres_title} (${age_groups[age_group]})`)
+
+        $("#most-borrowed-section").css("display", "none");
     }
 
-    function get_publisher_books(publisher) {
+    function get_publisher_books(publisher, navigate) {
         let data = {
             publisher: publisher
         };
@@ -98,6 +163,10 @@
                         }
                     }
                 });
+
+                if (navigate) {
+                    window.location.href = "#publisher_books";
+                }
             },
             error: function (result) {
                 Swal.fire(
@@ -114,7 +183,7 @@
         })
     }
 
-    function get_author_books(author) {
+    function get_author_books(author, navigate) {
         let data = {
             author: author
         };
@@ -159,6 +228,10 @@
                         }
                     }
                 });
+
+                if (navigate) {
+                    window.location.href = "#author_books"
+                }
             },
             error: function (result) {
                 Swal.fire(
@@ -175,7 +248,7 @@
         })
     }
 
-    function get_series_books(series) {
+    function get_series_books(series, navigate) {
         let data = {
             series: series
         };
@@ -220,6 +293,10 @@
                         }
                     }
                 });
+
+                if (navigate) {
+                    window.location.href = "#series_books"
+                }
             },
             error: function (result) {
                 Swal.fire(
@@ -258,7 +335,7 @@
                 for (let i = 0; i < result.data.length; i++) {
                     let item_number = i % 4;
                     let html = `
-                        <a onclick="get_series_books('${result.data[i]}')">
+                        <a onclick="get_series_books('${result.data[i]}', true)">
                             <div class="amazon-series-box box-color-${item_number} text-center">
                                 <div class="row">
                                     <div class="col-12 col-md-12 col-lg-12 py-5">
@@ -292,7 +369,7 @@
                     }
                 });
 
-                get_series_books(result.data[0])
+                get_series_books(result.data[0], false)
             },
             error: function (result) {
                 Swal.fire(
@@ -309,7 +386,7 @@
         })
     }
 
-    function get_genres_books(genres) {
+    function get_genres_books(genres, navigate) {
         let data = {
             genres: genres
         };
@@ -354,6 +431,10 @@
                         }
                     }
                 });
+
+                if (navigate) {
+                    window.location.href = "#genre_books"
+                }
             },
             error: function (result) {
                 Swal.fire(
@@ -392,7 +473,7 @@
                 for (let i = 0; i < result.data.length; i++) {
                     let item_number = i % 4;
                     let html = `
-                        <a onclick="get_genres_books('${result.data[i].name}')">
+                        <a onclick="get_genres_books('${result.data[i].name}', true)">
                             <div class="amazon-genres-box px-2 pt-2 px-md-3 pt-md-3 px-lg-4 pt-lg-4 box-color-${item_number}">
                                 <div class="row">
                                     <div class="col-6 col-md-6 col-lg-6 mb-5">
@@ -432,7 +513,7 @@
                     }
                 });
 
-                get_genres_books(result.data[0].name)
+                get_genres_books(result.data[0].name, false)
             },
             error: function (result) {
                 Swal.fire(
@@ -493,6 +574,48 @@
                         }
                     }
                 });
+
+                $.ajax({
+                    url: "{{url_for('api.get_all_most_borrowed')}}",
+                    type: "post",
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    success: function (result) {
+                        for (let i = 0; i < result.data.length; i++) {
+                            let html = create_book_html(result.data[i])
+
+                            $("#most-borrowed-carousel").append(html);
+                        }
+
+                        $("#most-borrowed-carousel").owlCarousel("destroy")
+
+                        $("#most-borrowed-carousel").owlCarousel({
+                            responsiveClass:true,
+                            margin:25,
+                            nav: true,
+                            dots: false,
+                            responsive:{
+                                0:{
+                                    items:3
+                                },
+                                480:{
+                                    items:5
+                                },
+                                1024:{
+                                    items:6
+                                }
+                            }
+                        });
+                    },
+                    error: function (result) {
+                        Swal.fire(
+                            'Uh Oh!',
+                            result.responseJSON.message,
+                            'error'
+                        )
+                    }
+                })
             },
             error: function (result) {
                 Swal.fire(
@@ -556,6 +679,51 @@
 
                 generate_amazon_bestselling_authors(result.data);
                 generate_amazon_bestselling_publishers(result.data);
+
+                $.ajax({
+                    url: "{{url_for('api.get_all_amazon_bestsellers')}}",
+                    type: "post",
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    success: function (result) {
+                        for (let i = 0; i < result.data.length; i++) {
+                            let html = create_book_html(result.data[i])
+
+                            $("#amazon-bestseller-carousel").append(html);
+                        }
+
+                        $("#amazon-bestseller-carousel").owlCarousel("destroy")
+
+                        $("#amazon-bestseller-carousel").owlCarousel({
+                            responsiveClass:true,
+                            margin:25,
+                            nav: true,
+                            dots: false,
+                            responsive:{
+                                0:{
+                                    items:3
+                                },
+                                480:{
+                                    items:5
+                                },
+                                1024:{
+                                    items:6
+                                }
+                            }
+                        });
+
+                        generate_amazon_bestselling_authors(result.data);
+                        generate_amazon_bestselling_publishers(result.data);
+                    },
+                    error: function (result) {
+                        Swal.fire(
+                            'Uh Oh!',
+                            result.responseJSON.message,
+                            'error'
+                        )
+                    }
+                })
             },
             error: function (result) {
                 Swal.fire(
@@ -589,7 +757,7 @@
         for (let i = 0; i < publishers.length; i++) {
             let item_number = i % 4;
             let html = `
-                        <a onclick="get_publisher_books('${publishers[i]}')">
+                        <a onclick="get_publisher_books('${publishers[i]}', true)">
                             <div class="amazon-publishers-box box-color-${item_number} text-center">
                                 <div class="row">
                                     <div class="col-12 col-md-12 col-lg-12 py-5">
@@ -623,7 +791,7 @@
             }
         });
 
-        get_publisher_books(publishers[0])
+        get_publisher_books(publishers[0], false)
     }
 
     function generate_amazon_bestselling_authors(data) {
@@ -643,7 +811,7 @@
         for (let i = 0; i < authors.length; i++) {
             let item_number = i % 4;
             let html = `
-                        <a onclick="get_author_books('${authors[i]}')">
+                        <a onclick="get_author_books('${authors[i]}', true)">
                             <div class="amazon-authors-box px-2 pt-2 px-md-3 pt-md-3 px-lg-4 pt-lg-4 box-color-${item_number}">
                                 <div class="row">
                                     <div class="col-12 col-md-12 col-lg-12">
@@ -680,6 +848,6 @@
             }
         });
 
-        get_author_books(authors[0])
+        get_author_books(authors[0], false)
     }
 </script>
