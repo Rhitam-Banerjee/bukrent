@@ -18,7 +18,7 @@
                     $("#loader").show();
                 },
                 success: function (result) {
-                    window.location.href = "{{url_for('views.confirm_mobile')}}"
+                    window.location.href = result.redirect
                 },
                 error: function (result) {
                     Swal.fire(
