@@ -9,12 +9,12 @@
     let genres_title = "Genres";
 
     let age_groups = {
-        1: "0-2",
-        2: "3-5",
-        3: "6-8",
-        4: "9-11",
-        5: "12-14",
-        6: "15+"
+        1: "0-2 Years",
+        2: "3-5 Years",
+        3: "6-8 Years",
+        4: "9-11 Years",
+        5: "12-14 Years",
+        6: "15+ Years"
     }
 
     $(document).ready(function() {
@@ -106,16 +106,12 @@
         }
 
         get_amazon_bestsellers(age_group);
-        get_most_borrowed(age_group);
 
         $(".bestseller-title").html(`${bestseller_title} (${age_groups[age_group]})`)
-        $(".borrowed-title").html(`${borrowed_title} (${age_groups[age_group]})`)
         $(".authors-title").html(`${authors_title} (${age_groups[age_group]})`)
         $(".publisher-title").html(`${publisher_title} (${age_groups[age_group]})`)
         $(".series-title").html(`${series_title} (${age_groups[age_group]})`)
         $(".genres-title").html(`${genres_title} (${age_groups[age_group]})`)
-
-        $("#most-borrowed-section").css("display", "none");
     }
 
     function get_publisher_books(publisher, navigate) {
@@ -814,8 +810,7 @@
                         <a onclick="get_author_books('${authors[i]}', true)">
                             <div class="amazon-authors-box px-2 pt-2 px-md-3 pt-md-3 px-lg-4 pt-lg-4 box-color-${item_number}">
                                 <div class="row">
-                                    <div class="col-12 col-md-12 col-lg-12">
-                                        <img src="/static/images/demo_author.png" class="img-fluid author-img" />
+                                    <div class="col-12 col-md-12 col-lg-12" style="min-height:100px">
                                     </div>
                                     <div class="text-center author-name-container text-container-color-${item_number}">
                                         ${text_short_author(authors[i])}

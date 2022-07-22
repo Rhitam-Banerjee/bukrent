@@ -2,7 +2,8 @@
     $(function(){
         $("#login_button").click(function(){
             let data = {
-                mobile_number: $("#mobile_number").val()
+                mobile_number: $("#mobile_number").val(),
+                password: $("#password").val()
             }
 
             $.ajax({
