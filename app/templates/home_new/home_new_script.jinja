@@ -112,6 +112,8 @@
         $(".publisher-title").html(`${publisher_title} (${age_groups[age_group]})`)
         $(".series-title").html(`${series_title} (${age_groups[age_group]})`)
         $(".genres-title").html(`${genres_title} (${age_groups[age_group]})`)
+
+        window.location.href = "#amazon_bestsellers";
     }
 
     function get_publisher_books(publisher, navigate) {
