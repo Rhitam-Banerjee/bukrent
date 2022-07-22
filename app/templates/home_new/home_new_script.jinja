@@ -113,7 +113,7 @@
         $(".series-title").html(`${series_title} (${age_groups[age_group]})`)
         $(".genres-title").html(`${genres_title} (${age_groups[age_group]})`)
 
-        window.location.href = "#amazon_bestsellers";
+        $(window).scrollTop(300);
     }
 
     function get_publisher_books(publisher, navigate) {
