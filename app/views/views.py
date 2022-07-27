@@ -16,9 +16,13 @@ views = Blueprint('views', __name__, url_prefix="/")
 @views.route("/")
 def home():
     current_user = session.get("current_user")
+    user = None
+    if current_user:
+        user = User.query.filter_by(guid=guid).first()
     return render_template(
         "/home_new/home_new.html",
-        current_user=current_user
+        current_user=current_user,
+        user=user
     )
 
 @views.route("/book-details")
@@ -180,4 +184,52 @@ def search_result():
         all_publishers = all_publishers,
         query = search,
         user = user
+    )
+
+@views.route("/terms-and-conditions")
+def terms_and_conditions():
+    current_user = session.get("current_user")
+    user = None
+    if current_user:
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+    return render_template(
+        "/terms_and_conditions/terms_and_conditions.html",
+        current_user=current_user,
+        user=user
+    )
+
+@views.route("/privacy-policy")
+def privacy_policy():
+    current_user = session.get("current_user")
+    user = None
+    if current_user:
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+    return render_template(
+        "/privacy_policy/privacy_policy.html",
+        current_user=current_user,
+        user=user
+    )
+
+@views.route("/contact-us")
+def contact_us():
+    current_user = session.get("current_user")
+    user = None
+    if current_user:
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+    return render_template(
+        "/contact_us/contact_us.html",
+        current_user=current_user,
+        user=user
+    )
+
+@views.route("/about-us")
+def about_us():
+    current_user = session.get("current_user")
+    user = None
+    if current_user:
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+    return render_template(
+        "/about_us/about_us.html",
+        current_user=current_user,
+        user=user
     )

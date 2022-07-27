@@ -29,7 +29,24 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.min.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.min.css">
 
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400&family=Roboto:wght@100;400&display=swap" rel="stylesheet">
+
         <style>
+            body {
+                font-family: 'Roboto', sans-serif;
+            }
+
+            .no-desktop {
+                display: none;
+            }
+
+            .no-mobile {
+                display: block;
+            }
+
             .navbar {
                 background-color: #FFA142 !important;
                 padding: 0px !important;
@@ -64,13 +81,28 @@
             }
 
             main {
-                margin-top: 7vh;
+                margin-top: 74px;
                 min-height: 60vh
             }
 
             .no-decoration {
                 color: black;
                 text-decoration: none;
+            }
+
+            .title-box {
+                font-family: 'Comic Neue', cursive;
+                background-color: #ffedd6;
+                font-size: 2rem;
+                font-weight: 900;
+                min-height: 125px;
+                max-height: 125px;
+            }
+
+            .big-title-text {
+                color: #ffa142;
+                font-size: 4rem;
+                font-weight: 900;
             }
 
             .section-title-box {
@@ -96,8 +128,8 @@
             }
 
             .book-img {
-                min-height: 30vh;
-                max-height: 30vh;
+                min-height: 25vh;
+                max-height: 25vh;
                 position: relative;
             }
 
@@ -111,6 +143,8 @@
 
             .book-author-name {
                 color: #636363;
+                min-height: 36px;
+                max-height: 36px;
                 font-size: 0.75rem;
             }
 
@@ -197,6 +231,19 @@
                     padding: 0px !important;
                 }
 
+                .title-box {
+                    font-family: 'Comic Neue', cursive;
+                    background-color: #ffedd6;
+                    font-size: 1.5rem;
+                    font-weight: 900;
+                }
+
+                .big-title-text {
+                    color: #ffa142;
+                    font-size: 3rem;
+                    font-weight: 900;
+                }
+
                 .book-img {
                     min-height: 15vh;
                     max-height: 15vh;
@@ -213,6 +260,8 @@
 
                 .book-author-name {
                     color: #636363;
+                    min-height: 36px;
+                    max-height: 36px;
                     font-size: 0.75rem;
                 }
 
@@ -279,8 +328,16 @@
             }
 
             @media (max-width:480px) {
+                .no-mobile {
+                    display: none;
+                }
+
+                .no-desktop {
+                    display: block;
+                }
+
                 main {
-                    margin-top: 20vh;
+                    margin-top: 138px;
                 }
 
                 .nav-button {
@@ -328,6 +385,8 @@
 
                 .book-author-name {
                     color: #636363;
+                    min-height: 36px;
+                    max-height: 36px;
                     font-size: 0.75rem;
                 }
 
@@ -412,15 +471,15 @@
                         <div class="collapse navbar-collapse" id="nav_toggler">
                             <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
                                 {% if current_user %}
-                                    <li class="nav-item">
-                                        <a class="nav-link pe-4" onclick="logout_user()">
+                                    <li class="nav-item pt-0 pt-md-0 pt-lg-3">
+                                        <a class="nav-link pe-4 ps-3 ps-md-0 ps-lg-0" onclick="logout_user()">
                                             <button class="nav-button"><b>Logout</b></button>
                                         </a>
                                     </li>
                                 {% else %}
-                                    <li class="nav-item">
-                                        <a class="nav-link pe-4" href="{{url_for('views.login')}}">
-                                            <button class="nav-button"><b>Login</b></button>
+                                    <li class="nav-item pt-0 pt-md-0 pt-lg-3">
+                                        <a class="nav-link pe-4 ps-3 ps-md-0 ps-lg-0" href="{{url_for('views.login')}}">
+                                            <b><i class="fa fa-user" aria-hidden="true"></i> Log In / Sign Up</b>
                                         </a>
                                     </li>
                                 {% endif %}
@@ -440,7 +499,7 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link pe-4 pt-4" href="{{url_for('views.cart')}}">
+                                    <a class="nav-link pe-4 pt-4 ps-3 ps-md-0 ps-lg-0" href="{{url_for('views.cart')}}">
                                         <i class="fa fa-shopping-cart" aria-hidden="true" style="font-size: 1.5em;"></i>
                                     </a>
                                 </li>
@@ -459,20 +518,18 @@
                     </div>
                     <div class="col-12 col-sm-7 col-lg-7">
                         <div class="row">
-                            <!-- <div class="col-12 col-md-4 col-lg-4 mt-0 mt-md-5 mt-lg-5">
-                                <h5 class="mt-0 mt-md-5 mt-lg-5 pt-2">Get Connected</h5>
-                                <p class="mt-4">About Us</p>
-                                <p>Contact Us</p>
-                                <p>Products</p>
+                            <div class="col-12 col-md-4 col-lg-4 mt-0 mt-md-5 mt-lg-5">
+                                <b><h3 class="">Get Connected</h3></b>
+                                <a class="no-decoration" href="{{url_for('views.about_us')}}"><p class="mt-4">About Us</p></a>
+                                <a class="no-decoration" href="{{url_for('views.contact_us')}}"><p>Contact Us</p></a>
                             </div>
                             <div class="col-12 col-md-4 col-lg-4 mt-0 mt-md-5 mt-lg-5">
-                                <h5 class="mt-0 mt-md-5 mt-lg-5 pt-2">FAQs</h5>
-                                <p class="mt-4">Help</p>
-                                <p>Customer Support</p>
-                                <p>Raise Complaint</p>
-                            </div> -->
-                            <div class="col-12 col-md-4 col-lg-4">
-                                <h5 class="">Follow Us</h5>
+                                <b><h3 class="">FAQs</h3></b>
+                                <a class="no-decoration" href="{{url_for('views.privacy_policy')}}"><p class="mt-4">Privacy Policy</p></a>
+                                <a class="no-decoration" href="{{url_for('views.terms_and_conditions')}}"><p>Terms and Conditions</p></a>
+                            </div>
+                            <div class="col-12 col-md-4 col-lg-4 mt-0 mt-md-5 mt-lg-5">
+                                <b><h3 class="">Follow Us</h3></b>
                                 <p class="mt-4"><i class="fa-brands fa-instagram"></i> Instagram</p>
                                 <p><i class="fa-brands fa-facebook"></i> Facebook</p>
                                 <p><i class="fa-brands fa-twitter"></i> Twitter</p>
@@ -493,6 +550,7 @@
 
         <script>
             let current_guid = null;
+            let book_number = 1;
             $(function(){
                 $("#search").on("keypress", function(event) {
                     if (event.key === "Enter") {
@@ -537,8 +595,8 @@
 
             function create_book_html(book)  {
                 let html = `
-                            <a onclick="book_clicked('${book.guid}')">
-                                <div class="books-box" id="${book.guid}">
+                            <a onclick="book_clicked('${book.guid}-${book_number}')">
+                                <div class="books-box" id="${book.guid}-${book_number}">
                                     <div class="row">
                                         <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
                                             <img src="${book.image}" class="img-fluid book-img" />
@@ -549,7 +607,7 @@
                                                 <button class="show-details p-2" onclick="show_details('${book.guid}')">
                                                     <i class="fa fa-info-circle" aria-hidden="true"></i>
                                                 </button>
-                                            <button class="add-to-cart p-2" onclick="add_to_cart('${book.guid}')">
+                                                <button class="add-to-cart p-2" onclick="add_to_cart('${book.guid}')">
                                                     <i class="fa fa-shopping-cart" aria-hidden="true"></i> Add to Cart
                                                 </button>
                                             </div>
@@ -568,6 +626,7 @@
                             </a>
                             `
 
+                book_number++;
                 return html
             }
 
@@ -575,7 +634,7 @@
                 if (current_guid) {
                     $(`#${current_guid}`).find("div.overlay").addClass("hidden-overlay")
                 }
-                current_guid = guid
+                current_guid = `${guid}`
                 let book_box = $(`#${guid}`).find("div.overlay").toggleClass("hidden-overlay")
             }
 

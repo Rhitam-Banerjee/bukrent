@@ -6,7 +6,7 @@
 
 <!-- Top Text Section -->
 <div class="no-mobile row">
-    <div class="col-12 col-md-12 col-lg-12 title-box text-center p-5">
+    <div class="col-12 col-md-12 col-lg-12 title-box text-center p-3">
         <span class="big-title-text">50%</span> Books purchased are <span class="big-title-text">never</span> completed
     </div>
 </div>
@@ -30,7 +30,7 @@
                         Years
                     </div>
                     <div class="col-12 col-md-12 col-lg-12 text-center">
-                        <img src="/static/images/age1.png" width="75px" class="img-fluid" />
+                        <img src="/static/images/age1.png" class="img-fluid" />
                     </div>
                 </a>
             </div>
@@ -46,7 +46,7 @@
                         Years
                     </div>
                     <div class="col-12 col-md-12 col-lg-12 text-center">
-                        <img src="/static/images/age2.png" width="75px" class="img-fluid" />
+                        <img src="/static/images/age2.png" class="img-fluid" />
                     </div>
                 </a>
             </div>
@@ -62,7 +62,7 @@
                         Years
                     </div>
                     <div class="col-12 col-md-12 col-lg-12 text-center">
-                        <img src="/static/images/age3.png" width="75px" class="img-fluid" />
+                        <img src="/static/images/age3.png" class="img-fluid" />
                     </div>
                 </a>
             </div>
@@ -78,7 +78,7 @@
                         Years
                     </div>
                     <div class="col-12 col-md-12 col-lg-12 text-center">
-                        <img src="/static/images/age4.png" width="75px" class="img-fluid" />
+                        <img src="/static/images/age4.png" class="img-fluid" />
                     </div>
                 </a>
             </div>
@@ -94,7 +94,7 @@
                         Years
                     </div>
                     <div class="col-12 col-md-12 col-lg-12 text-center">
-                        <img src="/static/images/age5.png" width="75px" class="img-fluid" />
+                        <img src="/static/images/age5.png" class="img-fluid" />
                     </div>
                 </a>
             </div>
@@ -110,7 +110,7 @@
                         Years
                     </div>
                     <div class="col-12 col-md-12 col-lg-12 text-center">
-                        <img src="/static/images/age6.png" width="75px" class="img-fluid" />
+                        <img src="/static/images/age6.png" class="img-fluid" />
                     </div>
                 </a>
             </div>
@@ -172,7 +172,7 @@
 
 <!-- Top Text Section -->
 <div class="no-mobile row">
-    <div class="col-12 col-md-12 col-lg-12 title-box2 text-center p-5">
+    <div class="col-12 col-md-12 col-lg-12 title-box2 text-center p-3">
         <span class="big-title-text2">Reading</span> to mind is what <span class="big-title-text2">exercise</span> is to Body
     </div>
 </div>
@@ -216,7 +216,7 @@
 
 <!-- Top Text Section -->
 <div class="no-mobile row">
-    <div class="col-12 col-md-12 col-lg-12 title-box3 text-center p-5">
+    <div class="col-12 col-md-12 col-lg-12 title-box3 text-center p-3">
         <span class="big-title-text3">80%</span> of Readers develop the habit at <span class="big-title-text3">age 10</span>
     </div>
 </div>
@@ -247,7 +247,7 @@
 
 <!-- Top Text Section -->
 <div class="no-mobile row">
-    <div class="col-12 col-md-12 col-lg-12 title-box4 text-center p-5">
+    <div class="col-12 col-md-12 col-lg-12 title-box4 text-center p-3">
         <span class="big-title-text4">80%</span> of Readers develop the habit at <span class="big-title-text4">age 10</span>
     </div>
 </div>
@@ -300,6 +300,35 @@
     </div>
 </div>
 
+{% if user %}
+    {% if not user.is_subscribed %}
+    <!-- Become A Subscriber -->
+    <div class="container">
+        <div class="row my-3">
+            <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
+                <p class="section-title">Become a subscriber</p>
+            </div>
+        </div>
+        <div class="row my-3">
+            <div class="col-4 col-md-4 col-lg-4">
+                <a onclick="choose_plan(1)">
+                    <img src="/static/images/subscription1.png" class="img-fluid banner-img" />
+                </a>
+            </div>
+            <div class="col-4 col-md-4 col-lg-4">
+                <a onclick="choose_plan(2)">
+                    <img src="/static/images/subscription2.png" class="img-fluid banner-img" />
+                </a>
+            </div>
+            <div class="col-4 col-md-4 col-lg-4">
+                <a onclick="choose_plan(3)">
+                    <img src="/static/images/subscription3.png" class="img-fluid banner-img" />
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% else %}
 <!-- Become A Subscriber -->
 <div class="container">
     <div class="row my-3">
@@ -325,5 +354,6 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 {% endblock %}
