@@ -50,8 +50,10 @@
 
         get_amazon_bestsellers(age_group);
         get_most_borrowed(age_group);
-        generate_amazon_bestselling_series();
-        generate_amazon_bestselling_genres();
+        get_authors(age_group);
+        get_publishers(age_group);
+        get_series(age_group);
+        get_genres(age_group);
 
     })
 
@@ -106,6 +108,11 @@
         }
 
         get_amazon_bestsellers(age_group);
+        get_most_borrowed(age_group);
+        get_authors(age_group);
+        get_publishers(age_group);
+        get_series(age_group);
+        get_genres(age_group);
 
         $(".bestseller-title").html(`${bestseller_title} (${age_groups[age_group]})`)
         $(".authors-title").html(`${authors_title} (${age_groups[age_group]})`)
@@ -127,11 +134,6 @@
             data: JSON.stringify(data),
             dataType: 'json',
             contentType: 'application/json',
-            beforeSend: function(){
-                $('.main-container').addClass('blur');
-                $(':button').prop('disabled', true);
-                $("#loader").show();
-            },
             success: function (result) {
                 $("#book-by-publisher").html(`${publisher} Books`)
                 $("#publisher-books-carousel").empty();
@@ -172,11 +174,6 @@
                     result.responseJSON.message,
                     'error'
                 )
-            },
-            complete:function(data){
-                $('.main-container').removeClass('blur');
-                $(':button').prop('disabled', false);
-                $("#loader").hide();
             }
         })
     }
@@ -192,11 +189,6 @@
             data: JSON.stringify(data),
             dataType: 'json',
             contentType: 'application/json',
-            beforeSend: function(){
-                $('.main-container').addClass('blur');
-                $(':button').prop('disabled', true);
-                $("#loader").show();
-            },
             success: function (result) {
                 $("#book-by-author").html(`${author} Books`)
                 $("#author-books-carousel").empty();
@@ -237,11 +229,6 @@
                     result.responseJSON.message,
                     'error'
                 )
-            },
-            complete:function(data){
-                $('.main-container').removeClass('blur');
-                $(':button').prop('disabled', false);
-                $("#loader").hide();
             }
         })
     }
@@ -257,11 +244,6 @@
             data: JSON.stringify(data),
             dataType: 'json',
             contentType: 'application/json',
-            beforeSend: function(){
-                $('.main-container').addClass('blur');
-                $(':button').prop('disabled', true);
-                $("#loader").show();
-            },
             success: function (result) {
                 $("#book-by-series").html(`${series} Books`)
                 $("#series-books-carousel").empty();
@@ -302,16 +284,11 @@
                     result.responseJSON.message,
                     'error'
                 )
-            },
-            complete:function(data){
-                $('.main-container').removeClass('blur');
-                $(':button').prop('disabled', false);
-                $("#loader").hide();
             }
         })
     }
 
-    function generate_amazon_bestselling_series() {
+    function get_series() {
         let data = {
             age_group: age_group
         };
@@ -322,22 +299,18 @@
             data: JSON.stringify(data),
             dataType: 'json',
             contentType: 'application/json',
-            beforeSend: function(){
-                $('.main-container').addClass('blur');
-                $(':button').prop('disabled', true);
-                $("#loader").show();
-            },
             success: function (result) {
                 $("#amazon-series-carousel").empty();
 
                 for (let i = 0; i < result.data.length; i++) {
                     let item_number = i % 4;
+                    let series_name = result.data[i].replace(" ", "+");
                     let html = `
                         <a onclick="get_series_books('${result.data[i]}', true)">
                             <div class="amazon-series-box box-color-${item_number} text-center">
                                 <div class="row">
-                                    <div class="col-12 col-md-12 col-lg-12 py-5">
-                                        ${result.data[i]}
+                                    <div class="col-12 col-md-12 col-lg-12">
+                                        <img src="https://bukrent-production.s3.ap-south-1.amazonaws.com/series_images/${series_name}.jpg" class="img-fluid author-img" />
                                     </div>
                                 </div>
                             </div>
@@ -368,6 +341,60 @@
                 });
 
                 get_series_books(result.data[0], false)
+
+                $.ajax({
+                    url: "{{url_for('api.get_all_series')}}",
+                    type: "post",
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    success: function (result) {
+                        for (let i = 0; i < result.data.length; i++) {
+                            let item_number = i % 4;
+                            let series_name = result.data[i].replace(" ", "+");
+                            let html = `
+                                <a onclick="get_series_books('${result.data[i]}', true)">
+                                    <div class="amazon-series-box box-color-${item_number} text-center">
+                                        <div class="row">
+                                            <div class="col-12 col-md-12 col-lg-12">
+                                                <img src="https://bukrent-production.s3.ap-south-1.amazonaws.com/series_images/${series_name}.jpg" class="img-fluid author-img" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            `
+
+                            $("#amazon-series-carousel").append(html);
+                        }
+
+                        $("#amazon-series-carousel").owlCarousel("destroy")
+
+                        $("#amazon-series-carousel").owlCarousel({
+                            responsiveClass:true,
+                            margin:25,
+                            nav: true,
+                            dots: false,
+                            responsive:{
+                                0:{
+                                    items:2
+                                },
+                                480:{
+                                    items:3
+                                },
+                                1024:{
+                                    items:4
+                                }
+                            }
+                        });
+                    },
+                    error: function (result) {
+                        Swal.fire(
+                            'Uh Oh!',
+                            result.responseJSON.message,
+                            'error'
+                        )
+                    }
+                })
             },
             error: function (result) {
                 Swal.fire(
@@ -375,11 +402,6 @@
                     result.responseJSON.message,
                     'error'
                 )
-            },
-            complete:function(data){
-                $('.main-container').removeClass('blur');
-                $(':button').prop('disabled', false);
-                $("#loader").hide();
             }
         })
     }
@@ -395,11 +417,6 @@
             data: JSON.stringify(data),
             dataType: 'json',
             contentType: 'application/json',
-            beforeSend: function(){
-                $('.main-container').addClass('blur');
-                $(':button').prop('disabled', true);
-                $("#loader").show();
-            },
             success: function (result) {
                 $("#book-by-genres").html(`${genres} Books`)
                 $("#genres-books-carousel").empty();
@@ -440,16 +457,11 @@
                     result.responseJSON.message,
                     'error'
                 )
-            },
-            complete:function(data){
-                $('.main-container').removeClass('blur');
-                $(':button').prop('disabled', false);
-                $("#loader").hide();
             }
         })
     }
 
-    function generate_amazon_bestselling_genres() {
+    function get_genres() {
         let data = {
             age_group: age_group
         };
@@ -460,11 +472,6 @@
             data: JSON.stringify(data),
             dataType: 'json',
             contentType: 'application/json',
-            beforeSend: function(){
-                $('.main-container').addClass('blur');
-                $(':button').prop('disabled', true);
-                $("#loader").show();
-            },
             success: function (result) {
                 $("#amazon-genres-carousel").empty();
 
@@ -512,6 +519,65 @@
                 });
 
                 get_genres_books(result.data[0].name, false)
+
+                $.ajax({
+                    url: "{{url_for('api.get_all_genres')}}",
+                    type: "post",
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    success: function (result) {
+                        for (let i = 0; i < result.data.length; i++) {
+                            let item_number = i % 4;
+                            let html = `
+                                <a onclick="get_genres_books('${result.data[i].name}', true)">
+                                    <div class="amazon-genres-box px-2 pt-2 px-md-3 pt-md-3 px-lg-4 pt-lg-4 box-color-${item_number}">
+                                        <div class="row">
+                                            <div class="col-6 col-md-6 col-lg-6 mb-5">
+                                                <img src="${result.data[i].image_1}" class="img-fluid genre-img-1 book-img-small" />
+                                            </div>
+                                            <div class="col-6 col-md-6 col-lg-6 mb-5">
+                                                <img src="${result.data[i].image_2}" class="img-fluid genre-img-2 book-img-small" />
+                                            </div>
+                                            <div class="text-center genre-name-container text-container-color-${item_number}">
+                                                ${result.data[i].name}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            `
+
+                            $("#amazon-genres-carousel").append(html);
+                        }
+
+                        $("#amazon-genres-carousel").owlCarousel("destroy")
+
+                        $("#amazon-genres-carousel").owlCarousel({
+                            responsiveClass:true,
+                            margin:25,
+                            nav: true,
+                            dots: false,
+                            responsive:{
+                                0:{
+                                    items:2
+                                },
+                                480:{
+                                    items:3
+                                },
+                                1024:{
+                                    items:4
+                                }
+                            }
+                        });
+                    },
+                    error: function (result) {
+                        Swal.fire(
+                            'Uh Oh!',
+                            result.responseJSON.message,
+                            'error'
+                        )
+                    }
+                })
             },
             error: function (result) {
                 Swal.fire(
@@ -519,11 +585,6 @@
                     result.responseJSON.message,
                     'error'
                 )
-            },
-            complete:function(data){
-                $('.main-container').removeClass('blur');
-                $(':button').prop('disabled', false);
-                $("#loader").hide();
             }
         })
     }
@@ -675,9 +736,6 @@
                     }
                 });
 
-                generate_amazon_bestselling_authors(result.data);
-                generate_amazon_bestselling_publishers(result.data);
-
                 $.ajax({
                     url: "{{url_for('api.get_all_amazon_bestsellers')}}",
                     type: "post",
@@ -710,9 +768,6 @@
                                 }
                             }
                         });
-
-                        generate_amazon_bestselling_authors(result.data);
-                        generate_amazon_bestselling_publishers(result.data);
                     },
                     error: function (result) {
                         Swal.fire(
@@ -738,113 +793,243 @@
         })
     }
 
-    function generate_amazon_bestselling_publishers(data) {
-        $("#amazon-publications-carousel").empty();
+    function get_publishers() {
+        let data = {
+            age_group: age_group
+        };
 
-        let publishers = []
-        for (let i = 0; i < data.length; i++) {
-            for (let j = 0; j < data[i].publishers.length; j++) {
-                if (publishers.includes(data[i].publishers[j])) {
-                    ;
-                } else {
-                    publishers.push(data[i].publishers[j])
-                }
-            }
-        }
+        $.ajax({
+            url: "{{url_for('api.get_publishers')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                $("#amazon-publications-carousel").empty();
 
-        for (let i = 0; i < publishers.length; i++) {
-            let item_number = i % 4;
-            let html = `
-                        <a onclick="get_publisher_books('${publishers[i]}', true)">
-                            <div class="amazon-publishers-box box-color-${item_number} text-center">
-                                <div class="row">
-                                    <div class="col-12 col-md-12 col-lg-12 py-5">
-                                        ${publishers[i]}
+                for (let i = 0; i < result.data.length; i++) {
+                    let item_number = i % 4;
+                    let html = `
+                                <a onclick="get_publisher_books('${result.data[i]}', true)">
+                                    <div class="amazon-publishers-box box-color-${item_number} text-center">
+                                        <div class="row">
+                                            <div class="col-12 col-md-12 col-lg-12 py-5">
+                                                ${result.data[i]}
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </a>
-                    `
+                                </a>
+                            `
 
-            $("#amazon-publications-carousel").append(html)
-        }
-
-        $("#amazon-publications-carousel").owlCarousel("destroy")
-
-        $("#amazon-publications-carousel").owlCarousel({
-            responsiveClass:true,
-            margin:25,
-            nav: true,
-            dots: false,
-            responsive:{
-                0:{
-                    items:2
-                },
-                480:{
-                    items:3
-                },
-                1024:{
-                    items:4
+                    $("#amazon-publications-carousel").append(html)
                 }
-            }
-        });
 
-        get_publisher_books(publishers[0], false)
+                $("#amazon-publications-carousel").owlCarousel("destroy")
+
+                $("#amazon-publications-carousel").owlCarousel({
+                    responsiveClass:true,
+                    margin:25,
+                    nav: true,
+                    dots: false,
+                    responsive:{
+                        0:{
+                            items:2
+                        },
+                        480:{
+                            items:3
+                        },
+                        1024:{
+                            items:4
+                        }
+                    }
+                });
+
+                get_publisher_books(result.data[0], false)
+
+                $.ajax({
+                    url: "{{url_for('api.get_all_publishers')}}",
+                    type: "post",
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    success: function (result) {
+                        for (let i = 0; i < result.data.length; i++) {
+                            let item_number = i % 4;
+                            let html = `
+                                        <a onclick="get_publisher_books('${result.data[i]}', true)">
+                                            <div class="amazon-publishers-box box-color-${item_number} text-center">
+                                                <div class="row">
+                                                    <div class="col-12 col-md-12 col-lg-12 py-5">
+                                                        ${result.data[i]}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    `
+
+                            $("#amazon-publications-carousel").append(html)
+                        }
+
+                        $("#amazon-publications-carousel").owlCarousel("destroy")
+
+                        $("#amazon-publications-carousel").owlCarousel({
+                            responsiveClass:true,
+                            margin:25,
+                            nav: true,
+                            dots: false,
+                            responsive:{
+                                0:{
+                                    items:2
+                                },
+                                480:{
+                                    items:3
+                                },
+                                1024:{
+                                    items:4
+                                }
+                            }
+                        });
+                    },
+                    error: function (result) {
+                        Swal.fire(
+                            'Uh Oh!',
+                            result.responseJSON.message,
+                            'error'
+                        )
+                    }
+                })
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
     }
 
-    function generate_amazon_bestselling_authors(data) {
-        $("#amazon-authors-carousel").empty();
+    function get_authors() {
+        let data = {
+            age_group: age_group
+        };
 
-        let authors = [];
-        for (let i = 0; i < data.length; i++) {
-            for (let j = 0; j < data[i].authors.length; j++) {
-                if (authors.includes(data[i].authors[j])) {
-                    ;
-                } else {
-                    authors.push(data[i].authors[j])
-                }
-            }
-        }
-        
-        for (let i = 0; i < authors.length; i++) {
-            let item_number = i % 4;
-            let html = `
-                        <a onclick="get_author_books('${authors[i]}', true)">
-                            <div class="amazon-authors-box px-2 pt-2 px-md-3 pt-md-3 px-lg-4 pt-lg-4 box-color-${item_number}">
-                                <div class="row">
-                                    <div class="col-12 col-md-12 col-lg-12" style="min-height:100px">
+        $.ajax({
+            url: "{{url_for('api.get_authors')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                $("#amazon-authors-carousel").empty();
+
+                for (let i = 0; i < result.data.length; i++) {
+                    let item_number = i % 4;
+                    let author_name = result.data[i].replace(" ", "+");
+                    let html = `
+                                <a onclick="get_author_books('${result.data[i]}', true)">
+                                    <div class="amazon-authors-box px-2 pt-2 px-md-3 pt-md-3 px-lg-4 pt-lg-4 box-color-${item_number}">
+                                        <div class="row">
+                                            <div class="col-12 col-md-12 col-lg-12">
+                                                <img src="https://bukrent-production.s3.ap-south-1.amazonaws.com/author_images/${author_name}.jpg" class="img-fluid author-img" />
+                                            </div>
+                                            <div class="text-center author-name-container text-container-color-${item_number}">
+                                                ${text_short_author(result.data[i])}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-center author-name-container text-container-color-${item_number}">
-                                        ${text_short_author(authors[i])}
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    `
-            
-            $("#amazon-authors-carousel").append(html);
-        }
-
-        $("#amazon-authors-carousel").owlCarousel("destroy")
-
-        $("#amazon-authors-carousel").owlCarousel({
-            responsiveClass:true,
-            margin:25,
-            nav: true,
-            dots: false,
-            responsive:{
-                0:{
-                    items:2
-                },
-                480:{
-                    items:3
-                },
-                1024:{
-                    items:4
+                                </a>
+                            `
+                    
+                    $("#amazon-authors-carousel").append(html);
                 }
-            }
-        });
 
-        get_author_books(authors[0], false)
+                $("#amazon-authors-carousel").owlCarousel("destroy")
+
+                $("#amazon-authors-carousel").owlCarousel({
+                    responsiveClass:true,
+                    margin:25,
+                    nav: true,
+                    dots: false,
+                    responsive:{
+                        0:{
+                            items:2
+                        },
+                        480:{
+                            items:3
+                        },
+                        1024:{
+                            items:4
+                        }
+                    }
+                });
+
+                get_author_books(result.data[0], false)
+
+                $.ajax({
+                    url: "{{url_for('api.get_all_authors')}}",
+                    type: "post",
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    success: function (result) {
+                        for (let i = 0; i < result.data.length; i++) {
+                            let item_number = i % 4;
+                            let author_name = result.data[i].replace(" ", "+");
+                            let html = `
+                                        <a onclick="get_author_books('${result.data[i]}', true)">
+                                            <div class="amazon-authors-box px-2 pt-2 px-md-3 pt-md-3 px-lg-4 pt-lg-4 box-color-${item_number}">
+                                                <div class="row">
+                                                    <div class="col-12 col-md-12 col-lg-12">
+                                                        <img src="https://bukrent-production.s3.ap-south-1.amazonaws.com/author_images/${author_name}.jpg" class="img-fluid author-img" />
+                                                    </div>
+                                                    <div class="text-center author-name-container text-container-color-${item_number}">
+                                                        ${text_short_author(result.data[i])}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    `
+                            
+                            $("#amazon-authors-carousel").append(html);
+                        }
+
+                        $("#amazon-authors-carousel").owlCarousel("destroy")
+
+                        $("#amazon-authors-carousel").owlCarousel({
+                            responsiveClass:true,
+                            margin:25,
+                            nav: true,
+                            dots: false,
+                            responsive:{
+                                0:{
+                                    items:2
+                                },
+                                480:{
+                                    items:3
+                                },
+                                1024:{
+                                    items:4
+                                }
+                            }
+                        });
+                    },
+                    error: function (result) {
+                        Swal.fire(
+                            'Uh Oh!',
+                            result.responseJSON.message,
+                            'error'
+                        )
+                    }
+                })
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
     }
 </script>

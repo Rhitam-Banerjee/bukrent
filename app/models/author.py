@@ -11,47 +11,79 @@ class Author(db.Model):
     guid = db.Column(db.String, nullable=False, unique=True)
     name = db.Column(db.String, nullable=False, unique=True)
     author_type = db.Column(db.String)
-    age1_books = db.Column(db.Integer)
-    age2_books = db.Column(db.Integer)
-    age3_books = db.Column(db.Integer)
-    age4_books = db.Column(db.Integer)
-    age5_books = db.Column(db.Integer)
+    age1 = db.Column(db.Boolean, default=False)
+    age2 = db.Column(db.Boolean, default=False)
+    age3 = db.Column(db.Boolean, default=False)
+    age4 = db.Column(db.Boolean, default=False)
+    age5 = db.Column(db.Boolean, default=False)
+    age6 = db.Column(db.Boolean, default=False)
     total_books = db.Column(db.Integer)
-    books = db.relationship('Book', secondary=BookAuthor.__table__)
     display = db.Column(db.Boolean, default=False)
+    books = db.relationship('Book', secondary=BookAuthor.__table__)
 
     @staticmethod
-    def create(name, author_type, age1_books, age2_books, age3_books, age4_books, age5_books, total_books):
+    def create(name, author_type, age1, age2, age3, age4, age5, age6, total_books, display):
         author_dict = dict(
             guid = str(uuid.uuid4()),
             name = name,
             author_type = author_type,
-            age1_books = age1_books,
-            age2_books = age2_books,
-            age3_books = age3_books,
-            age4_books = age4_books,
-            age5_books = age5_books,
-            total_books = total_books
+            age1 = age1,
+            age2 = age2,
+            age3 = age3,
+            age4 = age4,
+            age5 = age5,
+            age6 = age6,
+            total_books = total_books,
+            display = display
         )
         author_obj = Author(**author_dict)
         db.session.add(author_obj)
         db.session.commit()
 
     @staticmethod
-    def get_top_authors():
-        return Author.query.order_by(Author.total_books.desc()).limit(10).all()
+    def get_authors(age_group):
+        if age_group:
+            if age_group == 1:
+                authors = Author.query.filter_by(age1=True).all()[:10]
+            elif age_group == 2:
+                authors = Author.query.filter_by(age2=True).all()[:10]
+            elif age_group == 3:
+                authors = Author.query.filter_by(age3=True).all()[:10]
+            elif age_group == 4:
+                authors = Author.query.filter_by(age4=True).all()[:10]
+            elif age_group == 5:
+                authors = Author.query.filter_by(age5=True).all()[:10]
+            elif age_group == 6:
+                authors = Author.query.filter_by(age6=True).all()[:10]
+        else:
+            authors = Author.query.filter_by(display=True).all()[:10]
+        
+        final_authors = []
+        for author in authors:
+            final_authors.append(author.name)
 
-    # @staticmethod
-    # def get_top_authors():
-    #     objs = db.session.query(func.count(Author.books) > 0).limit(10).all()
-    #     # authors = []
-    #     # for obj in objs:
-    #     #     if len(obj.books) < 3:
-    #     #         continue
-    #     #     temp_dict = {}
-    #     #     temp_dict["name"] = obj.name
-    #     #     temp_dict["guid"] = obj.guid
-    #     #     temp_dict["objs"] = obj.books
-    #     #     authors.append(temp_dict)
-    #     # return authors
-    #     return objs
+        return final_authors
+
+    @staticmethod
+    def get_all_authors(age_group):
+        if age_group:
+            if age_group == 1:
+                authors = Author.query.filter_by(age1=True).all()[10:]
+            elif age_group == 2:
+                authors = Author.query.filter_by(age2=True).all()[10:]
+            elif age_group == 3:
+                authors = Author.query.filter_by(age3=True).all()[10:]
+            elif age_group == 4:
+                authors = Author.query.filter_by(age4=True).all()[10:]
+            elif age_group == 5:
+                authors = Author.query.filter_by(age5=True).all()[10:]
+            elif age_group == 6:
+                authors = Author.query.filter_by(age6=True).all()[10:]
+        else:
+            authors = Author.query.filter_by(display=True).all()[10:]
+        
+        final_authors = []
+        for author in authors:
+            final_authors.append(author.name)
+
+        return final_authors

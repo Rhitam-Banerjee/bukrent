@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, render_template, redirect, session, url_for
 
+from app.models.author import Author
 from app.models.category import Category
 from app.models.launch import Launch
 from app.models.books import Book
@@ -7,6 +8,7 @@ from app.models.user import User, Address
 from app.models.series import Series
 from app.models.order import Order
 from app.models.cart import Cart, Wishlist
+from app.models.publishers import Publisher
 from app.models.search import Search
 
 import os
@@ -75,9 +77,16 @@ def signup():
     email = request.json.get("email")
     password = request.json.get("password")
 
-    if not all((name, mobile_number, email, password)):
+    house_number = request.json.get("house_number")
+    area = request.json.get("area")
+    landmark = request.json.get("landmark")
+    city = request.json.get("city")
+    country = request.json.get("country")
+    pincode = request.json.get("pincode")
+
+    if not all((name, mobile_number, email, password, child_name, age, house_number, area, city, country, pincode)):
         return jsonify({
-            "message": "Name, Mobile Number, Email and Password are mandatory fields!",
+            "message": "All fields are required!",
             "status": "error"
         }), 400
     
@@ -97,6 +106,13 @@ def signup():
         session["age"] = age
         session["email"] = email
         session["password"] = password
+
+        session["house_number"] = house_number
+        session["area"] = area
+        session["landmark"] = landmark
+        session["city"] = city
+        session["country"] = country
+        session["pincode"] = pincode
 
     account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
@@ -135,6 +151,14 @@ def confirm_mobile():
     if verification_check.status == "approved":
         User.create(session.get("name"), session.get("age"), session.get("child_name"), session.get("mobile_number"), session.get("email"), session.get("password"))
         user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
+        Address.create({
+            session.get("house_number"),
+            session.get("area"),
+            session.get("city"),
+            session.get("pincode"),
+            session.get("country"),
+            session.get("landmark")
+        }, user.id)
 
         session["name"] = None
         session["child_name"] = None
@@ -142,6 +166,13 @@ def confirm_mobile():
         session["mobile_number"] = None
         session["email"] = None
         session["password"] = None
+
+        session["house_number"] = None
+        session["area"] = None
+        session["landmark"] = None
+        session["city"] = None
+        session["country"] = None
+        session["pincode"] = None
 
         session["current_user"] = user.guid
         
@@ -548,6 +579,38 @@ def get_all_most_borrowed():
             "status": "success"
         }), 200
 
+@api.route("/get-authors", methods=["POST"])
+def get_authors():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Author.get_authors(age_group),
+        "status": "success"
+    }), 200
+
+@api.route("/get-all-authors", methods=["POST"])
+def get_all_authors():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Author.get_all_authors(age_group),
+        "status": "success"
+    }), 200
+
+@api.route("/get-publishers", methods=["POST"])
+def get_publishers():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Publisher.get_publishers(age_group),
+        "status": "success"
+    }), 200
+
+@api.route("/get-all-publishers", methods=["POST"])
+def get_all_publishers():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Publisher.get_all_publishers(age_group),
+        "status": "success"
+    }), 200
+
 @api.route("/get-author-books", methods=["POST"])
 def get_author_books():
     author = request.json.get("author")
@@ -580,11 +643,27 @@ def get_series():
         "status": "success"
     }), 200
 
+@api.route("/get-all-series", methods=["POST"])
+def get_all_series():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Series.get_all_series(age_group),
+        "status": "success"
+    }), 200
+
 @api.route("/get-genres", methods=["POST"])
 def get_genres():
     age_group = request.json.get("age_group")
     return jsonify({
         "data": Category.get_genres(age_group),
+        "status": "success"
+    }), 200
+
+@api.route("/get-all-genres", methods=["POST"])
+def get_all_genres():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Category.get_all_genres(age_group),
         "status": "success"
     }), 200
 

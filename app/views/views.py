@@ -18,7 +18,7 @@ def home():
     current_user = session.get("current_user")
     user = None
     if current_user:
-        user = User.query.filter_by(guid=guid).first()
+        user = User.query.filter_by(guid=current_user).first()
     return render_template(
         "/home_new/home_new.html",
         current_user=current_user,

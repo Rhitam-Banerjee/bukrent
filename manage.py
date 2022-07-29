@@ -2,8 +2,7 @@ from flask.cli import FlaskGroup
 from app import create_app, db
 from flask import current_app
 
-# from seed import *
-from seed_final import *
+from seed_4 import *
 from export import *
 
 from app.models.annotations import Annotation
