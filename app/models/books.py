@@ -114,19 +114,19 @@ class Book(db.Model):
     def get_most_borrowed(age_group):
         if age_group:
             if age_group == 1:
-                books = Book.query.filter_by(borrowed_age1=True).all()[:10]
+                books = Book.query.filter_by(borrowed_age1=True).order_by(Book.id.desc()).all()[:10]
             elif age_group == 2:
-                books = Book.query.filter_by(borrowed_age2=True).all()[:10]
+                books = Book.query.filter_by(borrowed_age2=True).order_by(Book.id.desc()).all()[:10]
             elif age_group == 3:
-                books = Book.query.filter_by(borrowed_age3=True).all()[:10]
+                books = Book.query.filter_by(borrowed_age3=True).order_by(Book.id.desc()).all()[:10]
             elif age_group == 4:
-                books = Book.query.filter_by(borrowed_age4=True).all()[:10]
+                books = Book.query.filter_by(borrowed_age4=True).order_by(Book.id.desc()).all()[:10]
             elif age_group == 5:
-                books = Book.query.filter_by(borrowed_age5=True).all()[:10]
+                books = Book.query.filter_by(borrowed_age5=True).order_by(Book.id.desc()).all()[:10]
             elif age_group == 6:
-                books = Book.query.filter_by(borrowed_age6=True).all()[:10]
+                books = Book.query.filter_by(borrowed_age6=True).order_by(Book.id.desc()).all()[:10]
         else:
-            books = Book.query.filter_by(most_borrowed=True).all()[:10]
+            books = Book.query.filter_by(most_borrowed=True).order_by(Book.id.desc()).all()[:10]
         
         final_books = []
         for book in books:
@@ -138,19 +138,19 @@ class Book(db.Model):
     def get_all_most_borrowed(age_group):
         if age_group:
             if age_group == 1:
-                books = Book.query.filter_by(borrowed_age1=True).all()[10:]
+                books = Book.query.filter_by(borrowed_age1=True).order_by(Book.id.desc()).all()[10:]
             elif age_group == 2:
-                books = Book.query.filter_by(borrowed_age2=True).all()[10:]
+                books = Book.query.filter_by(borrowed_age2=True).order_by(Book.id.desc()).all()[10:]
             elif age_group == 3:
-                books = Book.query.filter_by(borrowed_age3=True).all()[10:]
+                books = Book.query.filter_by(borrowed_age3=True).order_by(Book.id.desc()).all()[10:]
             elif age_group == 4:
-                books = Book.query.filter_by(borrowed_age4=True).all()[10:]
+                books = Book.query.filter_by(borrowed_age4=True).order_by(Book.id.desc()).all()[10:]
             elif age_group == 5:
-                books = Book.query.filter_by(borrowed_age5=True).all()[10:]
+                books = Book.query.filter_by(borrowed_age5=True).order_by(Book.id.desc()).all()[10:]
             elif age_group == 6:
-                books = Book.query.filter_by(borrowed_age6=True).all()[10:]
+                books = Book.query.filter_by(borrowed_age6=True).order_by(Book.id.desc()).all()[10:]
         else:
-            books = Book.query.filter_by(most_borrowed=True).all()[10:]
+            books = Book.query.filter_by(most_borrowed=True).order_by(Book.id.desc()).all()[10:]
         
         final_books = []
         for book in books:
