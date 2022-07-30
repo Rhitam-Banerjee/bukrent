@@ -152,12 +152,12 @@ def confirm_mobile():
         User.create(session.get("name"), session.get("age"), session.get("child_name"), session.get("mobile_number"), session.get("email"), session.get("password"))
         user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
         Address.create({
-            session.get("house_number"),
-            session.get("area"),
-            session.get("city"),
-            session.get("pincode"),
-            session.get("country"),
-            session.get("landmark")
+            "house_number": session.get("house_number"),
+            "area": session.get("area"),
+            "city": session.get("city"),
+            "pincode": session.get("pincode"),
+            "country": session.get("country"),
+            "landmark": session.get("landmark")
         }, user.id)
 
         session["name"] = None
