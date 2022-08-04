@@ -18,6 +18,318 @@ import razorpay
 
 api = Blueprint('api', __name__, url_prefix="/api")
 
+@api.route("/submit-mobile", methods=["POST"])
+def submit_mobile():
+    mobile_number = request.json.get("mobile_number")
+    if not mobile_number:
+        return jsonify({
+            "message": "Please enter your mobile number!",
+            "status": "error"
+        }), 400
+
+    if len(mobile_number) != 10:
+        return jsonify({
+            "message": "Incorrect format for mobile number. Please make sure there are no spaces or country codes.",
+            "status": "error"
+        }), 400
+
+    session["mobile_number"] = mobile_number
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+
+    if user and user.password:
+        return jsonify({
+            "redirect": url_for('views.login'),
+            "status": "success"
+        }), 200
+    elif user:
+        account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+        auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+        client = Client(account_sid, auth_token)
+
+        verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
+
+        return jsonify({
+            "redirect": url_for('views.confirm_mobile'),
+            "status": "success"
+        }), 200
+    else:
+        return jsonify({
+            "redirect": url_for('views.signup'),
+            "status": "success"
+        }), 200
+
+@api.route("/signup", methods=["POST"])
+def signup():
+    first_name = request.json.get("first_name")
+    last_name = request.json.get("last_name")
+
+    if not all((first_name)):
+        return jsonify({
+            "message": "First Name is mandatory!",
+            "status": "error"
+        }), 400
+
+    session["first_name"] = first_name
+    session["last_name"] = last_name
+
+    mobile_number = session.get("mobile_number")
+
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
+
+    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
+
+    return jsonify({
+        "redirect": url_for('views.confirm_mobile'),
+        "status": "success"
+    }), 201
+
+@api.route("/resend-otp", methods=["POST"])
+def resend_otp():
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
+
+    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{session.get('mobile_number')}", channel="sms")
+
+    return jsonify({
+        "message": "OTP Sent!",
+        "status": "success"
+    }), 201
+
+@api.route("/confirm-mobile", methods=["POST"])
+def confirm_mobile():
+    verification_code = request.json.get("otp")
+
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
+
+    verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{session.get('mobile_number')}", code=verification_code)
+
+    if verification_check.status == "approved":
+        user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
+        if not user:
+            User.create(session.get("first_name"), session.get("last_name"), session.get("mobile_number"))
+            user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
+
+            session["first_name"] = None
+            session["last_name"] = None
+            session["mobile_number"] = None
+
+        session["current_user"] = user.guid
+
+        return jsonify({
+            "redirect": url_for('views.add_details'),
+            "status": "success"
+        }), 201
+    else:
+        return jsonify({
+            "message": "Verification Failed! Try Again.",
+            "status": "error"
+        }), 400
+
+@api.route("/add-details", methods=["POST"])
+def add_details():
+    email = request.json.get("email")
+    password = request.json.get("password")
+    confirm_password = request.json.get("confirm_password")
+
+    if len(password) < 10:
+        return jsonify({
+            "message": "Password should be atleast 10 characters long",
+            "status": "error"
+        }), 400
+    
+    if password != confirm_password:
+        return jsonify({
+            "message": "Password and Confirm Password don't match",
+            "status": "error"
+        }), 400
+
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+
+    user.update_details(email, password)
+
+    return jsonify({
+        "redirect": url_for('views.select_plan'),
+        "status": "success"
+    }), 201
+
+@api.route("/choose-plan", methods=["POST"])
+def choose_plan():
+    plan = request.json.get("plan")
+
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+
+    user.update_plan(plan)
+
+    return jsonify({
+        "redirect": url_for('views.selected_plan'),
+        "status": "success"
+    }), 201
+
+@api.route("/choose-card", methods=["POST"])
+def choose_card():
+    card = request.json.get("card")
+    if card == 1:
+        return jsonify({
+            "redirect": url_for('views.confirm_subscription'),
+            "status": "success"
+        }), 200
+    else:
+        return jsonify({
+            "redirect": url_for('views.confirm_payment'),
+            "status": "success"
+        }), 200
+
+@api.route("/generate-subscription-id", methods=["POST"])
+def generate_subscription_id():
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
+
+    if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
+        plan_desc = "Get 1 Book Per Week"
+    elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"):
+        plan_desc = "Get 2 Books Per Week"
+    elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
+        plan_desc = "Get 4 Books Per Week"
+
+    subscription = client.subscription.create({
+        'plan_id': user.plan_id,
+        'total_count': 36,
+        'addons': [
+            {
+                "item": {
+                    "name": "Security deposit",
+                    "amount": 50000,
+                    "currency": "INR"
+                }
+            }
+        ]
+    })
+
+    subscription_id = subscription.get("id")
+
+    user.add_subscription_details(subscription_id)
+
+    return jsonify({
+        "subscription_id": subscription_id,
+        "key": os.environ.get("RZP_KEY_ID"),
+        "name": f"{user.first_name}",
+        "contact": f"+91{user.mobile_number}",
+        "plan_desc": plan_desc
+    }), 201
+
+@api.route("/generate-order-id", methods=["POST"])
+def generate_order_id():
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
+
+    if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
+        amount = 137900
+        plan_desc = "Get 1 Book Per Week"
+    elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"):
+        amount = 184700
+        plan_desc = "Get 2 Books Per Week"
+    elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
+        amount = 250700
+        plan_desc = "Get 4 Books Per Week"
+
+    order = client.order.create({
+        "amount": amount,
+        "currency": "INR"
+    })
+
+    order_id = order.get("id")
+
+    user.add_order_details(order_id)
+
+    return jsonify({
+        "order_id": order_id,
+        "key": os.environ.get("RZP_KEY_ID"),
+        "name": f"{user.first_name}",
+        "contact": f"+91{user.mobile_number}",
+        "plan_desc": plan_desc
+    }), 201
+
+@api.route("/verify-subscription", methods=["POST"])
+def verify_subscription():
+    try:
+        payment_id = request.json.get("payment_id")
+        subscription_id = request.json.get("subscription_id")
+        signature = request.json.get("signature")
+
+        # client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
+
+        # result = client.utility.verify_payment_signature({
+        #     'razorpay_subscription_id': subscription_id,
+        #     'razorpay_payment_id': payment_id,
+        #     'razorpay_signature': signature
+        # })
+        
+        return jsonify({
+            "message": "Payment Successful!",
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": "Payment Failed! Please try again!",
+            "status": "error"
+        }), 400
+
+@api.route("/verify-order", methods=["POST"])
+def verify_order():
+    try:
+        payment_id = request.json.get("payment_id")
+        order_id = request.json.get("order_id")
+        signature = request.json.get("signature")
+
+        client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
+
+        result = client.utility.verify_payment_signature({
+            'razorpay_order_id': order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature
+        })
+
+        return jsonify({
+            "message": "Payment Successful!",
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": "Payment Failed! Please try again!",
+            "status": "error"
+        }), 400
+
+@api.route("/subscription-successful", methods=["POST"])
+def subscription_successful():
+    subscription_id = request.json.get("subscription_id")
+    payment_id = request.json.get("payment_id")
+
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    
+    user.update_subscription_details(subscription_id, payment_id)
+
+    return jsonify({
+        "status": "success"
+    }), 201
+
+@api.route("/payment-successful", methods=["POST"])
+def payment_successful():
+    payment_id = request.json.get("payment_id")
+    order_id = request.json.get("order_id")
+
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    
+    user.update_payment_details(order_id, payment_id)
+
+    return jsonify({
+        "status": "success"
+    }), 201
+
 @api.route("/login", methods=["POST"])
 def login():
     mobile_number = request.json.get("mobile_number")
@@ -68,134 +380,121 @@ def login():
             "status": "error"
         }), 400
 
-@api.route("/signup", methods=["POST"])
-def signup():
-    name = request.json.get("name")
-    child_name = request.json.get("child_name")
-    mobile_number = request.json.get("mobile_number")
-    age = request.json.get("age")
-    email = request.json.get("email")
-    password = request.json.get("password")
+# @api.route("/signup", methods=["POST"])
+# def signup():
+#     name = request.json.get("name")
+#     child_name = request.json.get("child_name")
+#     mobile_number = request.json.get("mobile_number")
+#     age = request.json.get("age")
+#     email = request.json.get("email")
+#     password = request.json.get("password")
 
-    house_number = request.json.get("house_number")
-    area = request.json.get("area")
-    landmark = request.json.get("landmark")
-    city = request.json.get("city")
-    country = request.json.get("country")
-    pincode = request.json.get("pincode")
+#     house_number = request.json.get("house_number")
+#     area = request.json.get("area")
+#     landmark = request.json.get("landmark")
+#     city = request.json.get("city")
+#     country = request.json.get("country")
+#     pincode = request.json.get("pincode")
 
-    if not all((name, mobile_number, email, password, child_name, age, house_number, area, city, country, pincode)):
-        return jsonify({
-            "message": "All fields are required!",
-            "status": "error"
-        }), 400
+#     if not all((name, mobile_number, email, password, child_name, age, house_number, area, city, country, pincode)):
+#         return jsonify({
+#             "message": "All fields are required!",
+#             "status": "error"
+#         }), 400
     
-    if len(mobile_number) != 10:
-        return jsonify({
-            "message": "Incorrect format for mobile number. Please make sure there are no spaces or country codes.",
-            "status": "error"
-        }), 400
+#     if len(mobile_number) != 10:
+#         return jsonify({
+#             "message": "Incorrect format for mobile number. Please make sure there are no spaces or country codes.",
+#             "status": "error"
+#         }), 400
 
-    user = User.query.filter_by(mobile_number=mobile_number).first()
-    if user:
-        session["mobile_number"] = mobile_number
-    else:
-        session["name"] = name
-        session["child_name"] = child_name
-        session["mobile_number"] = mobile_number
-        session["age"] = age
-        session["email"] = email
-        session["password"] = password
+#     user = User.query.filter_by(mobile_number=mobile_number).first()
+#     if user:
+#         session["mobile_number"] = mobile_number
+#     else:
+#         session["name"] = name
+#         session["child_name"] = child_name
+#         session["mobile_number"] = mobile_number
+#         session["age"] = age
+#         session["email"] = email
+#         session["password"] = password
 
-        session["house_number"] = house_number
-        session["area"] = area
-        session["landmark"] = landmark
-        session["city"] = city
-        session["country"] = country
-        session["pincode"] = pincode
+#         session["house_number"] = house_number
+#         session["area"] = area
+#         session["landmark"] = landmark
+#         session["city"] = city
+#         session["country"] = country
+#         session["pincode"] = pincode
 
-    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-    client = Client(account_sid, auth_token)
+#     account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+#     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+#     client = Client(account_sid, auth_token)
 
-    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
+#     verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
 
-    return jsonify({
-        "message": "OTP Sent!",
-        "status": "success"
-    }), 201
+#     return jsonify({
+#         "message": "OTP Sent!",
+#         "status": "success"
+#     }), 201
 
-@api.route("/resend-otp", methods=["POST"])
-def resend_otp():
-    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-    client = Client(account_sid, auth_token)
+# @api.route("/confirm-mobile", methods=["POST"])
+# def confirm_mobile():
+#     verification_code = request.json.get("verification_code")
 
-    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{session.get('mobile_number')}", channel="sms")
+#     account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+#     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+#     client = Client(account_sid, auth_token)
 
-    return jsonify({
-        "message": "OTP Sent!",
-        "status": "success"
-    }), 201    
+#     verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{session.get('mobile_number')}", code=verification_code)
 
-@api.route("/confirm-mobile", methods=["POST"])
-def confirm_mobile():
-    verification_code = request.json.get("verification_code")
+#     if verification_check.status == "approved":
+#         User.create(session.get("name"), session.get("age"), session.get("child_name"), session.get("mobile_number"), session.get("email"), session.get("password"))
+#         user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
+#         Address.create({
+#             "house_number": session.get("house_number"),
+#             "area": session.get("area"),
+#             "city": session.get("city"),
+#             "pincode": session.get("pincode"),
+#             "country": session.get("country"),
+#             "landmark": session.get("landmark")
+#         }, user.id)
 
-    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-    client = Client(account_sid, auth_token)
+#         session["name"] = None
+#         session["child_name"] = None
+#         session["age"] = None
+#         session["mobile_number"] = None
+#         session["email"] = None
+#         session["password"] = None
 
-    verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{session.get('mobile_number')}", code=verification_code)
+#         session["house_number"] = None
+#         session["area"] = None
+#         session["landmark"] = None
+#         session["city"] = None
+#         session["country"] = None
+#         session["pincode"] = None
 
-    if verification_check.status == "approved":
-        User.create(session.get("name"), session.get("age"), session.get("child_name"), session.get("mobile_number"), session.get("email"), session.get("password"))
-        user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
-        Address.create({
-            "house_number": session.get("house_number"),
-            "area": session.get("area"),
-            "city": session.get("city"),
-            "pincode": session.get("pincode"),
-            "country": session.get("country"),
-            "landmark": session.get("landmark")
-        }, user.id)
-
-        session["name"] = None
-        session["child_name"] = None
-        session["age"] = None
-        session["mobile_number"] = None
-        session["email"] = None
-        session["password"] = None
-
-        session["house_number"] = None
-        session["area"] = None
-        session["landmark"] = None
-        session["city"] = None
-        session["country"] = None
-        session["pincode"] = None
-
-        session["current_user"] = user.guid
+#         session["current_user"] = user.guid
         
-        user.add_books_to_cart_and_wishlist(session.get("cart") or [], session.get("wishlist") or [])
-        session["cart"] = None
-        session["wishlist"] = None
+#         user.add_books_to_cart_and_wishlist(session.get("cart") or [], session.get("wishlist") or [])
+#         session["cart"] = None
+#         session["wishlist"] = None
 
-        if session.get("plan"):
-            return jsonify({
-                "redirect": url_for('views.confirm_plan'),
-                "status": "success"
-            }), 201
-        else:
-            return jsonify({
-                "redirect": url_for('views.become_a_subscriber'),
-                "status": "success"
-            }), 201
+#         if session.get("plan"):
+#             return jsonify({
+#                 "redirect": url_for('views.confirm_plan'),
+#                 "status": "success"
+#             }), 201
+#         else:
+#             return jsonify({
+#                 "redirect": url_for('views.become_a_subscriber'),
+#                 "status": "success"
+#             }), 201
         
-    else:
-        return jsonify({
-            "message": "Verification Failed! Try Again.",
-            "status": "error"
-        }), 400
+#     else:
+#         return jsonify({
+#             "message": "Verification Failed! Try Again.",
+#             "status": "error"
+#         }), 400
 
 @api.route("/logout", methods=["POST"])
 def logout():
@@ -235,95 +534,20 @@ def cart_checkout():
             "status": "success"
         }), 201
 
-@api.route("/choose-plan", methods=["POST"])
-def choose_plan():
-    plan = request.json.get("plan")
+# @api.route("/payment-successful", methods=["POST"])
+# def payment_successful():
+#     current_user = User.query.filter_by(guid=session.get('current_user')).first()
+#     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
+#     subscription = client.subscription.fetch(current_user.subscription_id)
 
-    current_user = session.get("current_user")
-    user = User.query.filter_by(guid=current_user).first()
+#     current_user.add_customer_id(subscription.get("customer_id"))
+#     session["plan"] = None
 
-    if current_user:
-        if user.is_subscribed:
-            return jsonify({
-                "redirect": url_for('views.home'),
-                "status": "success"
-            }), 201
-        else:
-            session["plan"] = plan
-            return jsonify({
-                "redirect": url_for('views.confirm_plan'),
-                "status": "success"
-            }), 201
-    else:
-        session["plan"] = plan
-        return jsonify({
-            "redirect": url_for('views.signup'),
-            "status": "success"
-        }), 201
-
-@api.route("/generate-subscription-id", methods=["POST"])
-def generate_subscription_id():
-    plan = session.get("plan")
-    if not plan:
-        return jsonify({
-            "message": "No Plan Selected!",
-            "status": "error"
-        }), 400
-    
-    client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
-
-    if plan == 1:
-        plan_id = os.environ.get("RZP_PLAN_1_ID")
-        plan_desc = "Get 1 Book Per Week"
-    elif plan == 2:
-        plan_id = os.environ.get("RZP_PLAN_2_ID")
-        plan_desc = "Get 2 Books Per Week"
-    elif plan == 3:
-        plan_id = os.environ.get("RZP_PLAN_3_ID")
-        plan_desc = "Get 4 Books Per Week"
-
-    subscription = client.subscription.create({
-        'plan_id': plan_id,
-        'total_count': 36,
-        'addons': [
-            {
-                "item": {
-                    "name": "Security deposit",
-                    "amount": 50000,
-                    "currency": "INR"
-                }
-            }
-        ]
-    })
-
-    subscription_id = subscription.get("id")
-    plan_id = subscription.get("plan_id")
-
-    current_user = User.query.filter_by(guid=session.get('current_user')).first()
-    current_user.add_subscription_details(plan, plan_id, subscription_id)
-
-    return jsonify({
-        "subscription_id": subscription_id,
-        "key": os.environ.get("RZP_KEY_ID"),
-        "name": f"{current_user.name}",
-        "contact": f"+91{current_user.mobile_number}",
-        "plan_desc": plan_desc
-    }), 201
-
-@api.route("/payment-successful", methods=["POST"])
-def payment_successful():
-    current_user = User.query.filter_by(guid=session.get('current_user')).first()
-    client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
-    subscription = client.subscription.fetch(current_user.subscription_id)
-
-    current_user.add_customer_id(subscription.get("customer_id"))
-    session["plan"] = None
-
-    if session.get("cart_checkout"):
-        session["cart_checkout"] = None
-        return redirect(url_for("views.add_address"))
-    else:
-        return redirect(url_for("views.payment_successful"))
+#     if session.get("cart_checkout"):
+#         session["cart_checkout"] = None
+#         return redirect(url_for("views.add_address"))
+#     else:
+#         return redirect(url_for("views.payment_successful"))
 
 @api.route("/add-to-cart", methods=["POST"])
 def add_to_cart():

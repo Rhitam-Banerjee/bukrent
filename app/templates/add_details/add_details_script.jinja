@@ -1,0 +1,39 @@
+<script>
+    $(function(){
+        $("#next_button").click(function(){
+            let data = {
+                email: $("#email").val(),
+                password: $("#password").val(),
+                confirm_password: $("#confirm_password").val()
+            }
+
+            $.ajax({
+                url: "{{url_for('api.add_details')}}",
+                type: "post",
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: 'application/json',
+                beforeSend: function(){
+                    $('.main-container').addClass('blur');
+                    $(':button').prop('disabled', true);
+                    $("#loader").show();
+                },
+                success: function (result) {
+                    window.location.href = result.redirect;
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                },
+                complete:function(data){
+                    $('.main-container').removeClass('blur');
+                    $(':button').prop('disabled', false);
+                    $("#loader").hide();
+                }
+            })
+        })
+    })
+</script>

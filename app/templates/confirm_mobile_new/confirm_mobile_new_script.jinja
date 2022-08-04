@@ -1,0 +1,92 @@
+<script>
+    $(function(){
+        $('.otp-container').find('input').each(function() {  
+            $(this).attr('maxlength', 1);  
+            $(this).on('keyup', function(e) {  
+                var parent = $($(this).parent());  
+                if(e.keyCode === 8 || e.keyCode === 37) {  
+                    var prev = parent.find('input#' + $(this).data('previous'));  
+                    if(prev.length) {  
+                            $(prev).select();  
+                    }  
+                } else if((e.keyCode >= 48 && e.keyCode <= 57) || (e.keyCode >= 65 && e.keyCode <= 90) || (e.keyCode >= 96 && e.keyCode <= 105) || e.keyCode === 39) {  
+                    var next = parent.find('input#' + $(this).data('next'));  
+                    if(next.length) {  
+                            $(next).select();  
+                    } else {  
+                            if(parent.data('autosubmit')) {  
+                                parent.submit();  
+                            }  
+                    }  
+                }  
+            });  
+        });  
+
+        $("#signup_button").click(function(){
+            let data = {
+                otp: `${$("#digit-1").val()}${$("#digit-2").val()}${$("#digit-3").val()}${$("#digit-4").val()}${$("#digit-5").val()}${$("#digit-6").val()}`
+            }
+
+            $.ajax({
+                url: "{{url_for('api.confirm_mobile')}}",
+                type: "post",
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: 'application/json',
+                beforeSend: function(){
+                    $('.main-container').addClass('blur');
+                    $(':button').prop('disabled', true);
+                    $("#loader").show();
+                },
+                success: function (result) {
+                    window.location.href = result.redirect;
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                },
+                complete:function(data){
+                    $('.main-container').removeClass('blur');
+                    $(':button').prop('disabled', false);
+                    $("#loader").hide();
+                }
+            })
+        })
+    })
+
+    function resend_otp() {
+        $.ajax({
+            url: "{{url_for('api.resend_otp')}}",
+            type: "post",
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                Swal.fire(
+                    'Sent!',
+                    "We've sent you another OTP",
+                    'success'
+                )
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
+</script>

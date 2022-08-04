@@ -1,0 +1,40 @@
+{% extends "template_new.jinja" %}
+{% block main %}
+
+{% include("select_plan/select_plan_script.jinja") %}
+{% include("select_plan/select_plan_style.jinja") %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <img src="/static/images/select.svg" class="img-fluid step-img" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <h2><b>Choose your Plan</b></h2>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <div class="row my-3">
+                <div class="col-4 col-md-4 col-lg-4">
+                    <a onclick="choose_plan(1)">
+                        <img src="/static/images/subscription1.svg" class="img-fluid banner-img" />
+                    </a>
+                </div>
+                <div class="col-4 col-md-4 col-lg-4">
+                    <a onclick="choose_plan(2)">
+                        <img src="/static/images/subscription2.svg" class="img-fluid banner-img" />
+                    </a>
+                </div>
+                <div class="col-4 col-md-4 col-lg-4">
+                    <a onclick="choose_plan(3)">
+                        <img src="/static/images/subscription3.svg" class="img-fluid banner-img" />
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-end">
+            <b><p class="detail-small-text">Click on a plan to choose</p></b>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

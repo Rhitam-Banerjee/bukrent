@@ -1,19 +1,45 @@
-{% extends "template.jinja" %}
+{% extends "template_new.jinja" %}
 {% block main %}
 
 {% include("payment_successful/payment_successful_script.jinja") %}
 {% include("payment_successful/payment_successful_style.jinja") %}
 
 <div class="container">
-    <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-0 mt-md-1 mt-lg-5">
-            <p class="section-title">Successfully Subscribed!</p>
+    <div class="row text-center">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <h2 style="font-size: 2rem;"><b>Congratulations!</b></h2>
         </div>
-    </div>
-
-    <div class="row mt-5">
-        <div class="col-12 col-md-12 col-lg-12 text-center">
-            <a href="{{url_for('views.home')}}"><button class="cart-button m-2 py-3">Start Exploring!</button></a>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-3">
+            <p><b>Your Payment Was Successful!</b></p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-3">
+            <h3 class="text-orange"><b>Your payment ID is</b></h3>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 mt-3 payment_id p-3">
+            <h3><b>{{payment_id}}</b></h3>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-3">
+            <div class="row">
+                <div class="col-3 col-md-3 col-lg-3">
+                    <img src="/static/images/success1.svg" class="img-fluid step-img" />
+                </div>
+                <div class="col-6 col-md-6 col-lg-6">
+                    <div class="row">
+                        <div class="col-12 col-md-12 col-lg-12">
+                            <h3 style="font-size: 1.5rem;" class="text-orange"><b>You are almost there!</b></h3>
+                        </div>
+                        <div class="col-12 col-md-12 col-lg-12">
+                            <h4 style="font-size: 1rem;" class="text-orange"><b>Help us know you better!</b></h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3 col-md-3 col-lg-3">
+                    <img src="/static/images/success2.svg" class="img-fluid step-img" />
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 py-5 text-center">
+            <button class="orange-btn m-2 py-3" id="next_button">Next</button>
         </div>
     </div>
 </div>

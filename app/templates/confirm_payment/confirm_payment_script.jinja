@@ -1,0 +1,92 @@
+<script>
+    $(function(){
+        $("#payment").click(function(){
+            $.ajax({
+                url: "{{url_for('api.generate_order_id')}}",
+                type: "post",
+                dataType: 'json',
+                contentType: 'application/json',
+                beforeSend: function(){
+                    $('.main-container').addClass('blur');
+                    $(':button').prop('disabled', true);
+                    $("#loader").show();
+                },
+                success: function (result) {
+                    let options = {
+                        "key": result.key,
+                        "order_id": result.order_id,
+                        "name": "Bukrent",
+                        "description": result.plan_desc,
+                        "image": "/static/images/logo.png",
+                        "handler": function (response) {
+                            let data = {
+                                "payment_id": response.razorpay_payment_id,
+                                "order_id": response.razorpay_order_id,
+                                "signature": response.razorpay_signature
+                            }
+
+                            $.ajax({
+                                url: "{{url_for('api.verify_order')}}",
+                                type: "post",
+                                data: JSON.stringify(data),
+                                dataType: 'json',
+                                contentType: 'application/json',
+                                success: function (result) {
+                                    $.ajax({
+                                        url: "{{url_for('api.payment_successful')}}",
+                                        type: "post",
+                                        data: JSON.stringify(data),
+                                        dataType: 'json',
+                                        contentType: 'application/json',
+                                        success: function (result) {
+                                            window.location.href = "{{url_for('views.payment_successful')}}"
+                                        },
+                                        error: function (result) {
+                                            $("#loader").hide();
+                                            Swal.fire(
+                                                'Error',
+                                                result.responseJSON.message,
+                                                'error'
+                                            )
+                                        }
+                                    })
+                                },
+                                error: function (result) {
+                                    $("#loader").hide();
+                                    Swal.fire(
+                                        'Error',
+                                        result.responseJSON.message,
+                                        'error'
+                                    )
+                                }
+                            })
+                        },
+                        "prefill": {
+                            "name": result.name,
+                            "contact": result.contact
+                        },
+                        "notes": {},
+                        "theme": {
+                            "color": "#FFA142"
+                        }
+                    }
+
+                    let rzp1 = new Razorpay(options);
+                    rzp1.open();
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                },
+                complete:function(data){
+                    $('.main-container').removeClass('blur');
+                    $(':button').prop('disabled', false);
+                    $("#loader").hide();
+                }
+            })
+        })
+    })
+</script>

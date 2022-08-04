@@ -46,18 +46,21 @@ class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     guid = db.Column(db.String, nullable=False, unique=True)
-    name = db.Column(db.String)
-    age = db.Column(db.String)
-    child_name = db.Column(db.String)
+    first_name = db.Column(db.String)
+    last_name = db.Column(db.String)
     mobile_number = db.Column(db.String, unique=True)
+
     email = db.Column(db.String)
     password = db.Column(db.String)
+
     newsletter = db.Column(db.Boolean, default=False)
+
     is_subscribed = db.Column(db.Boolean, default=False)
     security_deposit = db.Column(db.Boolean, default=False)
-    customer_id = db.Column(db.String)
+    payment_id = db.Column(db.String)
     plan_id = db.Column(db.String)
     subscription_id = db.Column(db.String)
+    order_id = db.Column(db.String)
 
     cart = db.relationship(Cart, lazy=True, uselist=False)
     wishlist = db.relationship(Wishlist, lazy=True, uselist=False)
@@ -78,15 +81,12 @@ class User(db.Model):
             return 0
 
     @staticmethod
-    def create(name, age, child_name, mobile_number, email, password):
+    def create(first_name, last_name, mobile_number):
         user_dict = dict(
             guid = str(uuid.uuid4()),
-            name = name,
-            age = age,
-            child_name = child_name,
-            mobile_number = mobile_number,
-            email = email,
-            password = password
+            first_name = first_name,
+            last_name = last_name,
+            mobile_number = mobile_number
         )
         user_obj = User(**user_dict)
         db.session.add(user_obj)
@@ -95,6 +95,22 @@ class User(db.Model):
         user_obj.add_cart_and_wishlist()
 
         return user_obj
+
+    def update_details(self, email, password):
+        self.email = email
+        self.password = password
+        db.session.add(self)
+        db.session.commit()
+
+    def update_plan(self, plan):
+        if plan == 1:
+            self.plan_id = os.environ.get("RZP_PLAN_1_ID")
+        elif plan == 2:
+            self.plan_id = os.environ.get("RZP_PLAN_2_ID")
+        elif plan == 3:
+            self.plan_id = os.environ.get("RZP_PLAN_3_ID")
+        db.session.add(self)
+        db.session.commit()
 
     def add_cart_and_wishlist(self):
         cart = Cart.create(self.id)
@@ -140,16 +156,29 @@ class User(db.Model):
         db.session.add(wishlist)
         db.session.commit()
 
-    def add_subscription_details(self, plan, plan_id, subscription_id):
-        self.plan_id = plan_id
+    def add_subscription_details(self, subscription_id):
         self.subscription_id = subscription_id
         db.session.add(self)
         db.session.commit()
 
-    def add_customer_id(self, customer_id):
-        self.customer_id = customer_id
-        self.is_subscribed = True
+    def add_order_details(self, order_id):
+        self.order_id = order_id
+        db.session.add(self)
+        db.session.commit()
+
+    def update_payment_details(self, order_id, payment_id):
+        self.order_id = order_id
+        self.payment_id = payment_id
         self.security_deposit = True
+        self.is_subscribed = True
+        db.session.add(self)
+        db.session.commit()
+
+    def update_subscription_details(self, subscription_id, payment_id):
+        self.subscription_id = subscription_id
+        self.payment_id = payment_id
+        self.security_deposit = True
+        self.is_subscribed = True
         db.session.add(self)
         db.session.commit()
 

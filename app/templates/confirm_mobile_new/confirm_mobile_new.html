@@ -1,0 +1,36 @@
+{% extends "template_new.jinja" %}
+{% block main %}
+
+{% include("confirm_mobile_new/confirm_mobile_new_script.jinja") %}
+{% include("confirm_mobile_new/confirm_mobile_new_style.jinja") %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <img src="/static/images/signup.svg" class="img-fluid step-img" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <h2><b>OTP</b></h2>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 otp-container">
+            <input class="otp-digit" type="text" id="digit-1" name="digit-1" data-next="digit-2" />  
+            <input class="otp-digit" type="text" id="digit-2" name="digit-2" data-next="digit-3" data-previous="digit-1" />  
+            <input class="otp-digit" type="text" id="digit-3" name="digit-3" data-next="digit-4" data-previous="digit-2" />  
+            <input class="otp-digit" type="text" id="digit-4" name="digit-4" data-next="digit-5" data-previous="digit-3" /> 
+            <input class="otp-digit" type="text" id="digit-5" name="digit-5" data-next="digit-6" data-previous="digit-4" /> 
+            <input class="otp-digit" type="text" id="digit-6" name="digit-6" data-previous="digit-5" /> 
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-end">
+            <div class="row">
+                <div class="col-8 col-md-6 col-lg-4 offset-4 offset-md-6 offset-lg-8">
+                    <a class="resend-otp" onclick="resend_otp()">Resend OTP</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 py-5 text-center">
+            <button class="orange-btn m-2 py-3" id="signup_button">Next</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "template_new.jinja" %}
+{% block main %}
+
+{% include("signup_new/signup_new_script.jinja") %}
+{% include("signup_new/signup_new_style.jinja") %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <img src="/static/images/signup.svg" class="img-fluid step-img" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <h2><b>Parent Details</b></h2>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
+            <p><b>First Name</b></p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <input type="text" name="first_name" id="first_name" class="form-control" placeholder="First Name" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
+            <p><b>Last Name</b></p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <input type="text" name="last_name" id="last_name" class="form-control" placeholder="Last Name" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
+            <p><b>Mobile Number</b></p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <input type="text" name="mobile_number" id="mobile_number" class="form-control" value="{{mobile_number}}" readonly />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-end">
+            <div class="row">
+                <div class="col-8 col-md-6 col-lg-4 offset-4 offset-md-6 offset-lg-8">
+                    <p class="signup-small-text">You will receive and OTP on your registered mobile number</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 py-5 text-center">
+            <button class="orange-btn m-2 py-3" id="signup_button">Signup</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "template_new.jinja" %}
+{% block main %}
+
+{% include("confirm_subscription/confirm_subscription_script.jinja") %}
+{% include("confirm_subscription/confirm_subscription_style.jinja") %}
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <img src="/static/images/select.svg" class="img-fluid step-img" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5 text-center">
+            <h2><b>1 Month Subscription</b></h2>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <img src="/static/images/{{plan_image}}" class="img-fluid banner-img" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5 text-center">
+            <h1 class="text-orange"><b>Amount - Rs. {{amount}}</b></h1>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5 text-center">
+            <h1 class="text-gray"><b>Next Month Payment - Rs. {{next_amount}}</b></h1>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 py-5 text-center">
+            <button class="orange-btn m-2 py-3" id="subscribe">Proceed to Payment</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
