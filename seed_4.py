@@ -688,16 +688,11 @@ def seed():
     for user in users:
         user_obj = User(
             guid=user[1],
-            name=user[2],
-            age=user[3],
-            child_name=user[4],
+            first_name=user[2],
             mobile_number=user[5],
-            email="",
-            password=user[2],
             newsletter=True if user[6] == "True" else False,
             is_subscribed=False if user[7] == "False" else True,
             security_deposit=False if user[8] == "False" else True,
-            customer_id=user[9],
             plan_id=user[10],
             subscription_id=user[11]
         )
@@ -706,16 +701,16 @@ def seed():
 
         user_obj.add_cart_and_wishlist()
 
-        if user[12] == "True":
-            address = Address(
-                guid=user[14],
-                house_number=user[15],
-                area=user[16],
-                city=user[17],
-                pincode=user[18],
-                country=user[19],
-                landmark=user[20],
-                user_id=user_obj.id
-            )
-            db.session.add(address)
-            db.session.commit()
+        # if user[12] == "True":
+        #     address = Address(
+        #         guid=user[14],
+        #         house_number=user[15],
+        #         area=user[16],
+        #         city=user[17],
+        #         pincode=user[18],
+        #         country=user[19],
+        #         landmark=user[20],
+        #         user_id=user_obj.id
+        #     )
+        #     db.session.add(address)
+        #     db.session.commit()
