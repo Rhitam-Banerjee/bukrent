@@ -95,7 +95,7 @@ def login():
                     "status": "success"
                 }), 200
             return jsonify({
-                "redirect": url_for('views.home'),
+                "redirect": url_for('views.happy_reading'),
                 "status": "success"
             }), 200
         else:
