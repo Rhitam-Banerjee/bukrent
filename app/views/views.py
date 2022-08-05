@@ -155,6 +155,17 @@ def confirm_payment():
         next_amount=next_amount
     )
 
+@views.route("/payment-failed")
+def payment_failed():
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if user.is_subscribed:
+        return redirect(url_for('views.add_address'))
+    return render_template(
+        "/payment_failed/payment_failed.html"
+    )
+
 @views.route("/payment-successful")
 def payment_successful():
     user = User.query.filter_by(guid=session.get("current_user")).first()

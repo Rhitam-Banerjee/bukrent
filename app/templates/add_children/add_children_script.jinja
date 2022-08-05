@@ -9,19 +9,22 @@
     function add_child_form(number) {
         let html = `
                     <div class="row mt-4" id="child${number}-form">
-                        <div class="col-12 col-md-12 col-lg-12 pt-4">
+                        <div class="col-12 col-md-12 col-lg-12">
                             <p><b>Child's Name</b></p>
                         </div>
-                        <div class="col-12 col-md-12 col-lg-12 pt-4">
+                        <div class="col-12 col-md-12 col-lg-12">
                             <input type="text" name="child_name${number}" id="child_name${number}" class="form-control" />
                         </div>
                         <div class="col-12 col-md-12 col-lg-12 pt-4">
                             <p><b>Child's DOB</b></p>
                         </div>
-                        <div class="col-12 col-md-12 col-lg-12 pt-4">
+                        <div class="col-12 col-md-12 col-lg-12">
                             <input type="date" name="child_dob${number}" id="child_dob${number}" class="form-control" />
                         </div>
-                        <div id="age-carousel" class="owl-carousel owl-theme mt-5">
+                        <div class="col-12 col-md-12 col-lg-12 pt-4">
+                            <p><b>Select Age Group</b></p>
+                        </div>
+                        <div id="age-carousel" class="owl-carousel owl-theme">
                             <div class="age-box age-1">
                                 <div class="row">
                                     <a onclick="select_age(1)">
@@ -206,13 +209,17 @@
                 data.children.push(child_obj)
             }
 
-            data.children.push(
-                {
-                    name: $(`#child_name${child_number}`).val(),
-                    dob: $(`#child_dob${child_number}`).val(),
-                    age_group: selected_age
-                }
-            )
+            if ($(`#child_name${child_number}`).val()) {
+                data.children.push(
+                    {
+                        name: $(`#child_name${child_number}`).val(),
+                        dob: $(`#child_dob${child_number}`).val(),
+                        age_group: selected_age
+                    }
+                )
+            }
+
+            debugger;
 
             $.ajax({
                 url: "{{url_for('api.add_children')}}",
@@ -226,11 +233,7 @@
                     $("#loader").show();
                 },
                 success: function (result) {
-                    Swal.fire(
-                        'Finished!',
-                        "We'll start recommending you books soon!",
-                        'success'
-                    )
+                    window.location.href = "{{url_for('views.happy_reading')}}"
                 },
                 error: function (result) {
                     Swal.fire(
@@ -296,11 +299,15 @@
             <div class="col-3 col-md-3 col-lg-3 text-center">
                 <img src="${features.image}" class="img-fluid" />
             </div>
-            <div class="col-5 col-md-5 col-lg-5 text-center age-text-big pt-3">
-                ${$(name_id).val()}
-            </div>
-            <div class="col-4 col-md-4 col-lg-4 text-center age-text-small pt-4">
-                ${age} Years
+            <div class="col-9 col-md-9 col-lg-9 text-center align-middle">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-lg-12 age-text-big ">
+                        ${$(name_id).val()}
+                    </div>
+                    <div class="col-12 col-md-12 col-lg-12 age-text-small">
+                        ${age} Years
+                    </div>
+                </div>
             </div>
         `
         $(`#${id}`).empty();
