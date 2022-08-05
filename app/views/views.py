@@ -188,9 +188,21 @@ def add_children():
     if len(user.address) == 0:
         return redirect(url_for('views.add_address'))
     if len(user.child) > 0:
-        return redirect(url_for('views.home'))
+        return redirect(url_for('views.happy_reading'))
     return render_template(
         "/add_children/add_children.html",
+        user=user
+    )
+
+@views.route("/happy-reading")
+def happy_reading():
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if len(user.child) == 0:
+        return redirect(url_for('views.add_children'))
+    return render_template(
+        "happy_reading/happy_reading.html",
         user=user
     )
 
