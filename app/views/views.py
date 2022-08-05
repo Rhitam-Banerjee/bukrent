@@ -33,10 +33,12 @@ def signup():
 
 @views.route("/login")
 def login():
-    mobile_number = session.get("mobile_number")
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
     return render_template(
         "/login/login.html",
-        mobile_number=mobile_number
+        user=user
     )
 
 @views.route('/confirm-mobile')

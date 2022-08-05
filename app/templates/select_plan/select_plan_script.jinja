@@ -1,4 +1,17 @@
 <script>
+    $(document).ready(function(){
+        $("#plan-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            responsive:{
+                0:{
+                    items:2.5
+                }
+            }
+        });
+    })
     function choose_plan(plan) {
         let data = {
             plan: plan

@@ -60,7 +60,7 @@ def submit_mobile():
 
 @api.route("/login", methods=["POST"])
 def login():
-    mobile_number = request.json.get("mobile_number")
+    mobile_number = session.get("mobile_number")
     password = request.json.get("password")
 
     if not all((password)):
@@ -153,6 +153,12 @@ def resend_otp():
 def confirm_mobile():
     verification_code = request.json.get("otp")
 
+    if not verification_code:
+        return jsonify({
+            "message": "Please enter the OTP",
+            "status": "error"
+        }), 400
+
     account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
@@ -187,9 +193,9 @@ def add_details():
     password = request.json.get("password")
     confirm_password = request.json.get("confirm_password")
 
-    if len(password) < 10:
+    if len(password) < 6:
         return jsonify({
-            "message": "Password should be atleast 10 characters long",
+            "message": "Password should be atleast 6 characters long",
             "status": "error"
         }), 400
     

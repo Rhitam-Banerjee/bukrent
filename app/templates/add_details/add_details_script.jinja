@@ -1,4 +1,6 @@
 <script>
+    let password1 = false; 
+    let password2 = false; 
     $(function(){
         $("#next_button").click(function(){
             let data = {
@@ -34,6 +36,32 @@
                     $("#loader").hide();
                 }
             })
+        })
+
+        $("#basic-addon1").click(function(){
+            $("#basic-addon1").empty()
+            if (password1) {
+                $("#basic-addon1").append(`<i class="fas fa-eye-slash" aria-hidden="true"></i>`)
+                $("#password").attr('type', 'password')
+            } else {
+                $("#basic-addon1").append(`<i class="fa fa-eye" aria-hidden="true"></i>`)
+                $("#password").attr('type', 'text')
+            }
+
+            password1 = true ? !password1 : false;
+        })
+
+        $("#basic-addon2").click(function(){
+            $("#basic-addon2").empty()
+            if (password2) {
+                $("#basic-addon2").append(`<i class="fas fa-eye-slash" aria-hidden="true"></i>`)
+                $("#confirm_password").attr('type', 'password')
+            } else {
+                $("#basic-addon2").append(`<i class="fa fa-eye" aria-hidden="true"></i>`)
+                $("#confirm_password").attr('type', 'text')
+            }
+
+            password2 = true ? !password2 : false;
         })
     })
 </script>

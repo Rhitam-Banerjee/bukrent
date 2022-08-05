@@ -10,20 +10,25 @@
             <h2><b>Login</b></h2>
         </div>
         <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
+            <p><b>Parent's Name</b></p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <input type="text" name="name" class="form-control" value="{{user.first_name}} {{user.last_name}}" readonly />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
             <p><b>Mobile Number</b></p>
         </div>
         <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
-            {% if mobile_number %}
-            <input type="text" name="mobile_number" id="mobile_number" class="form-control" value="{{mobile_number}}" readonly />
-            {% else %}
-            <input type="text" name="mobile_number" id="mobile_number" class="form-control" />
-            {% endif %}
+            <input type="text" name="mobile_number" id="mobile_number" class="form-control" value="{{user.mobile_number}}" readonly />
         </div>
         <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
             <p><b>Password</b></p>
         </div>
         <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
-            <input type="text" name="password" id="password" class="form-control" />
+            <div class="input-group">
+                <input type="password" name="password" id="password" class="form-control" aria-label="Recipient's Password" aria-describedby="basic-addon1" />
+                <span class="input-group-btn p-2" id="basic-addon1"><i class="fas fa-eye-slash" aria-hidden="true"></i></span>
+            </div>
         </div>
         <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 py-5 text-center">
             <button class="orange-btn m-2 py-3" id="login_button">Login</button>
