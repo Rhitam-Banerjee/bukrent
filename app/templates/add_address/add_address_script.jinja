@@ -1,137 +1,41 @@
 <script>
-    $(document).ready(function() {
-        $.ajax({
-            url: "{{url_for('api.check_books')}}",
-            type: "post",
-            dataType: 'json',
-            contentType: 'application/json',
-            beforeSend: function(){
-                $('.main-container').addClass('blur');
-                $(':button').prop('disabled', true);
-                $("#loader").show();
-            },
-            success: function (result) {
-                ;
-            },
-            error: function (result) {
-                Swal.fire(
-                    'Uh Oh!',
-                    result.responseJSON.message,
-                    'error'
-                )
-            },
-            complete:function(data){
-                $('.main-container').removeClass('blur');
-                $(':button').prop('disabled', false);
-                $("#loader").hide();
-            }
-        })
-    })
     $(function(){
-        $("#same_as_billing").click(function(){
-            if ($("#same_as_billing").is(":checked")) {
-
-                $("#delivery_house_number").val($("#billing_house_number").val())
-                $("#delivery_house_number").attr("readonly", true)
-
-                $("#delivery_area").val($("#billing_area").val())
-                $("#delivery_area").attr("readonly", true)
-
-                $("#delivery_landmark").val($("#billing_landmark").val())
-                $("#delivery_landmark").attr("readonly", true)
-
-                $("#delivery_city").val($("#billing_city").val())
-                $("#delivery_city").attr("readonly", true)
-
-                $("#delivery_country").val($("#billing_country").val())
-                $("#delivery_country").attr("readonly", true)
-
-                $("#delivery_pincode").val($("#billing_pincode").val())
-                $("#delivery_pincode").attr("readonly", true)
-
-            } else {
-
-                $("#delivery_house_number").val("")
-                $("#delivery_house_number").attr("readonly", false)
-
-                $("#delivery_area").val("")
-                $("#delivery_area").attr("readonly", false)
-
-                $("#delivery_landmark").val("")
-                $("#delivery_landmark").attr("readonly", false)
-
-                $("#delivery_city").val("")
-                $("#delivery_city").attr("readonly", false)
-
-                $("#delivery_country").val("")
-                $("#delivery_country").attr("readonly", false)
-
-                $("#delivery_pincode").val("")
-                $("#delivery_pincode").attr("readonly", false)
-
+        $("#next_button").click(function(){
+            let data = {
+                house_number: $("#house_number").val(),
+                building: $("#building").val(),
+                area: $("#area").val(),
+                landmark: $("#landmark").val(),
+                pin_code: $("#pin_code").val()
             }
+
+            $.ajax({
+                url: "{{url_for('api.add_address')}}",
+                type: "post",
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: 'application/json',
+                beforeSend: function(){
+                    $('.main-container').addClass('blur');
+                    $(':button').prop('disabled', true);
+                    $("#loader").show();
+                },
+                success: function (result) {
+                    window.location.href = result.redirect;
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                },
+                complete:function(data){
+                    $('.main-container').removeClass('blur');
+                    $(':button').prop('disabled', false);
+                    $("#loader").hide();
+                }
+            })
         })
     })
-
-    function place_order(){
-        let data = {
-            billing_address: {
-                house_number: $("#billing_house_number").val(),
-                area: $("#billing_area").val(),
-                landmark: $("#billing_landmark").val(),
-                city: $("#billing_city").val(),
-                country: $("#billing_country").val(),
-                pincode: $("#billing_pincode").val()
-            },
-            delivery_address: {
-                house_number: $("#delivery_house_number").val(),
-                area: $("#delivery_area").val(),
-                landmark: $("#delivery_landmark").val(),
-                city: $("#delivery_city").val(),
-                country: $("#delivery_country").val(),
-                pincode: $("#delivery_pincode").val()
-            },
-            same_as_billing: $("#same_as_billing").is(":checked") ? true : false,
-            is_gift: $("#is_gift").is(":checked") ? true : false,
-            gift_message: $("#gift_message").val()
-        }
-        
-        let books = []
-
-        $(".book_checkbox").map(function(){
-            if ($(this).is(":checked")) {
-                books.push($(this).attr("id"))
-            }
-        })
-
-        data.books = books
-
-        $.ajax({
-            url: "{{url_for('api.place_order')}}",
-            type: "post",
-            data: JSON.stringify(data),
-            dataType: 'json',
-            contentType: 'application/json',
-            beforeSend: function(){
-                $('.main-container').addClass('blur');
-                $(':button').prop('disabled', true);
-                $("#loader").show();
-            },
-            success: function (result) {
-                window.location.href = "{{url_for('views.order_placed')}}"
-            },
-            error: function (result) {
-                Swal.fire(
-                    'Uh Oh!',
-                    result.responseJSON.message,
-                    'error'
-                )
-            },
-            complete:function(data){
-                $('.main-container').removeClass('blur');
-                $(':button').prop('disabled', false);
-                $("#loader").hide();
-            }
-        })
-    }
 </script>

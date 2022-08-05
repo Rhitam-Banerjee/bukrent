@@ -8,31 +8,54 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 import os
 
+class Child(db.Model):
+    __tablename__ = "children"
+    id = db.Column(db.Integer, primary_key=True)
+    guid = db.Column(db.String, nullable=False, unique=True)
+    name = db.Column(db.String)
+    dob = db.Column(db.Date)
+    age_group = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    @staticmethod
+    def create(child_json, user_id):
+        if not all((child_json.get("name"), child_json.get("dob"), child_json.get("age_group"))):
+            raise ValueError("All fields for all the kids are necessary.")
+
+        child_dict = dict(
+            guid = str(uuid.uuid4()),
+            name = child_json.get("name"),
+            dob = child_json.get("dob"),
+            age_group = child_json.get("age_group"),
+            user_id = user_id
+        )
+        child_obj = Child(**child_dict)
+        db.session.add(child_obj)
+        db.session.commit()
+
 class Address(db.Model):
     __tablename__ = "address"
     id = db.Column(db.Integer, primary_key=True)
     guid = db.Column(db.String, nullable=False, unique=True)
     house_number = db.Column(db.String)
+    building = db.Column(db.String)
     area = db.Column(db.String)
-    city = db.Column(db.String)
     pincode = db.Column(db.String)
-    country = db.Column(db.String)
     landmark = db.Column(db.String)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     @staticmethod
     def create(address_json, user_id):
-        if not all((address_json.get("house_number"), address_json.get("area"), address_json.get("city"), address_json.get("pincode"), address_json.get("country"))):
-            raise ValueError("House Number, Area, City, Country and Pin Code are required!")
+        if not all((address_json.get("house_number"), address_json.get("building"), address_json.get("area"), address_json.get("pin_code"))):
+            raise ValueError("House Number, Building, Area and Pin Code are required!")
 
         address_dict = dict(
             guid = str(uuid.uuid4()),
             house_number = address_json.get("house_number"),
+            building = address_json.get("building"),
             area = address_json.get("area"),
-            city = address_json.get("city"),
-            pincode = address_json.get("pincode"),
-            country = address_json.get("country"),
+            pincode = address_json.get("pin_code"),
             landmark = address_json.get("landmark") or "",
             user_id = user_id
         )
@@ -67,6 +90,7 @@ class User(db.Model):
 
     address = db.relationship(Address, lazy=True)
     order = db.relationship(Order, lazy=True)
+    child = db.relationship(Child, lazy=True)
     #Orders
 
     @hybrid_property
@@ -95,6 +119,9 @@ class User(db.Model):
         user_obj.add_cart_and_wishlist()
 
         return user_obj
+
+    def add_child(self, child_json):
+        Child.create(child_json, self.id)
 
     def update_details(self, email, password):
         self.email = email

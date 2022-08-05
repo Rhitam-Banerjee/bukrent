@@ -2,8 +2,8 @@
     $(function(){
         $("#login_button").click(function(){
             let data = {
-                mobile_number: $("#mobile_number").val(),
-                password: $("#password").val()
+                password: $("#password").val(),
+                mobile_number: $("#mobile_number").val()
             }
 
             $.ajax({
@@ -18,7 +18,7 @@
                     $("#loader").show();
                 },
                 success: function (result) {
-                    window.location.href = result.redirect
+                    window.location.href = result.redirect;
                 },
                 error: function (result) {
                     Swal.fire(

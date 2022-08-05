@@ -58,6 +58,57 @@ def submit_mobile():
             "status": "success"
         }), 200
 
+@api.route("/login", methods=["POST"])
+def login():
+    mobile_number = request.json.get("mobile_number")
+    password = request.json.get("password")
+
+    if not all((password)):
+        return jsonify({
+            "message": "Password not entered!",
+            "status": "error"
+        }), 400
+
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+
+    if user:
+        if user.password == password:
+            session["current_user"] = user.guid
+            if not user.plan_id:
+                return jsonify({
+                    "redirect": url_for("views.select_plan"),
+                    "status": "success"
+                }), 200
+            if user.plan_id and not user.is_subscribed:
+                return jsonify({
+                    "redirect": url_for('views.selected_plan'),
+                    "status": "success"
+                }), 200
+            if len(user.address) == 0:
+                return jsonify({
+                    "redirect": url_for('views.add_address'),
+                    "status": "success"
+                }), 200
+            if len(user.child) == 0:
+                return jsonify({
+                    "redirect": url_for('views.add_children'),
+                    "status": "success"
+                }), 200
+            return jsonify({
+                "redirect": url_for('views.home'),
+                "status": "success"
+            }), 200
+        else:
+            return jsonify({
+                "message": "Incorrect Password!",
+                "status": "error"
+            }), 400
+    else:
+        return jsonify({
+            "message": "No User with that mobile number exists!",
+            "status": "error"
+        }), 400
+
 @api.route("/signup", methods=["POST"])
 def signup():
     first_name = request.json.get("first_name")
@@ -330,171 +381,49 @@ def payment_successful():
         "status": "success"
     }), 201
 
-@api.route("/login", methods=["POST"])
-def login():
-    mobile_number = request.json.get("mobile_number")
-    password = request.json.get("password")
+@api.route("/add-address", methods=["POST"])
+def add_address():
+    try:
+        address_json = dict(
+            house_number = request.json.get("house_number"),
+            building = request.json.get("building"),
+            area = request.json.get("area"),
+            landmark = request.json.get("landmark"),
+            pin_code = request.json.get("pin_code")
+        )
 
-    if not all((mobile_number, password)):
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        Address.create(address_json, user.id)
+
         return jsonify({
-            "message": "Both fields are mandatory!",
-            "status": "error"
+            "redirect": url_for('views.add_children'),
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "success"
         }), 400
 
-    if len(mobile_number) != 10:
+@api.route("/add-children", methods=["POST"])
+def add_children():
+    try:
+        children = request.json.get("children")
+
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        for child in children:
+            user.add_child(child)
+
         return jsonify({
-            "message": "Incorrect format for mobile number. Please make sure there are no spaces or country codes.",
-            "status": "error"
-        }), 400
-
-    user = User.query.filter_by(mobile_number=mobile_number).first()
-
-    if user:
-        if user.password == password:
-            session["current_user"] = user.guid
-
-            if user.is_subscribed:
-                return jsonify({
-                    "redirect": url_for('views.home'),
-                    "status": "success"
-                }), 201
-            else:
-                if session.get("plan"):
-                    return jsonify({
-                        "redirect": url_for('views.confirm_plan'),
-                        "status": "success"
-                    }), 201
-                else:
-                    return jsonify({
-                        "redirect": url_for('views.become_a_subscriber'),
-                        "status": "success"
-                    }), 201            
-        else:
-            return jsonify({
-                "message": "Incorrect Password!",
-                "status": "error"
-            }), 400
-    else:
+            "status": "success"
+        }), 201
+    except Exception as e:
         return jsonify({
-            "message": "No User with that mobile number exists!",
-            "status": "error"
+            "message": str(e),
+            "status": "success"
         }), 400
-
-# @api.route("/signup", methods=["POST"])
-# def signup():
-#     name = request.json.get("name")
-#     child_name = request.json.get("child_name")
-#     mobile_number = request.json.get("mobile_number")
-#     age = request.json.get("age")
-#     email = request.json.get("email")
-#     password = request.json.get("password")
-
-#     house_number = request.json.get("house_number")
-#     area = request.json.get("area")
-#     landmark = request.json.get("landmark")
-#     city = request.json.get("city")
-#     country = request.json.get("country")
-#     pincode = request.json.get("pincode")
-
-#     if not all((name, mobile_number, email, password, child_name, age, house_number, area, city, country, pincode)):
-#         return jsonify({
-#             "message": "All fields are required!",
-#             "status": "error"
-#         }), 400
-    
-#     if len(mobile_number) != 10:
-#         return jsonify({
-#             "message": "Incorrect format for mobile number. Please make sure there are no spaces or country codes.",
-#             "status": "error"
-#         }), 400
-
-#     user = User.query.filter_by(mobile_number=mobile_number).first()
-#     if user:
-#         session["mobile_number"] = mobile_number
-#     else:
-#         session["name"] = name
-#         session["child_name"] = child_name
-#         session["mobile_number"] = mobile_number
-#         session["age"] = age
-#         session["email"] = email
-#         session["password"] = password
-
-#         session["house_number"] = house_number
-#         session["area"] = area
-#         session["landmark"] = landmark
-#         session["city"] = city
-#         session["country"] = country
-#         session["pincode"] = pincode
-
-#     account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-#     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-#     client = Client(account_sid, auth_token)
-
-#     verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
-
-#     return jsonify({
-#         "message": "OTP Sent!",
-#         "status": "success"
-#     }), 201
-
-# @api.route("/confirm-mobile", methods=["POST"])
-# def confirm_mobile():
-#     verification_code = request.json.get("verification_code")
-
-#     account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-#     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-#     client = Client(account_sid, auth_token)
-
-#     verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{session.get('mobile_number')}", code=verification_code)
-
-#     if verification_check.status == "approved":
-#         User.create(session.get("name"), session.get("age"), session.get("child_name"), session.get("mobile_number"), session.get("email"), session.get("password"))
-#         user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
-#         Address.create({
-#             "house_number": session.get("house_number"),
-#             "area": session.get("area"),
-#             "city": session.get("city"),
-#             "pincode": session.get("pincode"),
-#             "country": session.get("country"),
-#             "landmark": session.get("landmark")
-#         }, user.id)
-
-#         session["name"] = None
-#         session["child_name"] = None
-#         session["age"] = None
-#         session["mobile_number"] = None
-#         session["email"] = None
-#         session["password"] = None
-
-#         session["house_number"] = None
-#         session["area"] = None
-#         session["landmark"] = None
-#         session["city"] = None
-#         session["country"] = None
-#         session["pincode"] = None
-
-#         session["current_user"] = user.guid
-        
-#         user.add_books_to_cart_and_wishlist(session.get("cart") or [], session.get("wishlist") or [])
-#         session["cart"] = None
-#         session["wishlist"] = None
-
-#         if session.get("plan"):
-#             return jsonify({
-#                 "redirect": url_for('views.confirm_plan'),
-#                 "status": "success"
-#             }), 201
-#         else:
-#             return jsonify({
-#                 "redirect": url_for('views.become_a_subscriber'),
-#                 "status": "success"
-#             }), 201
-        
-#     else:
-#         return jsonify({
-#             "message": "Verification Failed! Try Again.",
-#             "status": "error"
-#         }), 400
 
 @api.route("/logout", methods=["POST"])
 def logout():
@@ -533,21 +462,6 @@ def cart_checkout():
             "redirect": url_for('views.signup'),
             "status": "success"
         }), 201
-
-# @api.route("/payment-successful", methods=["POST"])
-# def payment_successful():
-#     current_user = User.query.filter_by(guid=session.get('current_user')).first()
-#     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
-#     subscription = client.subscription.fetch(current_user.subscription_id)
-
-#     current_user.add_customer_id(subscription.get("customer_id"))
-#     session["plan"] = None
-
-#     if session.get("cart_checkout"):
-#         session["cart_checkout"] = None
-#         return redirect(url_for("views.add_address"))
-#     else:
-#         return redirect(url_for("views.payment_successful"))
 
 @api.route("/add-to-cart", methods=["POST"])
 def add_to_cart():

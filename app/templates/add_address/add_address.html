@@ -1,168 +1,49 @@
-{% extends "template.jinja" %}
+{% extends "template_new.jinja" %}
 {% block main %}
 
 {% include("add_address/add_address_script.jinja") %}
 {% include("add_address/add_address_style.jinja") %}
 
 <div class="container">
-    <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-0 mt-md-1 mt-lg-5">
-            <p class="section-title">Confirm Address</p>
-        </div>
-    </div>
-
-    <div class="row pt-3 pt-md-5 pt-lg-5">
-        <!-- Billing Address -->
-        <div class="col-12 col-md-6 col-lg-6">
-            <div class="row mt-4">
-                <div class="col-12 col-md-3 col-lg-3">
-                    <p class="big-text">Billing Address</p>
-                </div>
-                <div class="col-12 col-md-9 col-lg-9">
-                    <div class="row">
-                        <div class="col-12 col-md-12 col-lg-12 mt-2">
-                            <p class="small-text">Flat, House No., Building, Apartment</p>
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mb-2">
-                            <input type="text" name="billing_house_number" id="billing_house_number" class="form-control" placeholder="" />
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12">
-                            <p class="small-text">Area / Region</p>
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mb-2">
-                            <input type="text" name="billing_area" id="billing_area" class="form-control" placeholder="" />
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12">
-                            <p class="small-text">Landmark (Optional)</p>
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mb-2">
-                            <input type="text" name="billing_landmark" id="billing_landmark" class="form-control" placeholder="" />
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12">
-                            <p class="small-text">City</p>
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mb-2">
-                            <input type="text" name="billing_city" id="billing_city" class="form-control" placeholder="" />
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12">
-                            <p class="small-text">Country</p>
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mb-2">
-                            <input type="text" name="billing_country" id="billing_country" class="form-control" placeholder="" />
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12">
-                            <p class="small-text">Pincode</p>
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mb-2">
-                            <input type="text" name="billing_pincode" id="billing_pincode" class="form-control" placeholder="" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Delivery Address -->
-        <div class="col-12 col-md-6 col-lg-6">
-            <div class="row">
-                <div class="col-12 col-md-3 col-lg-3 mt-4">
-                    <p class="big-text">Delivery Address</p>
-                </div>
-                <div class="col-12 col-md-9 col-lg-9">
-                    <div class="row">
-                        <div class="col-12 col-md-12 col-lg-12">
-                            <input type="checkbox" name="same_as_billing" id="same_as_billing" /> Same as Billing Address
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mt-2">
-                            <p class="small-text">Flat, House No., Building, Apartment</p>
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mb-2">
-                            <input type="text" name="delivery_house_number" id="delivery_house_number" class="form-control" placeholder="" />
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12">
-                            <p class="small-text">Area / Region</p>
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mb-2">
-                            <input type="text" name="delivery_area" id="delivery_area" class="form-control" placeholder="" />
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12">
-                            <p class="small-text">Landmark (Optional)</p>
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mb-2">
-                            <input type="text" name="delivery_landmark" id="delivery_landmark" class="form-control" placeholder="" />
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12">
-                            <p class="small-text">City</p>
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mb-2">
-                            <input type="text" name="delivery_city" id="delivery_city" class="form-control" placeholder="" />
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12">
-                            <p class="small-text">Country</p>
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mb-2">
-                            <input type="text" name="delivery_country" id="delivery_country" class="form-control" placeholder="" />
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12">
-                            <p class="small-text">Pincode</p>
-                        </div>
-                        <div class="col-12 col-md-12 col-lg-12 mb-2">
-                            <input type="text" name="delivery_pincode" id="delivery_pincode" class="form-control" placeholder="" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 offset-md-2 offset-lg-2 col-md-9 col-lg-9 mt-2">
-            <input type="checkbox" name="is_gift" id="is_gift" /> This is a gift
-        </div>
-
-        <div class="col-12 offset-md-2 offset-lg-2 col-md-9 col-lg-9 mt-2">
-            <p class="big-text">Add Gifting Message (if any)</p>
-        </div>
-
-        <div class="col-12 offset-md-2 offset-lg-2 col-md-9 col-lg-9">
-            <textarea name="gift_message" id="gift_message" class="form-control"></textarea>
-        </div>
-    </div>
-
-    <div class="row pt-3 pt-md-5 pt-lg-5">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-0 mt-md-1 mt-lg-2">
-            <p class="section-title">Choose Books ({{user.books_per_week}})</p>
-        </div>
-    </div>
-
     <div class="row">
-        {% for book in user.cart.books %}
-            <div class="col-12 col-md-12 col-lg-12 book-box p-2 m-2">
-                <div class="row">
-                    <div class="col-3 col-md-3 col-lg-3 text-center">
-                        <img src="{{book.image}}" class="img-fluid cart-img" />
-                    </div>
-                    <div class="col-6 col-md-6 col-lg-6 pt-0 pt-md-3 pt-lg-3">
-                        <div class="row">
-                            <div class="col-12 col-md-12 col-lg-12">
-                                <a class="no-decoration" href="{{url_for('views.book_details')}}?guid={{book.guid}}"><h2 class="big-text"><b>{{book.name}}</b></h2></a>
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                <a class="no-decoration"><b>{{book.authors[0].name}}</b></a>
-                            </div>
-                            <div class="col-12 col-md-12 col-lg-12">
-                                <p class="text-yellow"><i class="fa-solid fa-star"></i> {{book.rating}}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-3 col-md-3 col-lg-3 pt-3 pt-md-5 pt-lg-5">
-                        <input type="checkbox" name="{{book.guid}}" id="{{book.guid}}" class="book_checkbox" /> Order this
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-
-    <div class="row mb-5">
-        <div class="col-12 col-md-12 col-lg-12 text-center">
-            <button class="cart-button m-2 py-3" onclick="place_order()">Confirm Order</button>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <img src="/static/images/address.svg" class="img-fluid step-img" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <h2><b>Add Address</b></h2>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
+            <p><b>Flat / House Number</b></p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <input type="text" name="house_number" id="house_number" class="form-control" placeholder="" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
+            <p><b>Building / Apartment</b></p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <input type="text" name="building" id="building" class="form-control" placeholder="" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
+            <p><b>Area / Street</b></p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <input type="text" name="area" id="area" class="form-control" placeholder="" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
+            <p><b>Landmark</b></p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <input type="text" name="landmark" id="landmark" class="form-control" placeholder="" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
+            <p><b>6 - Digits [0-9] PIN code</b></p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <input type="text" name="pin_code" id="pin_code" class="form-control" placeholder="" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 py-5 text-center">
+            <button class="orange-btn m-2 py-3" id="next_button">Next</button>
         </div>
     </div>
 </div>

@@ -1,0 +1,33 @@
+{% extends "template_new.jinja" %}
+{% block main %}
+
+{% include("add_children/add_children_script.jinja") %}
+{% include("add_children/add_children_style.jinja") %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <img src="/static/images/children.svg" class="img-fluid step-img" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <h2><b>Add Details</b></h2>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
+            <p><b>Parent's Name</b></p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <input type="text" name="name" class="form-control" value="{{user.first_name}} {{user.last_name}}" readonly />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3" id="children_data">
+            
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5 text-center">
+            <button class="orange-btn m-2 py-3" id="finish_button">Finish</button>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-3 pb-5 text-center">
+            <button class="white-btn m-2 py-3" id="add_button">Add another child</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

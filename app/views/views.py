@@ -24,14 +24,26 @@ def home():
 @views.route("/signup")
 def signup():
     mobile_number = session.get("mobile_number")
+    if not mobile_number:
+        return redirect(url_for('views.home'))
     return render_template(
         "signup_new/signup_new.html",
+        mobile_number=mobile_number
+    )
+
+@views.route("/login")
+def login():
+    mobile_number = session.get("mobile_number")
+    return render_template(
+        "/login/login.html",
         mobile_number=mobile_number
     )
 
 @views.route('/confirm-mobile')
 def confirm_mobile():
     mobile_number = session.get("mobile_number")
+    if not mobile_number:
+        return redirect(url_for('views.home'))
     return render_template(
         "confirm_mobile_new/confirm_mobile_new.html",
         mobile_number=mobile_number
@@ -40,6 +52,10 @@ def confirm_mobile():
 @views.route("/add-details")
 def add_details():
     user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if user.password:
+        return redirect(url_for('views.select_plan'))
     return render_template(
         "add_details/add_details.html",
         user=user
@@ -47,6 +63,13 @@ def add_details():
 
 @views.route("/select-plan")
 def select_plan():
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if not user.password:
+        return redirect(url_for('views.add_details'))
+    if user.plan_id:
+        return redirect(url_for('views.selected_plan'))
     return render_template(
         "select_plan/select_plan.html"
     )
@@ -54,12 +77,19 @@ def select_plan():
 @views.route("/selected-plan")
 def selected_plan():
     user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if not user.plan_id:
+        return redirect(url_for('views.select_plan'))
+    if user.is_subscribed:
+        return redirect(url_for('views.add_address'))
+
     if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
         plan_image = "selected1.svg"
     elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"):
-        plan_image = "selected1.svg"
+        plan_image = "selected2.svg"
     elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
-        plan_image = "selected1.svg"
+        plan_image = "selected3.svg"
     return render_template(
         "selected_plan/selected_plan.html",
         plan_image=plan_image
@@ -68,16 +98,23 @@ def selected_plan():
 @views.route("/confirm-subscription")
 def confirm_subscription():
     user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if not user.plan_id:
+        return redirect(url_for('views.select_plan'))
+    if user.is_subscribed:
+        return redirect(url_for('views.add_address'))
+
     if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
         plan_image = "subscription_box1.svg"
         amount = 799
         next_amount = 299
     elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"):
-        plan_image = "subscription_box1.svg"
+        plan_image = "subscription_box2.svg"
         amount = 949
         next_amount = 449
     elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
-        plan_image = "subscription_box1.svg"
+        plan_image = "subscription_box3.svg"
         amount = 1169
         next_amount = 669
     return render_template(
@@ -90,16 +127,23 @@ def confirm_subscription():
 @views.route("/confirm-payment")
 def confirm_payment():
     user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if not user.plan_id:
+        return redirect(url_for('views.select_plan'))
+    if user.is_subscribed:
+        return redirect(url_for('views.add_address'))
+
     if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
         plan_image = "payment_box1.svg"
         amount = 1379
         next_amount = 897
     elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"):
-        plan_image = "payment_box1.svg"
+        plan_image = "payment_box2.svg"
         amount = 1847
         next_amount = 1347
     elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
-        plan_image = "payment_box1.svg"
+        plan_image = "payment_box3.svg"
         amount = 2507
         next_amount = 2007
     return render_template(
@@ -112,9 +156,40 @@ def confirm_payment():
 @views.route("/payment-successful")
 def payment_successful():
     user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if not user.is_subscribed:
+        return redirect(url_for('views.select_plan'))
     return render_template(
         "/payment_successful/payment_successful.html",
         payment_id=user.payment_id
+    )
+
+@views.route("/add-address")
+def add_address():
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if not user.is_subscribed:
+        return redirect(url_for('views.select_plan'))
+    if len(user.address) > 0:
+        return redirect(url_for('views.add_children'))
+    return render_template(
+        "/add_address/add_address.html",
+    )
+
+@views.route("/add-children")
+def add_children():
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if len(user.address) == 0:
+        return redirect(url_for('views.add_address'))
+    if len(user.child) > 0:
+        return redirect(url_for('views.home'))
+    return render_template(
+        "/add_children/add_children.html",
+        user=user
     )
 
 @views.route("/browse")
@@ -148,14 +223,6 @@ def book_details():
         user=user
     )
 
-# @views.route('/become-subscriber')
-# def become_a_subscriber():
-#     current_user = session.get("current_user")
-#     return render_template(
-#         "/become_subscriber/become_subscriber.html",
-#         current_user=current_user
-#     )
-
 @views.route('/confirm-plan')
 def confirm_plan():
     plan = session.get("plan")
@@ -186,38 +253,6 @@ def confirm_plan():
         current_user=current_user
     )
 
-# @views.route("/signup")
-# def signup():
-#     if session.get("current_user"):
-#         user = User.query.filter_by(guid=session.get("current_user")).first()
-#         if user.is_subscribed:
-#             redirect(url_for('views.cart'))
-#         else:
-#             redirect(url_for(''))
-#     current_user = session.get("current_user")
-#     return render_template(
-#         "/signup/signup.html",
-#         current_user=current_user
-#     )
-
-@views.route("/login")
-def login():
-    current_user = session.get("current_user")
-    return render_template(
-        "/login/login.html",
-        current_user=current_user
-    )
-
-# @views.route("/confirm-mobile")
-# def confirm_mobile():
-#     mobile_number = session.get("mobile_number")
-#     current_user = session.get("current_user")
-#     return render_template(
-#         "/confirm_mobile/confirm_mobile.html",
-#         mobile_number=mobile_number,
-#         current_user=current_user
-#     )
-
 @views.route("/cart")
 def cart():
     current_user_guid = session.get('current_user')
@@ -241,17 +276,6 @@ def cart():
         cart = cart_objs,
         wishlist = wishlist_objs,
         current_user=current_user
-    )
-
-@views.route("/add-address")
-def add_address():
-    current_user = session.get("current_user")
-    user = User.query.filter_by(guid=current_user).first()
-
-    return render_template(
-        "/add_address/add_address.html",
-        current_user=current_user,
-        user=user
     )
 
 @views.route("/order-placed")

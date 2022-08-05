@@ -1,34 +1,32 @@
-{% extends "template.jinja" %}
+{% extends "template_new.jinja" %}
 {% block main %}
 
 {% include("login/login_script.jinja") %}
 {% include("login/login_style.jinja") %}
 
 <div class="container">
-    <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-0 mt-md-1 mt-lg-5">
-            <p class="section-title">Login</p>
-        </div>
-    </div>
-
     <div class="row">
-        <div class="col-12 col-md-6 col-lg-6 text-center">
-            <input type="number" name="mobile_number" id="mobile_number" class="form-control" placeholder="Mobile Number" />
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <h2><b>Login</b></h2>
         </div>
-        <div class="col-12 col-md-6 col-lg-6 text-center">
-            <input type="password" name="password" id="password" class="form-control" placeholder="Password" />
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
+            <p><b>Mobile Number</b></p>
         </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12 col-md-12 col-lg-12 text-center mt-5">
-            <button class="cart-button m-2 py-3" id="login_button">Login</button>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            {% if mobile_number %}
+            <input type="text" name="mobile_number" id="mobile_number" class="form-control" value="{{mobile_number}}" readonly />
+            {% else %}
+            <input type="text" name="mobile_number" id="mobile_number" class="form-control" />
+            {% endif %}
         </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12 col-md-12 col-lg-12 text-center">
-            <span class="small-text">Or don't have an account? <a href="{{url_for('views.signup')}}">Signup</a> now!</span>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-4">
+            <p><b>Password</b></p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <input type="text" name="password" id="password" class="form-control" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 py-5 text-center">
+            <button class="orange-btn m-2 py-3" id="login_button">Login</button>
         </div>
     </div>
 </div>
