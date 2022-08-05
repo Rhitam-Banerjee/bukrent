@@ -33,7 +33,7 @@ def signup():
 
 @views.route("/login")
 def login():
-    user = User.query.filter_by(guid=session.get("mobile_number")).first()
+    user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
     if not user:
         return redirect(url_for('views.home'))
     return render_template(
