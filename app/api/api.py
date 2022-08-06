@@ -227,6 +227,17 @@ def choose_plan():
         "status": "success"
     }), 201
 
+@api.route("/change-plan", methods=["POST"])
+def change_plan():
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+
+    user.remove_plan()
+
+    return jsonify({
+        "redirect": url_for('views.select_plan'),
+        "status": "success"
+    }), 201
+
 @api.route("/choose-card", methods=["POST"])
 def choose_card():
     card = request.json.get("card")

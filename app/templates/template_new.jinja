@@ -53,7 +53,7 @@
             }
 
             .navbar {
-                background-color: #FFA142 !important;
+                background-color: #fa7e0a !important;
                 padding: 0px !important;
                 position: relative;
                 height: 75px;
@@ -65,12 +65,19 @@
                 margin-left: -75px;
             }
 
+            .bg-container2 {
+                background-image: url("/static/images/home_bg2.png");
+                background-repeat: repeat-x;
+                min-height: 100px;
+                color: white;
+            }
+
             .footer-container {
-                background-color: #ffebd2 !important;
+                background-color: #fa7e0a !important;
             }
 
             .footer-branding {
-                background-color: #FFA142 !important;
+                background-color: #fa7e0a !important;
             }
 
             .footer-logo {
@@ -82,9 +89,9 @@
             }
 
             .orange-btn {
-                background-color: #FFA142;
+                background-color: #fa7e0a;
                 color: white;
-                border: 2px solid #FFA142;
+                border: 2px solid #fa7e0a;
                 border-radius: 1em;
                 width: 90%;
                 font-weight: 900;
@@ -92,8 +99,8 @@
 
             .white-btn {
                 background-color: white;
-                color: #FFA142;
-                border: 2px solid #FFA142;
+                color: #fa7e0a;
+                border: 2px solid #fa7e0a;
                 border-radius: 1em;
                 width: 90%;
                 font-weight: 900;
@@ -116,7 +123,7 @@
 
             @media (max-width: 1024px) {
                 .navbar {
-                    background-color: #FFA142 !important;
+                    background-color: #fa7e0a !important;
                     padding: 0px !important;
                 }
 
@@ -146,7 +153,7 @@
                 }
 
                 .navbar {
-                    background-color: #FFA142 !important;
+                    background-color: #fa7e0a !important;
                     padding: 0px !important;
                 }
 
@@ -182,10 +189,10 @@
                 {% block main %}{% endblock %}
             </main>
             <footer>
-                <div class="row footer-branding">
-                    <div class="col-12 col-md-12 col-lg-12 p-1">
-                        <h1></h1>
-                    </div>
+                <div class="col-12 col-md-12 col-lg-12 p-2 footer-branding"></div>
+                <div class="col-12 col-md-12 col-lg-12 bg-container2 text-center align-middle pt-3">
+                    <h1>Online Book Delivery</h1>
+                    <p>Weekly Doorstep Delivery</p>
                 </div>
                 <div class="row footer-container p-3">
                     <div class="col-6 col-md-4 col-lg-4">
@@ -215,5 +222,35 @@
         <div id="loader">
             <img src="/static/images/loading.gif" class="loading-gif">
         </div>
+
+        <script>
+            $("#plan_button").click(function(){
+                $.ajax({
+                    url: "{{url_for('api.change_plan')}}",
+                    type: "post",
+                    contentType: 'application/json',
+                    beforeSend: function(){
+                        $('.main-container').addClass('blur');
+                        $(':button').prop('disabled', true);
+                        $("#loader").show();
+                    },
+                    success: function (result) {
+                        window.location.href = result.redirect;
+                    },
+                    error: function (result) {
+                        Swal.fire(
+                            'Uh Oh!',
+                            result.responseJSON.message,
+                            'error'
+                        )
+                    },
+                    complete:function(data){
+                        $('.main-container').removeClass('blur');
+                        $(':button').prop('disabled', false);
+                        $("#loader").hide();
+                    }
+                })
+            })
+        </script>
     </body>
 </html>

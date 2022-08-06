@@ -139,6 +139,11 @@ class User(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def remove_plan(self):
+        self.plan_id = ""
+        db.session.add(self)
+        db.session.commit()
+
     def add_cart_and_wishlist(self):
         cart = Cart.create(self.id)
         wishlist = Wishlist.create(self.id)
