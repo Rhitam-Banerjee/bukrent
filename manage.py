@@ -31,7 +31,7 @@ def seed_db():
     seed()
 
 @cli.command()
-def export():
+def export_db():
     export()
 
 if __name__ == '__main__':
