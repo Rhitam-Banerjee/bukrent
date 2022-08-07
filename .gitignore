@@ -2,4 +2,6 @@ venv
 *.env
 data.csv
 
+export_data/
+
 __pycache__
