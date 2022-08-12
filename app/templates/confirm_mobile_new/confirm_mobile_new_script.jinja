@@ -24,7 +24,7 @@
 
         $("#signup_button").click(function(){
             let data = {
-                otp: `${$("#digit-1").val()}${$("#digit-2").val()}${$("#digit-3").val()}${$("#digit-4").val()}${$("#digit-5").val()}${$("#digit-6").val()}`
+                otp: $("#otp").val()
             }
 
             $.ajax({

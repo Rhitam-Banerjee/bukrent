@@ -286,6 +286,42 @@ def happy_reading():
         user=user
     )
 
+@views.route("/terms-and-conditions")
+def terms_and_conditions():
+    return render_template(
+        "/terms_and_conditions/terms_and_conditions.html"
+    )
+
+@views.route("/privacy-policy")
+def privacy_policy():
+    return render_template(
+        "/privacy_policy/privacy_policy.html"
+    )
+
+@views.route("/disclaimer")
+def disclaimer():
+    return render_template(
+        "/disclaimer/disclaimer.html"
+    )
+
+@views.route("/refund-policy")
+def refund_policy():
+    return render_template(
+        "/refund_policy/refund_policy.html"
+    )
+
+@views.route("/contact-us")
+def contact_us():
+    return render_template(
+        "/contact_us/contact_us.html"
+    )
+
+@views.route("/about-us")
+def about_us():
+    return render_template(
+        "/about_us/about_us.html"
+    )
+
 
 ################################### Admin APIs (Temporary)
 @views.route("/delete-user")
@@ -490,52 +526,4 @@ def search_result():
         all_publishers = all_publishers,
         query = search,
         user = user
-    )
-
-@views.route("/terms-and-conditions")
-def terms_and_conditions():
-    current_user = session.get("current_user")
-    user = None
-    if current_user:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
-    return render_template(
-        "/terms_and_conditions/terms_and_conditions.html",
-        current_user=current_user,
-        user=user
-    )
-
-@views.route("/privacy-policy")
-def privacy_policy():
-    current_user = session.get("current_user")
-    user = None
-    if current_user:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
-    return render_template(
-        "/privacy_policy/privacy_policy.html",
-        current_user=current_user,
-        user=user
-    )
-
-@views.route("/contact-us")
-def contact_us():
-    current_user = session.get("current_user")
-    user = None
-    if current_user:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
-    return render_template(
-        "/contact_us/contact_us.html",
-        current_user=current_user,
-        user=user
-    )
-
-@views.route("/about-us")
-def about_us():
-    current_user = session.get("current_user")
-    user = None
-    if current_user:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
-    return render_template(
-        "/about_us/about_us.html",
-        current_user=current_user,
-        user=user
     )
