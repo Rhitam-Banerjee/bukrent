@@ -222,7 +222,7 @@ def preferences():
         return redirect(url_for('views.happy_reading'))
     else:
         guid = request.args.get("guid")
-        all_children = Child.query.filter_by(user_id=user.id).order_by(Child.dob.asc()).all()
+        all_children = Child.query.filter_by(user_id=user.id).order_by(Child.dob.desc()).all()
         for child in user.child:
             if guid == child.guid:
                 if child.preferences:
