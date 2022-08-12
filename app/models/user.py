@@ -169,7 +169,8 @@ class Child(db.Model):
         db.session.commit()
 
     def delete(self):
-        db.session.delete(self.preferences)
+        if self.preferences:
+            db.session.delete(self.preferences)
         db.session.delete(self)
         db.session.commit()
 
