@@ -12,9 +12,10 @@
             margin:25,
             nav: true,
             dots: false,
+            navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
             responsive:{
                 0:{
-                    items:2
+                    items:1
                 }
             }
         });
@@ -316,7 +317,7 @@
                                     <div class="series-box" id="${result.data[i].guid}" data-guid="${result.data[i].guid}">
                                         <div class="row">
                                             <div class="col-12 col-md-12 col-lg-12 text-center series-box-container">
-                                                <img src="https://bukrent-production.s3.ap-south-1.amazonaws.com/series_images/${result.data[i].name}.jpg" class="img-fluid relative-img" style="border-radius: 1rem;" />
+                                                <img src="https://bukrent-production.s3.ap-south-1.amazonaws.com/series_images/${result.data[i].name}.jpg" class="img-fluid relative-img" style="border-radius: 1rem; min-height:88%;" />
                                                 <div class="overlay hidden-overlay">
                                                     <img class="img-fluid selected-img" src="/static/images/selected.png" />
                                                 </div>

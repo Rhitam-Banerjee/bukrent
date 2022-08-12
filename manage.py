@@ -36,7 +36,7 @@ def export_db():
     export()
 
 @cli.command()
-def seed():
+def seed_users_data():
     seed_users()
 
 if __name__ == '__main__':
