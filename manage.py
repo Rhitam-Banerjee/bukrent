@@ -4,6 +4,7 @@ from flask import current_app
 
 from seed_4 import *
 from export import *
+from seed_users import *
 
 from app.models.annotations import Annotation
 from app.models.author import Author
@@ -33,6 +34,10 @@ def seed_db():
 @cli.command()
 def export_db():
     export()
+
+@cli.command()
+def seed():
+    seed_users()
 
 if __name__ == '__main__':
     cli()

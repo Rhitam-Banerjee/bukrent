@@ -1,0 +1,362 @@
+<script>
+    let books_read_per_week = parseInt("{{child.preferences.books_read_per_week}}");
+
+    let selected_categories = {{categories}}
+    let selected_formats = {{formats}}
+    let selected_authors = {{authors}}
+    let selected_series = {{series}}
+
+    $(document).ready(function(){
+        $("#children-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            responsive:{
+                0:{
+                    items:2
+                }
+            }
+        });
+
+        $("#children-carousel").trigger('to.owl.carousel', parseInt("{{position}}"))
+
+        display_books_read_per_week();
+
+        get_preferences();
+        get_formats();
+        get_authors();
+        get_series();
+    })
+
+    $(function(){
+        $("#read-option-1").click(function(){
+            books_read_per_week = 1;
+            display_books_read_per_week();
+        });
+        $("#read-option-2").click(function(){
+            books_read_per_week = 2;
+            display_books_read_per_week();
+        });
+        $("#read-option-3").click(function(){
+            books_read_per_week = 3;
+            display_books_read_per_week();
+        });
+
+        $("#submit_button").click(function(){
+            let data = {
+                guid: "{{child.guid}}",
+                preference_data: {
+                    last_book_read1: $("#last_book_read1").val(),
+                    last_book_read2: $("#last_book_read2").val(),
+                    last_book_read3: $("#last_book_read3").val(),
+                    books_read_per_week: books_read_per_week,
+
+                    categories: [],
+                    formats: [],
+                    authors: [],
+                    series: []
+                }
+            }
+
+            $(".preference_selected").each(function(){
+                data.preference_data.categories.push($(this).data("guid"))
+            })
+
+            $(".format_selected").each(function(){
+                data.preference_data.formats.push($(this).data("guid"))
+            })
+
+            $(".author_selected").each(function(){
+                data.preference_data.authors.push($(this).data("guid"))
+            })
+
+            $(".series_selected").each(function(){
+                data.preference_data.series.push($(this).data("guid"))
+            })
+
+            $.ajax({
+                url: "{{url_for('api.submit_preferences')}}",
+                type: "post",
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function (result) {
+                    window.location.href = result.redirect
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                }
+            })
+        })
+    })
+
+    function display_books_read_per_week() {
+        $("#read-img-1").attr("src", `/static/images/books_read_1.svg`);
+        $("#read-img-2").attr("src", `/static/images/books_read_2.svg`);
+        $("#read-img-3").attr("src", `/static/images/books_read_3.svg`);
+
+        if (books_read_per_week == 1) {
+            $("#read-img-1").attr("src", `/static/images/books_read_1_selected.svg`);
+        }
+        if (books_read_per_week == 2) {
+            $("#read-img-2").attr("src", `/static/images/books_read_2_selected.svg`);
+        }
+
+        if (books_read_per_week == 3) {
+            $("#read-img-3").attr("src", `/static/images/books_read_3_selected.svg`);
+        }
+    }
+
+    function get_preferences() {
+        let data = {
+            age_group: {{child.age_group}}
+        }
+
+        $.ajax({
+            url: "{{url_for('api.get_genres')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                for (let i = 0; i < result.data.length; i++) {
+                    let html = `
+                                <a onclick="preference_clicked('${result.data[i].guid}')">
+                                    <div class="preference-box" id="${result.data[i].guid}" data-guid="${result.data[i].guid}">
+                                        <div class="row">
+                                            <div class="col-12 col-md-12 col-lg-12 text-center pt-4 preference-box-container">
+                                                <p>${result.data[i].name}</p>
+                                                <div class="overlay hidden-overlay">
+                                                    <img class="img-fluid selected-img" src="/static/images/selected.png" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            `
+
+                    $("#preferences-carousel").append(html);
+                }
+
+                $("#preferences-carousel").owlCarousel({
+                    responsiveClass:true,
+                    margin:25,
+                    nav: false,
+                    dots: false,
+                    responsive:{
+                        0:{
+                            items:3
+                        }
+                    }
+                });
+
+                for (let i = 0; i < selected_categories.length; i++) {
+                    preference_clicked(selected_categories[i])
+                }
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function preference_clicked(guid) {
+        $(`#${guid}`).find("div.overlay").toggleClass("hidden-overlay");
+        $(`#${guid}`).toggleClass("preference_selected");
+    }
+
+    function get_formats() {
+        let data = {
+            age_group: {{child.age_group}}
+        }
+
+        $.ajax({
+            url: "{{url_for('api.get_formats')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                for (let i = 0; i < result.data.length; i++) {
+                    let html = `
+                                <a onclick="format_clicked('${result.data[i].guid}')">
+                                    <div class="format-box" id="${result.data[i].guid}" data-guid="${result.data[i].guid}">
+                                        <div class="row">
+                                            <div class="col-12 col-md-12 col-lg-12 text-center format-box-container">
+                                                <img src="https://bukrent-production.s3.ap-south-1.amazonaws.com/format_images/${result.data[i].name}.svg" class="img-fluid relative-img" />
+                                                <div class="overlay-box hidden-overlay">
+                                                    <img class="img-fluid selected-img" src="/static/images/selected.png" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            `
+
+                    $("#formats-carousel").append(html);
+                }
+
+                $("#formats-carousel").owlCarousel({
+                    responsiveClass:true,
+                    margin:25,
+                    nav: false,
+                    dots: false,
+                    responsive:{
+                        0:{
+                            items:2
+                        }
+                    }
+                });
+
+                for (let i = 0; i < selected_formats.length; i++) {
+                    format_clicked(selected_formats[i])
+                }
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function format_clicked(guid) {
+        $(`#${guid}`).find("div.overlay-box").toggleClass("hidden-overlay");
+        $(`#${guid}`).toggleClass("format_selected");
+    }
+
+    function get_authors() {
+        let data = {
+            age_group: {{child.age_group}}
+        }
+
+        $.ajax({
+            url: "{{url_for('api.get_authors')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                for (let i = 0; i < result.data.length; i++) {
+                    let html = `
+                                <a onclick="author_clicked('${result.data[i].guid}')">
+                                    <div class="author-box" id="${result.data[i].guid}" data-guid="${result.data[i].guid}">
+                                        <div class="row">
+                                            <div class="col-12 col-md-12 col-lg-12 text-center author-box-container">
+                                                <img src="https://bukrent-production.s3.ap-south-1.amazonaws.com/author_images/${result.data[i].name}.jpg" class="img-fluid relative-img" style="border-radius: 1rem;" />
+                                                <div class="overlay hidden-overlay">
+                                                    <img class="img-fluid selected-img" src="/static/images/selected.png" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            `
+
+                    $("#authors-carousel").append(html);
+                }
+
+                $("#authors-carousel").owlCarousel({
+                    responsiveClass:true,
+                    margin:25,
+                    nav: false,
+                    dots: false,
+                    responsive:{
+                        0:{
+                            items:2
+                        }
+                    }
+                });
+
+                for (let i = 0; i < selected_authors.length; i++) {
+                    author_clicked(selected_authors[i])
+                }
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function author_clicked(guid) {
+        $(`#${guid}`).find("div.overlay").toggleClass("hidden-overlay");
+        $(`#${guid}`).toggleClass("author_selected");
+    }
+
+    function get_series() {
+        let data = {
+            age_group: {{child.age_group}}
+        }
+
+        $.ajax({
+            url: "{{url_for('api.get_series')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (result) {
+                for (let i = 0; i < result.data.length; i++) {
+                    let html = `
+                                <a onclick="series_clicked('${result.data[i].guid}')">
+                                    <div class="series-box" id="${result.data[i].guid}" data-guid="${result.data[i].guid}">
+                                        <div class="row">
+                                            <div class="col-12 col-md-12 col-lg-12 text-center series-box-container">
+                                                <img src="https://bukrent-production.s3.ap-south-1.amazonaws.com/series_images/${result.data[i].name}.jpg" class="img-fluid relative-img" style="border-radius: 1rem;" />
+                                                <div class="overlay hidden-overlay">
+                                                    <img class="img-fluid selected-img" src="/static/images/selected.png" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            `
+
+                    $("#series-carousel").append(html);
+                }
+
+                $("#series-carousel").owlCarousel({
+                    responsiveClass:true,
+                    margin:25,
+                    nav: false,
+                    dots: false,
+                    responsive:{
+                        0:{
+                            items:2
+                        }
+                    }
+                });
+
+                for (let i = 0; i < selected_series.length; i++) {
+                    series_clicked(selected_series[i])
+                }
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function series_clicked(guid) {
+        $(`#${guid}`).find("div.overlay").toggleClass("hidden-overlay");
+        $(`#${guid}`).toggleClass("series_selected");
+    }
+</script>

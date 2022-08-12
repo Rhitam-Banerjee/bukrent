@@ -199,11 +199,79 @@ def add_children():
     if len(user.address) == 0:
         return redirect(url_for('views.add_address'))
     if len(user.child) > 0:
-        return redirect(url_for('views.happy_reading'))
+        return redirect(url_for('views.preferences'))
     return render_template(
         "/add_children/add_children.html",
         user=user
     )
+
+@views.route("/preferences")
+def preferences():
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if len(user.child) == 0:
+        return redirect(url_for('views.add_children'))
+
+    all_preferences = True
+    for child in user.child:
+        if not child.preferences:
+            all_preferences = False
+    
+    if all_preferences:
+        return redirect(url_for('views.happy_reading'))
+    else:
+        guid = request.args.get("guid")
+        for child in user.child:
+            if guid == child.guid:
+                if child.preferences:
+                    return render_template(
+                        "/preferences/preferences.html",
+                        guid=guid,
+                        child=child,
+                        all_children=user.child,
+                        position=user.child.index(child),
+                        categories=[category.guid for category in child.preferences.categories],
+                        formats=[format_obj.guid for format_obj in child.preferences.formats],
+                        authors=[authors.guid for authors in child.preferences.authors],
+                        series=[serie.guid for serie in child.preferences.series]
+                    )
+                else:
+                    return render_template(
+                        "/preferences/preferences.html",
+                        guid=guid,
+                        child=child,
+                        all_children=user.child,
+                        position=user.child.index(child),
+                        categories=[],
+                        formats=[],
+                        authors=[],
+                        series=[]
+                    )
+        if user.child[0].preferences:
+            return render_template(
+                "/preferences/preferences.html",
+                guid=user.child[0].guid,
+                child=user.child[0],
+                all_children=user.child,
+                position=user.child.index(user.child[0]),
+                categories=[category.guid for category in user.child[0].preferences.categories],
+                formats=[format_obj.guid for format_obj in user.child[0].preferences.formats],
+                authors=[authors.guid for authors in user.child[0].preferences.authors],
+                series=[serie.guid for serie in user.child[0].preferences.series]
+            )
+        else:
+            return render_template(
+                "/preferences/preferences.html",
+                guid=user.child[0].guid,
+                child=user.child[0],
+                all_children=user.child,
+                position=user.child.index(user.child[0]),
+                categories=[],
+                formats=[],
+                authors=[],
+                series=[]
+            )
 
 @views.route("/happy-reading")
 def happy_reading():

@@ -1,9 +1,8 @@
 from app import db
 import uuid
 
-from sqlalchemy.sql.expression import func
-
 from app.models.books import BookAuthor
+from app.models.user import AuthorPreferences
 
 class Author(db.Model):
     __tablename__ = "authors"
@@ -20,6 +19,7 @@ class Author(db.Model):
     total_books = db.Column(db.Integer)
     display = db.Column(db.Boolean, default=False)
     books = db.relationship('Book', secondary=BookAuthor.__table__)
+    preferences = db.relationship('Preference', secondary=AuthorPreferences.__table__)
 
     @staticmethod
     def create(name, author_type, age1, age2, age3, age4, age5, age6, total_books, display):
@@ -44,23 +44,26 @@ class Author(db.Model):
     def get_authors(age_group):
         if age_group:
             if age_group == 1:
-                authors = Author.query.filter_by(age1=True).all()[:10]
+                authors = Author.query.filter_by(age1=True).all()
             elif age_group == 2:
-                authors = Author.query.filter_by(age2=True).all()[:10]
+                authors = Author.query.filter_by(age2=True).all()
             elif age_group == 3:
-                authors = Author.query.filter_by(age3=True).all()[:10]
+                authors = Author.query.filter_by(age3=True).all()
             elif age_group == 4:
-                authors = Author.query.filter_by(age4=True).all()[:10]
+                authors = Author.query.filter_by(age4=True).all()
             elif age_group == 5:
-                authors = Author.query.filter_by(age5=True).all()[:10]
+                authors = Author.query.filter_by(age5=True).all()
             elif age_group == 6:
-                authors = Author.query.filter_by(age6=True).all()[:10]
+                authors = Author.query.filter_by(age6=True).all()
         else:
-            authors = Author.query.filter_by(display=True).all()[:10]
+            authors = Author.query.filter_by(display=True).all()
         
         final_authors = []
         for author in authors:
-            final_authors.append(author.name)
+            final_authors.append({
+                "name": author.name,
+                "guid": author.guid
+            })
 
         return final_authors
 

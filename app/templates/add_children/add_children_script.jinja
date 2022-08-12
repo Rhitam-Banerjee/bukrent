@@ -219,8 +219,6 @@
                 )
             }
 
-            debugger;
-
             $.ajax({
                 url: "{{url_for('api.add_children')}}",
                 type: "post",
@@ -233,7 +231,7 @@
                     $("#loader").show();
                 },
                 success: function (result) {
-                    window.location.href = "{{url_for('views.happy_reading')}}"
+                    window.location.href = `{{url_for('views.preferences')}}?guid=${result.guid}`
                 },
                 error: function (result) {
                     Swal.fire(

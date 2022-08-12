@@ -4,10 +4,11 @@ from app.models.author import Author
 from app.models.category import Category
 from app.models.launch import Launch
 from app.models.books import Book
-from app.models.user import User, Address
+from app.models.user import User, Address, Child, Preference
 from app.models.series import Series
 from app.models.order import Order
 from app.models.cart import Cart, Wishlist
+from app.models.format import Format
 from app.models.publishers import Publisher
 from app.models.search import Search
 
@@ -95,7 +96,7 @@ def login():
                     "status": "success"
                 }), 200
             return jsonify({
-                "redirect": url_for('views.happy_reading'),
+                "redirect": url_for('views.preferences'),
                 "status": "success"
             }), 200
         else:
@@ -428,13 +429,63 @@ def add_children():
     try:
         children = request.json.get("children")
 
+        for child in children:
+            if not all((child.get("name"), child.get("dob"), child.get("age_group"))):
+                return jsonify({
+                    "message": "All fields for all the kids are necessary.",
+                    "status": "error"
+                }), 400
+
         user = User.query.filter_by(guid=session.get("current_user")).first()
 
         for child in children:
             user.add_child(child)
 
         return jsonify({
-            "status": "success"
+            "status": "success",
+            "guid": user.child[0].guid
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/submit-preferences", methods=["POST"])
+def submit_preferences():
+    try:
+        guid = request.json.get("guid")
+        preference_data = request.json.get("preference_data")
+        if not guid:
+            return jsonify({
+                "message": "Bad request. No child identified",
+                "status": "success"
+            }), 400
+        
+        child = Child.query.filter_by(guid=guid).first()
+        if child.preferences:
+            child.preferences.update(preference_data)
+        else:
+            Preference.create(
+                preference_data.get("last_book_read1"),
+                preference_data.get("last_book_read2"),
+                preference_data.get("last_book_read3"),
+                preference_data.get("books_read_per_week"),
+                preference_data.get("categories"),
+                preference_data.get("formats"),
+                preference_data.get("authors"),
+                preference_data.get("series"),
+                child.id
+            )
+
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        for child_obj in user.child:
+            if not child_obj.preferences:
+                return jsonify({
+                    "redirect": f"{url_for('views.preferences')}?guid={child_obj.guid}"
+                }), 201
+        return jsonify({
+            "redirect": url_for('views.happy_reading')
         }), 201
     except Exception as e:
         return jsonify({
@@ -819,6 +870,14 @@ def get_all_genres():
     age_group = request.json.get("age_group")
     return jsonify({
         "data": Category.get_all_genres(age_group),
+        "status": "success"
+    }), 200
+
+@api.route("/get-formats", methods=["POST"])
+def get_formats():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Format.get_formats(age_group),
         "status": "success"
     }), 200
 

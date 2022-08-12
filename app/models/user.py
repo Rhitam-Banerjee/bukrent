@@ -5,8 +5,134 @@ from app.models.cart import Cart, Wishlist
 from app.models.order import Order
 
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.sql import func
 
 import os
+
+class CategoryPreferences(db.Model):
+    __tablename__ = 'category_preferences'
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    preference_id = db.Column(db.Integer, db.ForeignKey('preferences.id'))
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+
+class FormatPreferences(db.Model):
+    __tablename__ = 'format_preferences'
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    preference_id = db.Column(db.Integer, db.ForeignKey('preferences.id'))
+    format_id = db.Column(db.Integer, db.ForeignKey('formats.id'))
+
+class AuthorPreferences(db.Model):
+    __tablename__ = 'author_preferences'
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    preference_id = db.Column(db.Integer, db.ForeignKey('preferences.id'))
+    author_id = db.Column(db.Integer, db.ForeignKey('authors.id'))
+
+class SeriesPreferences(db.Model):
+    __tablename__ = 'series_preferences'
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    preference_id = db.Column(db.Integer, db.ForeignKey('preferences.id'))
+    series_id = db.Column(db.Integer, db.ForeignKey('series.id'))
+
+class Preference(db.Model):
+    __tablename__ = "preferences"
+    id = db.Column(db.Integer, primary_key=True)
+    guid = db.Column(db.String, nullable=False, unique=True)
+    last_book_read1 = db.Column(db.String)
+    last_book_read2 = db.Column(db.String)
+    last_book_read3 = db.Column(db.String)
+
+    books_read_per_week = db.Column(db.Integer)
+
+    categories = db.relationship('Category', secondary=CategoryPreferences.__table__)
+    formats = db.relationship('Format', secondary=FormatPreferences.__table__)
+    authors = db.relationship('Author', secondary=AuthorPreferences.__table__)
+    series = db.relationship('Series', secondary=SeriesPreferences.__table__)
+
+    child_id = db.Column(db.Integer, db.ForeignKey('children.id'), nullable=False)
+
+    @staticmethod
+    def create(last_book_read1, last_book_read2, last_book_read3, books_read_per_week, categories, formats, authors, series, child_id):
+        from app.models.format import Format
+        from app.models.author import Author
+        from app.models.series import Series
+        from app.models.category import Category
+
+        preference_dict = dict(
+            guid = str(uuid.uuid4()),
+            last_book_read1 = last_book_read1,
+            last_book_read2 = last_book_read2,
+            last_book_read3 = last_book_read3,
+            books_read_per_week = books_read_per_week,
+            child_id = child_id
+        )
+
+        category_list = []
+        for category_guid in categories:
+            category_list.append(Category.query.filter_by(guid=category_guid).first())
+
+        format_list = []
+        for format_guid in formats:
+            format_list.append(Format.query.filter_by(guid=format_guid).first())
+
+        author_list = []
+        for author_guid in authors:
+            author_list.append(Author.query.filter_by(guid=author_guid).first())
+
+        series_list = []
+        for series_guid in series:
+            series_list.append(Series.query.filter_by(guid=series_guid).first())
+
+        preference_dict["categories"] = category_list
+        preference_dict["formats"] = format_list
+        preference_dict["authors"] = author_list
+        preference_dict["series"] = series_list
+
+        preference_obj = Preference(**preference_dict)
+        db.session.add(preference_obj)
+        db.session.commit()
+
+    def update(self, preference_data):
+        from app.models.format import Format
+        from app.models.author import Author
+        from app.models.series import Series
+        from app.models.category import Category
+
+        self.last_book_read1 = preference_data.get("last_book_read1")
+        self.last_book_read2 = preference_data.get("last_book_read2")
+        self.last_book_read3 = preference_data.get("last_book_read3")
+        self.books_read_per_week = preference_data.get("books_read_per_week")
+
+        self.categories = []
+        self.formats = []
+        self.authors = []
+        self.series = []
+        
+        db.session.add(self)
+        db.session.commit()
+
+        category_list = []
+        for category_guid in preference_data.get("categories"):
+            category_list.append(Category.query.filter_by(guid=category_guid).first())
+
+        format_list = []
+        for format_guid in preference_data.get("formats"):
+            format_list.append(Format.query.filter_by(guid=format_guid).first())
+
+        author_list = []
+        for author_guid in preference_data.get("authors"):
+            author_list.append(Author.query.filter_by(guid=author_guid).first())
+
+        series_list = []
+        for series_guid in preference_data.get("series"):
+            series_list.append(Series.query.filter_by(guid=series_guid).first())
+
+        self.categories = category_list
+        self.formats = format_list
+        self.authors = author_list
+        self.series = series_list
+
+        db.session.add(self)
+        db.session.commit()
 
 class Child(db.Model):
     __tablename__ = "children"
@@ -16,6 +142,8 @@ class Child(db.Model):
     dob = db.Column(db.Date)
     age_group = db.Column(db.Integer)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    preferences = db.relationship(Preference, lazy=True, uselist=False)
 
     @staticmethod
     def create(child_json, user_id):
@@ -72,6 +200,7 @@ class User(db.Model):
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
     mobile_number = db.Column(db.String, unique=True)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
     email = db.Column(db.String)
     password = db.Column(db.String)

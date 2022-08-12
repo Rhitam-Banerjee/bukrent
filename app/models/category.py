@@ -2,6 +2,7 @@ from app import db
 import uuid
 
 from app.models.books import BookCategory
+from app.models.user import CategoryPreferences
 
 class Category(db.Model):
     __tablename__ = "categories"
@@ -17,6 +18,7 @@ class Category(db.Model):
     total_books = db.Column(db.Integer)
     display = db.Column(db.Boolean, default=False)
     books = db.relationship('Book', secondary=BookCategory.__table__)
+    preferences = db.relationship('Preference', secondary=CategoryPreferences.__table__)
 
     @staticmethod
     def create(name, age1, age2, age3, age4, age5, age6, total_books, display):
@@ -40,24 +42,23 @@ class Category(db.Model):
     def get_genres(age_group):
         if age_group:
             if age_group == 1:
-                genres = Category.query.filter_by(age1=True).all()[:10]
+                genres = Category.query.filter_by(age1=True).all()
             elif age_group == 2:
-                genres = Category.query.filter_by(age2=True).all()[:10]
+                genres = Category.query.filter_by(age2=True).all()
             elif age_group == 3:
-                genres = Category.query.filter_by(age3=True).all()[:10]
+                genres = Category.query.filter_by(age3=True).all()
             elif age_group == 4:
-                genres = Category.query.filter_by(age4=True).all()[:10]
+                genres = Category.query.filter_by(age4=True).all()
             elif age_group == 5:
-                genres = Category.query.filter_by(age5=True).all()[:10]
+                genres = Category.query.filter_by(age5=True).all()
             elif age_group == 6:
-                genres = Category.query.filter_by(age6=True).all()[:10]
+                genres = Category.query.filter_by(age6=True).all()
         else:
-            genres = Category.query.filter_by(display=True).all()[:10]
+            genres = Category.query.filter_by(display=True).all()
         
         return [{
             "name": genre.name,
-            "image_1": genre.books[0].image,
-            "image_2": genre.books[1].image
+            "guid": genre.guid
         } for genre in genres]
 
     @staticmethod

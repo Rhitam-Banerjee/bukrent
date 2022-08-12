@@ -1,0 +1,252 @@
+<style>
+    .age-text-big {
+        font-family: 'Comic Neue', cursive;
+        font-weight: 900;
+        font-size: 2rem;
+    }
+
+    .age-text-small {
+        font-family: 'Comic Neue', cursive;
+        font-size: 1rem;
+    }
+
+    .children-box {
+        border-radius: 1rem;
+    }
+
+    .title-box-1::before,
+    .title-box-1::after {
+        border-top: 1px solid #FF7C72;
+        display: block;
+        height: 1px;
+        content: " ";
+        flex-grow: 1;
+        margin-top: 1.5rem;
+    }
+
+    .title-box-2::before,
+    .title-box-2::after {
+        border-top: 1px solid #fa7e0a;
+        display: block;
+        height: 1px;
+        content: " ";
+        flex-grow: 1;
+        margin-top: 1.5rem;
+    }
+
+    .title-box-3::before,
+    .title-box-3::after {
+        border-top: 1px solid #FFD631;
+        display: block;
+        height: 1px;
+        content: " ";
+        flex-grow: 1;
+        margin-top: 1.5rem;
+    }
+
+    .title-box-4::before,
+    .title-box-4::after {
+        border-top: 1px solid #8ACE38;
+        display: block;
+        height: 1px;
+        content: " ";
+        flex-grow: 1;
+        margin-top: 1.5rem;
+    }
+
+    .title-box-5::before,
+    .title-box-5::after {
+        border-top: 1px solid #74C7FF;
+        display: block;
+        height: 1px;
+        content: " ";
+        flex-grow: 1;
+        margin-top: 1.5rem;
+    }
+
+    .title-box-6::before,
+    .title-box-6::after {
+        border-top: 1px solid #CB85C2;
+        display: block;
+        height: 1px;
+        content: " ";
+        flex-grow: 1;
+        margin-top: 1.5rem;
+    }
+
+    .age-text-1 {
+        color: #FF7C72;
+    }
+
+    .age-text-2 {
+        color: #fa7e0a;
+    }
+
+    .age-text-3 {
+        color: #FFD631;
+    }
+
+    .age-text-4 {
+        color: #8ACE38;
+    }
+
+    .age-text-5 {
+        color: #74C7FF;
+    }
+
+    .age-text-6 {
+        color: #CB85C2;
+    }
+
+    .age-1 {
+        color: #FF7C72;
+        border: 1px solid #FF7C72;
+    }
+
+    .age-2 {
+        color: #fa7e0a;
+        border: 1px solid #fa7e0a;
+    }
+
+    .age-3 {
+        color: #FFD631;
+        border: 1px solid #FFD631;
+    }
+
+    .age-4 {
+        color: #8ACE38;
+        border: 1px solid #8ACE38;
+    }
+
+    .age-5 {
+        color: #74C7FF;
+        border: 1px solid #74C7FF;
+    }
+
+    .age-6 {
+        color: #CB85C2;
+        border: 1px solid #CB85C2;
+    }
+
+    .selected-age-1 {
+        color: white;
+        background-color: #FF7C72;
+    }
+
+    .selected-age-2 {
+        color: white;
+        background-color: #fa7e0a;
+    }
+
+    .selected-age-3 {
+        color: white;
+        background-color: #FFD631;
+    }
+
+    .selected-age-4 {
+        color: white;
+        background-color: #8ACE38;
+    }
+
+    .selected-age-5 {
+        color: white;
+        background-color: #74C7FF;
+    }
+
+    .selected-age-6 {
+        color: white;
+        background-color: #CB85C2;
+    }
+
+    .selected-img {
+        max-width: 20%;
+        position: absolute;
+        left: 40%;
+        top: 40%;
+    }
+
+    .preference-box {
+        background-color: #d9d9d9;
+        border-radius: 1rem;
+        border: 1px solid black;
+        min-height: 100px;
+        max-height: 100px;
+    }
+
+    .relative-img {
+        position: relative;
+    }
+
+    @media (max-width:480px) {
+        .age-text-big {
+            font-family: 'Comic Neue', cursive;
+            font-weight: 900;
+            font-size: 1.5rem;
+        }
+
+        .age-text-small {
+            font-family: 'Comic Neue', cursive;
+            font-size: 0.75rem;
+        }
+
+        .title-box-1::before,
+        .title-box-1::after {
+            border-top: 1px solid #FF7C72;
+            display: block;
+            height: 1px;
+            content: " ";
+            flex-grow: 1;
+            margin-top: 0.75rem;
+        }
+
+        .title-box-2::before,
+        .title-box-2::after {
+            border-top: 1px solid #fa7e0a;
+            display: block;
+            height: 1px;
+            content: " ";
+            flex-grow: 1;
+            margin-top: 0.75rem;
+        }
+
+        .title-box-3::before,
+        .title-box-3::after {
+            border-top: 1px solid #FFD631;
+            display: block;
+            height: 1px;
+            content: " ";
+            flex-grow: 1;
+            margin-top: 0.75rem;
+        }
+
+        .title-box-4::before,
+        .title-box-4::after {
+            border-top: 1px solid #8ACE38;
+            display: block;
+            height: 1px;
+            content: " ";
+            flex-grow: 1;
+            margin-top: 0.75rem;
+        }
+
+        .title-box-5::before,
+        .title-box-5::after {
+            border-top: 1px solid #74C7FF;
+            display: block;
+            height: 1px;
+            content: " ";
+            flex-grow: 1;
+            margin-top: 0.75rem;
+        }
+
+        .title-box-6::before,
+        .title-box-6::after {
+            border-top: 1px solid #CB85C2;
+            display: block;
+            height: 1px;
+            content: " ";
+            flex-grow: 1;
+            margin-top: 0.75rem;
+        }
+    }
+</style>

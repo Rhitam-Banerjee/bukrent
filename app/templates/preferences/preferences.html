@@ -1,0 +1,127 @@
+{% extends "template_new.jinja" %}
+{% block main %}
+
+{% include("preferences/preferences_script.jinja") %}
+{% include("preferences/preferences_style.jinja") %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-11 col-md-7 col-lg-5 offset-md-2 offset-lg-3 pt-5">
+            <div id="children-carousel" class="owl-carousel owl-theme">
+                {% for children in all_children %}
+                {% if child == children %}
+                <div class="children-box age-{{children.age_group}} selected-age-{{children.age_group}} text-center p-3">
+                    <div class="row">
+                        <div class="col-12 col-md-12 col-lg-12 age-text-big">
+                            {{children.name}}
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <img src="/static/images/age{{children.age_group}}.png" class="img-fluid" />
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6 age-text-small pt-lg-4">
+                            <p>{{children.dob}}</p>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="children-box age-{{children.age_group}} text-center p-3">
+                    <a style="color: inherit; text-decoration: none;" href="{{url_for('views.preferences')}}?guid={{children.guid}}">
+                        <div class="row">
+                            <div class="col-12 col-md-12 col-lg-12 age-text-big">
+                                {{children.name}}
+                            </div>
+                            <div class="col-6 col-md-6 col-lg-6">
+                                <img src="/static/images/age{{children.age_group}}.png" class="img-fluid" />
+                            </div>
+                            <div class="col-6 col-md-6 col-lg-6 age-text-small pt-lg-4">
+                                {{children.dob}}
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-1 col-md-1 col-lg-1 pt-5">
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <p><b>Last 3 Books Read</b></p>
+            <input class="form-control" id="last_book_read1" placeholder="1" value="{{child.preferences.last_book_read1}}"  />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 mt-3">
+            <input class="form-control" id="last_book_read2" placeholder="2" value="{{child.preferences.last_book_read2}}"  />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 mt-3">
+            <input class="form-control" id="last_book_read3" placeholder="3" value="{{child.preferences.last_book_read3}}"  />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center section-title-box title-box-{{child.age_group}} mt-5">
+            <p class="section-title age-text-{{child.age_group}}">Number of Books read per week</p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center">
+            <div class="row">
+                <div class="col-4 col-md-4 col-lg-4" id="read-option-1">
+                    <img class="img-fluid step-img" id="read-img-1"/>
+                </div>
+                <div class="col-4 col-md-4 col-lg-4" id="read-option-2">
+                    <img class="img-fluid step-img" id="read-img-2"/>
+                </div>
+                <div class="col-4 col-md-4 col-lg-4" id="read-option-3">
+                    <img class="img-fluid step-img" id="read-img-3"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center section-title-box title-box-{{child.age_group}} mt-5">
+            <p class="section-title age-text-{{child.age_group}}">Child Preferences</p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center">
+            <div id="preferences-carousel" class="owl-carousel owl-theme">
+
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center section-title-box title-box-{{child.age_group}} mt-5">
+            <p class="section-title age-text-{{child.age_group}}">Type of Books</p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center">
+            <div id="formats-carousel" class="owl-carousel owl-theme">
+
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center section-title-box title-box-{{child.age_group}} mt-5">
+            <p class="section-title age-text-{{child.age_group}}">Authors</p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center">
+            <div id="authors-carousel" class="owl-carousel owl-theme">
+
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center section-title-box title-box-{{child.age_group}} mt-5">
+            <p class="section-title age-text-{{child.age_group}}">Genres</p>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center">
+            <div id="series-carousel" class="owl-carousel owl-theme">
+
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5 pb-5 text-center">
+            <button class="orange-btn m-2 py-3" id="submit_button">Submit</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

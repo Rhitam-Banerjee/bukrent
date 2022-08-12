@@ -10,6 +10,7 @@ from app.models.details import Detail
 from app.models.publishers import Publisher
 from app.models.reviews import Review
 from app.models.series import Series
+from app.models.format import Format
 from app.models.user import User, Address
 
 def get_multi_age_groups(ages):
@@ -429,14 +430,14 @@ def seed():
             for item in data.get("categories"):
                 if not category_data.get(item):
                     category_data[item] = {
-                        "age1": True,
-                        "age2": True,
-                        "age3": True,
-                        "age4": True,
-                        "age5": True,
-                        "age6": True,
+                        "age1": False,
+                        "age2": False,
+                        "age3": False,
+                        "age4": False,
+                        "age5": False,
+                        "age6": False,
                         "total_books": 0,
-                        "display": True
+                        "display": False
                     }
                 category_data[item]["total_books"] += 1
         except:
@@ -454,6 +455,47 @@ def seed():
             data["total_books"],
             data["display"]
         )
+
+    preference = []
+    with open("app/data/preferences.csv", mode="r") as file:
+        csv_file = csv.reader(file)
+        for line in csv_file:
+            preference.append(line)
+
+    pref_dict = {}
+    for pref in preference:
+        if pref_dict.get(pref[0]):
+            if pref[1] not in pref_dict[pref[0]]:
+                pref_dict[pref[0]].append(pref[1])
+        else:
+            pref_dict[pref[0]] = [pref[1]]
+
+    for name, age_groups in pref_dict.items():
+        category = Category.query.filter_by(name=name).first()
+        ages = get_multi_age_groups(age_groups)
+        if category:
+            category.age1 = ages[0]
+            category.age2 = ages[1]
+            category.age3 = ages[2]
+            category.age4 = ages[3]
+            category.age5 = ages[4]
+            category.age6 = ages[5]
+            category.display = True
+
+            db.session.add(category)
+            db.session.commit()
+        else:
+            Category.create(
+                name,
+                ages[0],
+                ages[1],
+                ages[2],
+                ages[3],
+                ages[4],
+                ages[5],
+                0,
+                True
+            )
 
     #### Seeding Publishers
     print("Seeding Publishers")
@@ -675,42 +717,26 @@ def seed():
                 book_obj.id
             )
 
-    ##################### Seeding Users
-    print("Seeding Users")
-    users = []
-    with open("data.csv", mode="r") as file:
+    ########################################## Seeding Formats
+    format_dict = {}
+
+    print("Processing Formats")
+
+    formats = []
+    with open("app/data/formats.csv", mode="r") as file:
         csv_file = csv.reader(file)
         for line in csv_file:
-            users.append(line)
+            formats.append(line)
 
-    users = users[1:]
-
-    for user in users:
-        user_obj = User(
-            guid=user[1],
-            first_name=user[2],
-            mobile_number=user[5],
-            newsletter=True if user[6] == "True" else False,
-            is_subscribed=False if user[7] == "False" else True,
-            security_deposit=False if user[8] == "False" else True,
-            plan_id=user[10],
-            subscription_id=user[11]
+    for format_name in formats:
+        Format.create(
+            format_name[0],
+            True,
+            True,
+            True,
+            True,
+            True,
+            True,
+            0,
+            True
         )
-        db.session.add(user_obj)
-        db.session.commit()
-
-        user_obj.add_cart_and_wishlist()
-
-        # if user[12] == "True":
-        #     address = Address(
-        #         guid=user[14],
-        #         house_number=user[15],
-        #         area=user[16],
-        #         city=user[17],
-        #         pincode=user[18],
-        #         country=user[19],
-        #         landmark=user[20],
-        #         user_id=user_obj.id
-        #     )
-        #     db.session.add(address)
-        #     db.session.commit()
