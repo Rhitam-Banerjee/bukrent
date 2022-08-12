@@ -8,7 +8,7 @@ from app.models.details import Detail
 from app.models.publishers import Publisher
 from app.models.reviews import Review
 from app.models.series import Series
-from app.models.user import User
+from app.models.user import *
 from app.models.cart import Cart, Wishlist
 
 import os
@@ -222,6 +222,7 @@ def preferences():
         return redirect(url_for('views.happy_reading'))
     else:
         guid = request.args.get("guid")
+        all_children = Child.query.filter_by(user_id=user.id).order_by(Child.dob.asc()).all()
         for child in user.child:
             if guid == child.guid:
                 if child.preferences:
@@ -229,7 +230,7 @@ def preferences():
                         "/preferences/preferences.html",
                         guid=guid,
                         child=child,
-                        all_children=user.child,
+                        all_children=all_children,
                         position=user.child.index(child),
                         categories=[category.guid for category in child.preferences.categories],
                         formats=[format_obj.guid for format_obj in child.preferences.formats],
@@ -241,7 +242,7 @@ def preferences():
                         "/preferences/preferences.html",
                         guid=guid,
                         child=child,
-                        all_children=user.child,
+                        all_children=all_children,
                         position=user.child.index(child),
                         categories=[],
                         formats=[],
@@ -253,7 +254,7 @@ def preferences():
                 "/preferences/preferences.html",
                 guid=user.child[0].guid,
                 child=user.child[0],
-                all_children=user.child,
+                all_children=all_children,
                 position=user.child.index(user.child[0]),
                 categories=[category.guid for category in user.child[0].preferences.categories],
                 formats=[format_obj.guid for format_obj in user.child[0].preferences.formats],
@@ -265,7 +266,7 @@ def preferences():
                 "/preferences/preferences.html",
                 guid=user.child[0].guid,
                 child=user.child[0],
-                all_children=user.child,
+                all_children=all_children,
                 position=user.child.index(user.child[0]),
                 categories=[],
                 formats=[],
@@ -284,6 +285,98 @@ def happy_reading():
         "happy_reading/happy_reading.html",
         user=user
     )
+
+
+################################### Admin APIs (Temporary)
+@views.route("/delete-user")
+def delete_user():
+    guid = request.args.get("guid")
+    mobile_number = request.args.get("mobile_number")
+
+    if guid != "8cfa1920-dff4-4c7f-a928-d64f9e147f69":
+        return "Incorrect GUID"
+    
+    if mobile_number not in ["9910402972", "8826144375"]:
+        return "This mobile number cannot be resetted"
+
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+    
+    if not user:
+        return "User not found"
+
+    for child in user.child:
+        child.delete()
+
+    user.delete()
+
+    return redirect(url_for("views.home"))
+
+@views.route("/mark-paid")
+def mark_paid():
+    guid = request.args.get("guid")
+    mobile_number = request.args.get("mobile_number")
+
+    if guid != "74ae9792-b094-4877-8c92-dd155c5428d1":
+        return "Incorrect GUID"
+    
+    if mobile_number not in ["9910402972", "8826144375"]:
+        return "This mobile number cannot be marked as paid"
+
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+
+    user.update_payment_details("testing", "testing")
+
+    return redirect(url_for("views.add_address"))
+
+@views.route("/get-user-data")
+def get_user_data():
+    guid = request.args.get("guid")
+
+    if guid != "4b5490ff-dd63-41ab-8f15-c1e3b5758fd9":
+        return "Incorrect GUID"
+
+    users = User.query.all()
+    addresses = Address.query.all()
+    children = Child.query.all()
+
+    return jsonify({
+        "users": [
+            {
+                "id": user.id,
+                "guid": user.guid,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "mobile_number": user.mobile_number,
+                "email": user.email,
+                "is_subscribed": user.is_subscribed,
+                "security_deposit": user.security_deposit,
+                "payment_id": user.payment_id,
+                "plan_id": user.plan_id,
+                "subscription_id": user.subscription_id,
+                "order_id": user.order_id,
+            } for user in users
+        ],
+        "addresses": [
+            {
+                "guid": address.guid,
+                "house_number": address.house_number,
+                "building": address.building,
+                "area": address.area,
+                "pincode": address.pincode,
+                "landmark": address.landmark,
+                "user_id": address.user_id
+            } for address in addresses
+        ],
+        "children": [
+            {
+                "guid": child.guid,
+                "name": child.name,
+                "dob": child.dob,
+                "age_group": child.age_group,
+                "user_id": child.user_id,
+            } for child in children
+        ]
+    }), 200
 
 @views.route("/browse")
 def browse():

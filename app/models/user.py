@@ -7,6 +7,8 @@ from app.models.order import Order
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 
+from datetime import date
+
 import os
 
 class CategoryPreferences(db.Model):
@@ -145,6 +147,11 @@ class Child(db.Model):
 
     preferences = db.relationship(Preference, lazy=True, uselist=False)
 
+    @hybrid_property
+    def age(self):
+        today = date.today()
+        return today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
+
     @staticmethod
     def create(child_json, user_id):
         if not all((child_json.get("name"), child_json.get("dob"), child_json.get("age_group"))):
@@ -159,6 +166,11 @@ class Child(db.Model):
         )
         child_obj = Child(**child_dict)
         db.session.add(child_obj)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self.preferences)
+        db.session.delete(self)
         db.session.commit()
 
 class Address(db.Model):
@@ -192,6 +204,10 @@ class Address(db.Model):
         db.session.commit()
 
         return address_obj
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
 
 class User(db.Model):
     __tablename__ = "users"
@@ -248,6 +264,19 @@ class User(db.Model):
         user_obj.add_cart_and_wishlist()
 
         return user_obj
+
+    def delete(self):
+        try:
+            db.session.delete(self.cart)
+        except: pass
+        try:
+            db.session.delete(self.wishlist)
+        except: pass
+        try:
+            db.session.delete(self.address)
+        except: pass
+        db.session.delete(self)
+        db.session.commit()
 
     def add_child(self, child_json):
         Child.create(child_json, self.id)
