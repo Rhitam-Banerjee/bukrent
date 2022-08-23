@@ -280,18 +280,39 @@ class User(db.Model):
 
         return user_obj
 
-    # def delete(self):
-    #     try:
-    #         db.session.delete(self.cart)
-    #     except: pass
-    #     try:
-    #         db.session.delete(self.wishlist)
-    #     except: pass
-    #     try:
-    #         db.session.delete(self.address)
-    #     except: pass
-    #     db.session.delete(self)
-    #     db.session.commit()
+    def delete(self):
+        try:
+            delivery_buckets = self.delivery_buckets
+            for bucket in delivery_buckets:
+                bucket.delete()
+        except: pass
+        try:
+            book_dumps = self.book_dump
+            for dump in book_dumps:
+                dump.delete()
+        except: pass
+        try:
+            wishlists = self.wishlist
+            for wishlist in wishlists:
+                wishlist.delete()
+        except: pass
+        try:
+            suggestions = self.suggestions
+            for suggestion in suggestions:
+                suggestion.delete()
+        except: pass
+        try:
+            addresses = self.address
+            for address in addresses:
+                address.delete()
+        except: pass
+        try:
+            orders = self.order
+            for order in orders:
+                order.delete()
+        except: pass
+        db.session.delete(self)
+        db.session.commit()
 
     def add_child(self, child_json):
         Child.create(child_json, self.id)

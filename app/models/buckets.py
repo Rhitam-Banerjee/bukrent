@@ -22,6 +22,10 @@ class Dump(db.Model):
         db.session.commit()
         return dump_obj
 
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
 class DeliveryBucket(db.Model):
     __tablename__ = "delivery_bucket"
     id = db.Column(db.Integer, primary_key=True)

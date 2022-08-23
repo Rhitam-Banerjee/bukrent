@@ -369,7 +369,7 @@ def delete_user():
     if guid != "8cfa1920-dff4-4c7f-a928-d64f9e147f69":
         return "Incorrect GUID"
     
-    if mobile_number not in ["9910402972", "8826144375"]:
+    if mobile_number not in ["9910402972", "8826144375", "9953865517"]:
         return "This mobile number cannot be resetted"
 
     user = User.query.filter_by(mobile_number=mobile_number).first()
@@ -392,7 +392,7 @@ def mark_paid():
     if guid != "74ae9792-b094-4877-8c92-dd155c5428d1":
         return "Incorrect GUID"
     
-    if mobile_number not in ["9910402972", "8826144375"]:
+    if mobile_number not in ["9910402972", "8826144375", "9953865517"]:
         return "This mobile number cannot be marked as paid"
 
     user = User.query.filter_by(mobile_number=mobile_number).first()
