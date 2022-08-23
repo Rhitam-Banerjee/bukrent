@@ -7,7 +7,7 @@ from app.models.books import Book
 from app.models.user import User, Address, Child, Preference
 from app.models.series import Series
 from app.models.order import Order
-from app.models.cart import Cart, Wishlist
+from app.models.buckets import *
 from app.models.format import Format
 from app.models.publishers import Publisher
 from app.models.search import Search
@@ -441,6 +441,14 @@ def add_children():
         for child in children:
             user.add_child(child)
 
+        age_groups = []
+        for child in children:
+            age_groups.append(child.get("age_group"))
+
+        age_groups = list(set(age_groups))
+
+        user.add_age_groups(age_groups)
+
         return jsonify({
             "status": "success",
             "guid": user.child[0].guid
@@ -490,7 +498,171 @@ def submit_preferences():
     except Exception as e:
         return jsonify({
             "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/suggestion-to-wishlist", methods=["POST"])
+def suggestion_to_wishlist():
+    try:
+        guid = request.json.get("guid")
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user.suggestion_to_wishlist(guid)
+        return jsonify({
             "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/suggestion-to-dump", methods=["POST"])
+def suggestion_to_dump():
+    try:
+        guid = request.json.get("guid")
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user.suggestion_to_dump(guid)
+        return jsonify({
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/dump-action-read", methods=["POST"])
+def dump_action_read():
+    try:
+        guid = request.json.get("guid")
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user.dump_action_read(guid)
+        return jsonify({
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/dump-action-dislike", methods=["POST"])
+def dump_action_dislike():
+    try:
+        guid = request.json.get("guid")
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user.dump_action_dislike(guid)
+        return jsonify({
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/wishlist-next", methods=["POST"])
+def wishlist_next():
+    try:
+        guid = request.json.get("guid")
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user.wishlist_next(guid)
+        return jsonify({
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/wishlist-prev", methods=["POST"])
+def wishlist_prev():
+    try:
+        guid = request.json.get("guid")
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user.wishlist_prev(guid)
+        return jsonify({
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/wishlist-remove", methods=["POST"])
+def wishlist_remove():
+    try:
+        guid = request.json.get("guid")
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user.wishlist_remove(guid)
+        return jsonify({
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/bucket-remove", methods=["POST"])
+def bucket_remove():
+    try:
+        guid = request.json.get("guid")
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user.bucket_remove(guid)
+        return jsonify({
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/change-delivery-date", methods=["POST"])
+def change_delivery_date():
+    try:
+        delivery_date = request.json.get("delivery_date")
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user.change_delivery_date(delivery_date)
+        return jsonify({
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/confirm-order", methods=["POST"])
+def confirm_order():
+    try:
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user.confirm_order()
+        return jsonify({
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/retain-book", methods=["POST"])
+def retain_book():
+    try:
+        guid = request.json.get("guid")
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user.retain_book(guid)
+        return jsonify({
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
         }), 400
 
 @api.route("/logout", methods=["POST"])
@@ -501,245 +673,245 @@ def logout():
         "status": "success"
     }), 201
 
-@api.route("/cart-checkout", methods=["POST"])
-def cart_checkout():
-    session["cart_checkout"] = True
+# @api.route("/cart-checkout", methods=["POST"])
+# def cart_checkout():
+#     session["cart_checkout"] = True
 
-    current_user = session.get("current_user")
-    user = User.query.filter_by(guid=current_user).first()
+#     current_user = session.get("current_user")
+#     user = User.query.filter_by(guid=current_user).first()
 
-    if current_user:
-        if user.is_subscribed:
-            return jsonify({
-                "redirect": url_for('views.add_address'),
-                "status": "success"
-            }), 201
-        else:
-            if session.get("plan"):
-                return jsonify({
-                    "redirect": url_for('views.confirm_plan'),
-                    "status": "success"
-                }), 201
-            else:
-                return jsonify({
-                    "redirect": url_for('views.become_a_subscriber'),
-                    "status": "success"
-                }), 201
-    else:
-        return jsonify({
-            "redirect": url_for('views.signup'),
-            "status": "success"
-        }), 201
+#     if current_user:
+#         if user.is_subscribed:
+#             return jsonify({
+#                 "redirect": url_for('views.add_address'),
+#                 "status": "success"
+#             }), 201
+#         else:
+#             if session.get("plan"):
+#                 return jsonify({
+#                     "redirect": url_for('views.confirm_plan'),
+#                     "status": "success"
+#                 }), 201
+#             else:
+#                 return jsonify({
+#                     "redirect": url_for('views.become_a_subscriber'),
+#                     "status": "success"
+#                 }), 201
+#     else:
+#         return jsonify({
+#             "redirect": url_for('views.signup'),
+#             "status": "success"
+#         }), 201
 
-@api.route("/add-to-cart", methods=["POST"])
-def add_to_cart():
-    try:
-        book_guid = request.json.get("guid")
-        book = Book.query.filter_by(guid=book_guid).first()
-        current_user_guid = session.get("current_user")
-        if current_user_guid:
-            current_user = User.query.filter_by(guid=session.get("current_user")).first()
-            cart = Cart.query.filter_by(user_id=current_user.id).first()
-            cart.add_book(book)
-        else:
-            if session.get("cart"):
-                cart = session.get("cart")
-                cart.append(book.guid)
-                session["cart"] = cart
-            else:
-                session["cart"] = [book.guid]
+# @api.route("/add-to-cart", methods=["POST"])
+# def add_to_cart():
+#     try:
+#         book_guid = request.json.get("guid")
+#         book = Book.query.filter_by(guid=book_guid).first()
+#         current_user_guid = session.get("current_user")
+#         if current_user_guid:
+#             current_user = User.query.filter_by(guid=session.get("current_user")).first()
+#             cart = Cart.query.filter_by(user_id=current_user.id).first()
+#             cart.add_book(book)
+#         else:
+#             if session.get("cart"):
+#                 cart = session.get("cart")
+#                 cart.append(book.guid)
+#                 session["cart"] = cart
+#             else:
+#                 session["cart"] = [book.guid]
 
-        return jsonify({
-            "message": "Added",
-            "status": "success"
-        }), 201
-    except Exception as e:
-        return jsonify({
-            "message": str(e),
-            "status": "error"
-        }), 400
+#         return jsonify({
+#             "message": "Added",
+#             "status": "success"
+#         }), 201
+#     except Exception as e:
+#         return jsonify({
+#             "message": str(e),
+#             "status": "error"
+#         }), 400
 
-@api.route("/add-to-wishlist", methods=["POST"])
-def add_to_wishlist():
-    try:
-        book_guid = request.json.get("guid")
-        book = Book.query.filter_by(guid=book_guid).first()
-        current_user_guid = session.get("current_user")
-        if current_user_guid:
-            current_user = User.query.filter_by(guid=session.get("current_user")).first()
-            wishlist = Wishlist.query.filter_by(user_id=current_user.id).first()
-            wishlist.add_book(book)
-        else:
-            if session.get("wishlist"):
-                wishlist = session.get("wishlist")
-                wishlist.append(book.guid)
-                session["wishlist"] = wishlist
-            else:
-                session["wishlist"] = [book.guid]
+# @api.route("/add-to-wishlist", methods=["POST"])
+# def add_to_wishlist():
+#     try:
+#         book_guid = request.json.get("guid")
+#         book = Book.query.filter_by(guid=book_guid).first()
+#         current_user_guid = session.get("current_user")
+#         if current_user_guid:
+#             current_user = User.query.filter_by(guid=session.get("current_user")).first()
+#             wishlist = Wishlist.query.filter_by(user_id=current_user.id).first()
+#             wishlist.add_book(book)
+#         else:
+#             if session.get("wishlist"):
+#                 wishlist = session.get("wishlist")
+#                 wishlist.append(book.guid)
+#                 session["wishlist"] = wishlist
+#             else:
+#                 session["wishlist"] = [book.guid]
 
-        return jsonify({
-            "message": "Added",
-            "status": "success"
-        }), 201
-    except Exception as e:
-        return jsonify({
-            "message": str(e),
-            "status": "error"
-        }), 400
+#         return jsonify({
+#             "message": "Added",
+#             "status": "success"
+#         }), 201
+#     except Exception as e:
+#         return jsonify({
+#             "message": str(e),
+#             "status": "error"
+#         }), 400
 
-@api.route("/move-to-wishlist", methods=["POST"])
-def move_to_wishlist():
-    try:
-        book_guid = request.json.get('guid')
-        book = Book.query.filter_by(guid=book_guid).first()
-        current_user_guid = session.get("current_user")
-        if current_user_guid:
-            current_user = User.query.filter_by(guid=current_user_guid).first()
-            current_user.move_book_to_wishlist(book)
-        else:
-            cart = session.get("cart")
-            cart.remove(book_guid)
-            session["cart"] = cart
-            if session.get("wishlist"):
-                wishlist = session.get("wishlist")
-                wishlist.append(book_guid)
-                session["wishlist"] = wishlist
-            else:
-                session["wishlist"] = [book_guid]
-        return jsonify({
-            "message": "Moved",
-            "status": "success"
-        }), 201
-    except Exception as e:
-        return jsonify({
-            "message": str(e),
-            "status": "error"
-        }), 400
+# @api.route("/move-to-wishlist", methods=["POST"])
+# def move_to_wishlist():
+#     try:
+#         book_guid = request.json.get('guid')
+#         book = Book.query.filter_by(guid=book_guid).first()
+#         current_user_guid = session.get("current_user")
+#         if current_user_guid:
+#             current_user = User.query.filter_by(guid=current_user_guid).first()
+#             current_user.move_book_to_wishlist(book)
+#         else:
+#             cart = session.get("cart")
+#             cart.remove(book_guid)
+#             session["cart"] = cart
+#             if session.get("wishlist"):
+#                 wishlist = session.get("wishlist")
+#                 wishlist.append(book_guid)
+#                 session["wishlist"] = wishlist
+#             else:
+#                 session["wishlist"] = [book_guid]
+#         return jsonify({
+#             "message": "Moved",
+#             "status": "success"
+#         }), 201
+#     except Exception as e:
+#         return jsonify({
+#             "message": str(e),
+#             "status": "error"
+#         }), 400
 
-@api.route("/move-to-cart", methods=["POST"])
-def move_to_cart():
-    try:
-        book_guid = request.json.get('guid')
-        book = Book.query.filter_by(guid=book_guid).first()
-        current_user_guid = session.get("current_user")
-        if current_user_guid:
-            current_user = User.query.filter_by(guid=current_user_guid).first()
-            current_user.move_book_to_cart(book)
-        else:
-            wishlist = session.get("wishlist")
-            wishlist.remove(book_guid)
-            session["wishlist"] = wishlist
-            if session.get("cart"):
-                cart = session.get("cart")
-                cart.append(book_guid)
-                session["cart"] = cart
-            else:
-                session["cart"] = [book_guid]
-        return jsonify({
-            "message": "Moved",
-            "status": "success"
-        }), 201
-    except Exception as e:
-        return jsonify({
-            "message": str(e),
-            "status": "error"
-        }), 400
+# @api.route("/move-to-cart", methods=["POST"])
+# def move_to_cart():
+#     try:
+#         book_guid = request.json.get('guid')
+#         book = Book.query.filter_by(guid=book_guid).first()
+#         current_user_guid = session.get("current_user")
+#         if current_user_guid:
+#             current_user = User.query.filter_by(guid=current_user_guid).first()
+#             current_user.move_book_to_cart(book)
+#         else:
+#             wishlist = session.get("wishlist")
+#             wishlist.remove(book_guid)
+#             session["wishlist"] = wishlist
+#             if session.get("cart"):
+#                 cart = session.get("cart")
+#                 cart.append(book_guid)
+#                 session["cart"] = cart
+#             else:
+#                 session["cart"] = [book_guid]
+#         return jsonify({
+#             "message": "Moved",
+#             "status": "success"
+#         }), 201
+#     except Exception as e:
+#         return jsonify({
+#             "message": str(e),
+#             "status": "error"
+#         }), 400
 
-@api.route("/delete-from-cart", methods=["POST"])
-def delete_from_cart():
-    try:
-        book_guid = request.json.get('guid')
-        book = Book.query.filter_by(guid=book_guid).first()
-        current_user_guid = session.get("current_user")
-        if current_user_guid:
-            current_user = User.query.filter_by(guid=current_user_guid).first()
-            current_user.remove_book_from_cart(book)
-        else:
-            cart = session.get("cart")
-            cart.remove(book_guid)
-            session["cart"] = cart
-        return jsonify({
-            "message": "Moved",
-            "status": "success"
-        }), 201
-    except Exception as e:
-        return jsonify({
-            "message": str(e),
-            "status": "error"
-        }), 400
+# @api.route("/delete-from-cart", methods=["POST"])
+# def delete_from_cart():
+#     try:
+#         book_guid = request.json.get('guid')
+#         book = Book.query.filter_by(guid=book_guid).first()
+#         current_user_guid = session.get("current_user")
+#         if current_user_guid:
+#             current_user = User.query.filter_by(guid=current_user_guid).first()
+#             current_user.remove_book_from_cart(book)
+#         else:
+#             cart = session.get("cart")
+#             cart.remove(book_guid)
+#             session["cart"] = cart
+#         return jsonify({
+#             "message": "Moved",
+#             "status": "success"
+#         }), 201
+#     except Exception as e:
+#         return jsonify({
+#             "message": str(e),
+#             "status": "error"
+#         }), 400
 
-@api.route("/delete-from-wishlist", methods=["POST"])
-def delete_from_wishlist():
-    try:
-        book_guid = request.json.get('guid')
-        book = Book.query.filter_by(guid=book_guid).first()
-        current_user_guid = session.get("current_user")
-        if current_user_guid:
-            current_user = User.query.filter_by(guid=current_user_guid).first()
-            current_user.remove_book_from_wishlist(book)
-        else:
-            wishlist = session.get("wishlist")
-            wishlist.remove(book_guid)
-            session["wishlist"] = wishlist
-        return jsonify({
-            "message": "Moved",
-            "status": "success"
-        }), 201
-    except Exception as e:
-        return jsonify({
-            "message": str(e),
-            "status": "error"
-        }), 400
+# @api.route("/delete-from-wishlist", methods=["POST"])
+# def delete_from_wishlist():
+#     try:
+#         book_guid = request.json.get('guid')
+#         book = Book.query.filter_by(guid=book_guid).first()
+#         current_user_guid = session.get("current_user")
+#         if current_user_guid:
+#             current_user = User.query.filter_by(guid=current_user_guid).first()
+#             current_user.remove_book_from_wishlist(book)
+#         else:
+#             wishlist = session.get("wishlist")
+#             wishlist.remove(book_guid)
+#             session["wishlist"] = wishlist
+#         return jsonify({
+#             "message": "Moved",
+#             "status": "success"
+#         }), 201
+#     except Exception as e:
+#         return jsonify({
+#             "message": str(e),
+#             "status": "error"
+#         }), 400
 
-@api.route("/check-books", methods=["POST"])
-def check_books():
-    current_user = session.get("current_user")
-    user = User.query.filter_by(guid=current_user).first()
-    if len(user.cart.books) < user.books_per_week:
-        return jsonify({
-            "message": f"You should have at least {user.books_per_week} books in your cart to place an order.",
-            "status": "error"
-        }), 400
-    else:
-        return jsonify({
-            "status": "success"
-        }), 200
+# @api.route("/check-books", methods=["POST"])
+# def check_books():
+#     current_user = session.get("current_user")
+#     user = User.query.filter_by(guid=current_user).first()
+#     if len(user.cart.books) < user.books_per_week:
+#         return jsonify({
+#             "message": f"You should have at least {user.books_per_week} books in your cart to place an order.",
+#             "status": "error"
+#         }), 400
+#     else:
+#         return jsonify({
+#             "status": "success"
+#         }), 200
 
-@api.route("/place-order", methods=["POST"])
-def place_order():
-    try:
-        current_user = session.get("current_user")
-        user = User.query.filter_by(guid=current_user).first()
+# @api.route("/place-order", methods=["POST"])
+# def place_order():
+#     try:
+#         current_user = session.get("current_user")
+#         user = User.query.filter_by(guid=current_user).first()
 
-        if user.books_per_week != len(request.json.get("books")):
-            return jsonify({
-                "message": f"Select {user.books_per_week} books to place an order.",
-                "status": "error"
-            }), 400
+#         if user.books_per_week != len(request.json.get("books")):
+#             return jsonify({
+#                 "message": f"Select {user.books_per_week} books to place an order.",
+#                 "status": "error"
+#             }), 400
 
-        billing_address = Address.create(request.json.get("billing_address"), user.id)
-        if request.json.get("same_as_billing"):
-            delivery_address = billing_address
-        else:
-            delivery_address = Address.create(request.json.get("delivery_address"), user.id)
+#         billing_address = Address.create(request.json.get("billing_address"), user.id)
+#         if request.json.get("same_as_billing"):
+#             delivery_address = billing_address
+#         else:
+#             delivery_address = Address.create(request.json.get("delivery_address"), user.id)
         
-        is_gift = request.json.get("is_gift")
-        gift_message = request.json.get("gift_message")
-        books = request.json.get("books")
+#         is_gift = request.json.get("is_gift")
+#         gift_message = request.json.get("gift_message")
+#         books = request.json.get("books")
 
-        Order.create(user.id, billing_address.id, delivery_address.id, is_gift, gift_message, books)
-        for book in books:
-            user.remove_book_from_cart(Book.query.filter_by(guid=book).first())
+#         Order.create(user.id, billing_address.id, delivery_address.id, is_gift, gift_message, books)
+#         for book in books:
+#             user.remove_book_from_cart(Book.query.filter_by(guid=book).first())
 
-        return jsonify({
-            "message": "Order Placed",
-            "status": "success"
-        }), 201
-    except Exception as e:
-        return jsonify({
-            "message": str(e),
-            "status": "error"
-        }), 400
+#         return jsonify({
+#             "message": "Order Placed",
+#             "status": "success"
+#         }), 201
+#     except Exception as e:
+#         return jsonify({
+#             "message": str(e),
+#             "status": "error"
+#         }), 400
 
 @api.route("/get-amazon-bestsellers", methods=["POST"])
 def get_amazon_bestsellers():

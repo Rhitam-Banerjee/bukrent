@@ -5,9 +5,6 @@ from app.models.annotations import Annotation
 from app.models.reviews import Review
 from app.models.details import Detail
 
-from app.models.cart import CartBook, WishlistBook
-from app.models.order import OrderBook
-
 class BookCategory(db.Model):
     __tablename__ = 'book_categories'
     id = db.Column(db.Integer, primary_key=True, index=True)
@@ -39,6 +36,7 @@ class Book(db.Model):
     language = db.Column(db.String, nullable=False)
     price = db.Column(db.String)
     description = db.Column(db.String, nullable=False)
+    stock_available = db.Column(db.Integer)
 
     amazon_bestseller = db.Column(db.Boolean, default=False)
     bestseller_age1 = db.Column(db.Boolean, default=False)
@@ -55,6 +53,13 @@ class Book(db.Model):
     borrowed_age4 = db.Column(db.Boolean, default=False)
     borrowed_age5 = db.Column(db.Boolean, default=False)
     borrowed_age6 = db.Column(db.Boolean, default=False)
+
+    suggestion_age1 = db.Column(db.Boolean, default=False)
+    suggestion_age2 = db.Column(db.Boolean, default=False)
+    suggestion_age3 = db.Column(db.Boolean, default=False)
+    suggestion_age4 = db.Column(db.Boolean, default=False)
+    suggestion_age5 = db.Column(db.Boolean, default=False)
+    suggestion_age6 = db.Column(db.Boolean, default=False)
     
     details = db.relationship(Detail, lazy=True, uselist=False)
     annotation = db.relationship(Annotation, lazy=True, uselist=False)
@@ -66,12 +71,8 @@ class Book(db.Model):
     authors = db.relationship('Author', secondary=BookAuthor.__table__)
     publishers = db.relationship('Publisher', secondary=BookPublisher.__table__)
 
-    carts = db.relationship('Cart', secondary=CartBook.__table__)
-    wishlists = db.relationship('Wishlist', secondary=WishlistBook.__table__)
-    orders = db.relationship('Order', secondary=OrderBook.__table__)
-
     @staticmethod
-    def create(name, image, isbn, rating, review_count, book_format, language, price, description, series_id, bestseller_json, borrowed_json):
+    def create(name, image, isbn, rating, review_count, book_format, language, price, description, stock_available, series_id, bestseller_json, borrowed_json, suggestion_json):
         book_dict = dict(
             guid = str(uuid.uuid4()),
             name = name,
@@ -82,7 +83,8 @@ class Book(db.Model):
             book_format = book_format,
             language = language,
             price = price,
-            description = description
+            description = description,
+            stock_available = stock_available
         )
 
         if bestseller_json:
@@ -102,6 +104,14 @@ class Book(db.Model):
             book_dict["borrowed_age4"] = borrowed_json.get("borrowed_age4")
             book_dict["borrowed_age5"] = borrowed_json.get("borrowed_age5")
             book_dict["borrowed_age6"] = borrowed_json.get("borrowed_age6")
+
+        if suggestion_json:
+            book_dict["suggestion_age1"] = suggestion_json.get("suggestion_age1")
+            book_dict["suggestion_age2"] = suggestion_json.get("suggestion_age2")
+            book_dict["suggestion_age3"] = suggestion_json.get("suggestion_age3")
+            book_dict["suggestion_age4"] = suggestion_json.get("suggestion_age4")
+            book_dict["suggestion_age5"] = suggestion_json.get("suggestion_age5")
+            book_dict["suggestion_age6"] = suggestion_json.get("suggestion_age6")
 
         if series_id:
             book_dict["series_id"] = series_id

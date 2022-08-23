@@ -98,6 +98,7 @@ def seed():
         current_dict["categories"] = []
         current_dict["bestseller_json"] = None
         current_dict["borrowed_json"] = None
+        current_dict["suggestion_json"] = None
 
     ################################# Bestseller
     print("Processing Bestsellers")
@@ -147,6 +148,53 @@ def seed():
                 "borrowed_age4": borrowed_groups[3],
                 "borrowed_age5": borrowed_groups[4],
                 "borrowed_age6": borrowed_groups[5]
+            }
+
+    ###################################### Suggestions
+    print("Processing Suggestions")
+    
+    suggestions = []
+    with open("app/data/data_3/suggestions.csv", mode="r") as file:
+        csv_file = csv.reader(file)
+        for line in csv_file:
+            suggestions.append(line)
+
+    suggestions = suggestions[1:]
+
+    suggestion_dict = {}
+    for suggestion in suggestions:
+        for index, isbn in enumerate(suggestion):
+            if index == 0:
+                age_group = "0-2"
+            elif index == 1:
+                age_group = "3-5"
+            elif index == 2:
+                age_group = "6-8"
+            elif index == 3:
+                age_group = "6-8"
+            elif index == 4:
+                age_group = "9-11"
+            elif index == 5:
+                age_group = "12-14"
+            elif index == 6:
+                age_group = "15+"
+            if isbn:
+                if suggestion_dict.get(isbn):
+                    suggestion_dict[isbn].append(age_group)
+                else:
+                    suggestion_dict[isbn] = [age_group]
+
+    for isbn, age_groups in suggestion_dict.items():
+        current_dict = book_dict.get(isbn)
+        if current_dict:
+            suggestion_groups = get_multi_age_groups(age_groups)
+            current_dict["suggestion_json"] = {
+                "suggestion_age1": suggestion_groups[0],
+                "suggestion_age2": suggestion_groups[1],
+                "suggestion_age3": suggestion_groups[2],
+                "suggestion_age4": suggestion_groups[3],
+                "suggestion_age5": suggestion_groups[4],
+                "suggestion_age6": suggestion_groups[5]
             }
 
     ########################################## Annotations
@@ -616,9 +664,11 @@ def seed():
             book_data["language"],
             book_data["price"],
             book_data["description"],
+            1,
             series_id,
             book_data["bestseller_json"],
-            book_data["borrowed_json"]
+            book_data["borrowed_json"],
+            book_data["suggestion_json"]
         )
 
         book_obj = Book.query.filter_by(isbn=book_isbn).first()

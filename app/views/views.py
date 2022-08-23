@@ -9,9 +9,10 @@ from app.models.publishers import Publisher
 from app.models.reviews import Review
 from app.models.series import Series
 from app.models.user import *
-from app.models.cart import Cart, Wishlist
+from app.models.buckets import *
 
 import os
+from datetime import date
 
 views = Blueprint('views', __name__, url_prefix="/")
 
@@ -274,6 +275,42 @@ def preferences():
                 series=[]
             )
 
+@views.route("/library")
+def library():
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if len(user.child) == 0:
+        return redirect(url_for('views.add_children'))
+
+    all_preferences = True
+    for child in user.child:
+        if not child.preferences:
+            all_preferences = False
+    
+    if not all_preferences:
+        return redirect(url_for('views.preferences'))
+
+    if user.next_delivery_date:
+        next_delivery_date = user.next_delivery_date.strftime("%A %d %B %Y")
+        next_delivery_date_input = user.next_delivery_date.strftime("%Y-%m-%d")
+    else:
+        next_delivery_date = date.today().strftime("%A %d %B %Y")
+        next_delivery_date_input = date.today().strftime("%Y-%m-%d")
+    all_children = Child.query.filter_by(user_id=user.id).order_by(Child.dob.desc()).all()
+    return render_template(
+        "/library/library.html",
+        all_children=all_children,
+        next_bucket=user.get_next_bucket(),
+        retain_books=user.get_previous_books(),
+        suggestions=user.get_suggestions(),
+        wishlists=user.get_wishlist(),
+        dumps=user.get_dump_data(),
+        next_delivery_date=next_delivery_date,
+        next_delivery_date_input=next_delivery_date_input,
+        user=user
+    )
+
 @views.route("/happy-reading")
 def happy_reading():
     user = User.query.filter_by(guid=session.get("current_user")).first()
@@ -475,30 +512,30 @@ def confirm_plan():
         current_user=current_user
     )
 
-@views.route("/cart")
-def cart():
-    current_user_guid = session.get('current_user')
-    if current_user_guid:
-        current_user = User.query.filter_by(guid=current_user_guid).first()
-        cart_objs = current_user.cart.books
-        wishlist_objs = current_user.wishlist.books
-    else:
-        cart = session.get("cart") or []
-        cart_objs = []
-        for item in cart:
-            cart_objs.append(Book.query.filter_by(guid=item).first())
+# @views.route("/cart")
+# def cart():
+#     current_user_guid = session.get('current_user')
+#     if current_user_guid:
+#         current_user = User.query.filter_by(guid=current_user_guid).first()
+#         cart_objs = current_user.cart.books
+#         wishlist_objs = current_user.wishlist.books
+#     else:
+#         cart = session.get("cart") or []
+#         cart_objs = []
+#         for item in cart:
+#             cart_objs.append(Book.query.filter_by(guid=item).first())
 
-        wishlist = session.get("wishlist") or []
-        wishlist_objs = []
-        for item in wishlist:
-            wishlist_objs.append(Book.query.filter_by(guid=item).first())
-    current_user = session.get("current_user")
-    return render_template(
-        "/cart/cart.html",
-        cart = cart_objs,
-        wishlist = wishlist_objs,
-        current_user=current_user
-    )
+#         wishlist = session.get("wishlist") or []
+#         wishlist_objs = []
+#         for item in wishlist:
+#             wishlist_objs.append(Book.query.filter_by(guid=item).first())
+#     current_user = session.get("current_user")
+#     return render_template(
+#         "/cart/cart.html",
+#         cart = cart_objs,
+#         wishlist = wishlist_objs,
+#         current_user=current_user
+#     )
 
 @views.route("/order-placed")
 def order_placed():

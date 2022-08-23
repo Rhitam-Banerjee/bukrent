@@ -5,6 +5,7 @@ from flask import current_app
 from seed_4 import *
 from export import *
 from seed_users import *
+from script_order import *
 
 from app.models.annotations import Annotation
 from app.models.author import Author
@@ -38,6 +39,10 @@ def export_db():
 @cli.command()
 def seed_users_data():
     seed_users()
+
+@cli.command()
+def script_create_orders():
+    create_orders()
 
 if __name__ == '__main__':
     cli()
