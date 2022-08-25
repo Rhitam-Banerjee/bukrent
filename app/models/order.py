@@ -33,3 +33,7 @@ class Order(db.Model):
         order_obj = Order(**order_dict)
         db.session.add(order_obj)
         db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()

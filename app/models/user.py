@@ -385,21 +385,21 @@ class User(db.Model):
 
         wishlist_obj = Wishlist.create(self.id, book.id, age_group)
 
-        if not self.next_order_confirmed:
-            books_per_week = self.books_per_week
-            if wishlist_obj.priority_order <= books_per_week:
-                if self.next_delivery_date:
-                    next_delivery_date = self.next_delivery_date
-                else:
-                    next_delivery_date = date.today()
-                    self.next_delivery_date = date.today()
-                    db.session.add(self)
-                    db.session.commit()
-                DeliveryBucket.create(self.id, book.id, next_delivery_date, age_group)
+        # if not self.next_order_confirmed:
+        #     books_per_week = self.books_per_week
+        #     if wishlist_obj.priority_order <= books_per_week:
+        #         if self.next_delivery_date:
+        #             next_delivery_date = self.next_delivery_date
+        #         else:
+        #             next_delivery_date = date.today()
+        #             self.next_delivery_date = date.today()
+        #             db.session.add(self)
+        #             db.session.commit()
+        #         DeliveryBucket.create(self.id, book.id, next_delivery_date, age_group)
 
-        buckets = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.delivery_date==self.next_delivery_date)).all()
-        if len(buckets) < self.books_per_week:
-            DeliveryBucket.create(self.id, book.id, self.next_delivery_date, age_group)
+        # buckets = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.delivery_date==self.next_delivery_date)).all()
+        # if len(buckets) < self.books_per_week:
+        #     DeliveryBucket.create(self.id, book.id, self.next_delivery_date, age_group)
 
     def suggestion_to_dump(self, guid):
         from app.models.books import Book
@@ -447,14 +447,14 @@ class User(db.Model):
             next_priority_order += 1
 
         ##Check if first item is in delivery bucket
-        if not self.next_order_confirmed:
-            delivery_bucket_first = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
-            delivery_bucket_second = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==second_item.book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
-            if delivery_bucket_first and delivery_bucket_second:
-                pass
-            elif delivery_bucket_first:
-                delivery_bucket_first.delete()
-                DeliveryBucket.create(self.id, second_item.book.id, self.next_delivery_date, second_item.age_group)
+        # if not self.next_order_confirmed:
+        #     delivery_bucket_first = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
+        #     delivery_bucket_second = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==second_item.book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
+        #     if delivery_bucket_first and delivery_bucket_second:
+        #         pass
+        #     elif delivery_bucket_first:
+        #         delivery_bucket_first.delete()
+        #         DeliveryBucket.create(self.id, second_item.book.id, self.next_delivery_date, second_item.age_group)
 
         first_priority_order = first_item.priority_order
         second_priority_order = second_item.priority_order
@@ -481,14 +481,14 @@ class User(db.Model):
             prev_priority_order -= 1
 
         ##Check if first item is in delivery bucket
-        if not self.next_order_confirmed:
-            delivery_bucket_first = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==first_item.book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
-            delivery_bucket_second = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
-            if delivery_bucket_first and delivery_bucket_second:
-                pass
-            elif delivery_bucket_first:
-                delivery_bucket_first.delete()
-                DeliveryBucket.create(self.id, second_item.book.id, self.next_delivery_date, second_item.age_group)
+        # if not self.next_order_confirmed:
+        #     delivery_bucket_first = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==first_item.book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
+        #     delivery_bucket_second = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
+        #     if delivery_bucket_first and delivery_bucket_second:
+        #         pass
+        #     elif delivery_bucket_first:
+        #         delivery_bucket_first.delete()
+        #         DeliveryBucket.create(self.id, second_item.book.id, self.next_delivery_date, second_item.age_group)
 
         second_priority_order = second_item.priority_order
         first_priority_order = first_item.priority_order
@@ -506,24 +506,24 @@ class User(db.Model):
         book = Book.query.filter_by(guid=guid).first()
         wishlist = Wishlist.query.filter(and_(Wishlist.user_id==self.id, Wishlist.book_id==book.id)).first()
 
-        bucket_removed = False
+        # bucket_removed = False
 
-        if not self.next_order_confirmed:
-            delivery_bucket = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
-            if delivery_bucket:
-                delivery_bucket.delete()
-                bucket_removed = True
+        # if not self.next_order_confirmed:
+        #     delivery_bucket = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
+        #     if delivery_bucket:
+        #         delivery_bucket.delete()
+        #         bucket_removed = True
 
         wishlist.delete()
         Dump.create(self.id, book.id)
 
-        if bucket_removed:
-            wishlists = Wishlist.query.filter_by(user_id=self.id).order_by(Wishlist.priority_order.asc()).all()
-            for wishlist_obj in wishlists:
-                existing_bucket = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==wishlist_obj.book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
-                if not existing_bucket:
-                    DeliveryBucket.create(self.id, wishlist_obj.book.id, self.next_delivery_date, wishlist_obj.age_group)
-                    break
+        # if bucket_removed:
+        #     wishlists = Wishlist.query.filter_by(user_id=self.id).order_by(Wishlist.priority_order.asc()).all()
+        #     for wishlist_obj in wishlists:
+        #         existing_bucket = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==wishlist_obj.book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
+        #         if not existing_bucket:
+        #             DeliveryBucket.create(self.id, wishlist_obj.book.id, self.next_delivery_date, wishlist_obj.age_group)
+        #             break
 
         wishlists = Wishlist.query.filter_by(user_id=self.id).order_by(Wishlist.priority_order.asc()).all()
         current_priority_order = 1
@@ -647,7 +647,8 @@ class User(db.Model):
                     "name": suggestion.book.name,
                     "guid": suggestion.book.guid,
                     "isbn": suggestion.book.isbn,
-                    "age_group": suggestion.age_group
+                    "image": suggestion.book.image
+                    # "age_group": suggestion.age_group
                 }
 
                 book_list.append(temp_dict)
@@ -663,7 +664,8 @@ class User(db.Model):
                 temp_dict = {
                     "name": dump.book.name,
                     "guid": dump.book.guid,
-                    "isbn": dump.book.isbn
+                    "isbn": dump.book.isbn,
+                    "image": dump.book.image
                 }
 
                 book_list.append(temp_dict)
@@ -678,8 +680,9 @@ class User(db.Model):
                 "name": wishlist.book.name,
                 "guid": wishlist.book.guid,
                 "isbn": wishlist.book.isbn,
-                "age_group": wishlist.age_group,
-                "available": True if wishlist.book.stock_available > 0 else False
+                # "age_group": wishlist.age_group,
+                "available": True if wishlist.book.stock_available > 0 else False,
+                "image": wishlist.book.image
             }
 
             if i == 0:
@@ -702,7 +705,8 @@ class User(db.Model):
                 "name": bucket.book.name,
                 "guid": bucket.book.guid,
                 "isbn": bucket.book.isbn,
-                "age_group": bucket.age_group
+                "image": bucket.book.image
+                # "age_group": bucket.age_group
             }
 
             book_list.append(temp_dict)
@@ -725,7 +729,8 @@ class User(db.Model):
                     "name": order.book.name,
                     "guid": order.book.guid,
                     "isbn": order.book.isbn,
-                    "age_group": order.age_group
+                    "image": order.book.image
+                    # "age_group": order.age_group
                 }
 
                 book_list.append(temp_dict)

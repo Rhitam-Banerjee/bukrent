@@ -1,0 +1,161 @@
+<script>
+    function create_suggestions(suggestions) {
+        $("#suggestions-carousel").empty();
+
+        for (let i = 0; i < suggestions.length; i++) {
+            let html = create_suggestion_html(suggestions[i])
+
+            $("#suggestions-carousel").append(html);
+        }
+        
+        $("#suggestions-carousel").owlCarousel("destroy")
+
+        $("#suggestions-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+            responsive:{
+                0:{
+                    items:2
+                }
+            }
+        });
+    }
+
+    function create_suggestion_html(suggestion) {
+        let html = `
+                    <a onclick="suggestion_clicked('${suggestion.guid}')">
+                        <div class="suggestion-box p-3" id="suggestion-${suggestion.guid}">
+                            <div class="row suggestion-container">
+                                <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
+                                    <img src="${suggestion.image}" class="img-fluid book-img" />
+                                </div>
+                            </div>
+                            <div class="suggestion-overlay suggestion-hidden-overlay">
+                                <button class="suggestion-wishlist-btn p-2" onclick="suggestion_to_wishlist('${suggestion.guid}')">
+                                    <i class="fa-regular fa-heart" aria-hidden="true"></i>
+                                </button>
+                                <button class="suggestion-dump-btn p-2" onclick="suggestion_to_dump('${suggestion.guid}')">
+                                    <i class="fa fa-times" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </a>
+                    `
+        return html
+    }
+
+    function create_wishlists(wishlists) {
+        $("#wishlists-carousel").empty();
+
+        for (let i = 0; i < wishlists.length; i++) {
+            let html = create_wishlist_html(wishlists[i])
+
+            $("#wishlists-carousel").append(html);
+        }
+                
+        $("#wishlists-carousel").owlCarousel("destroy")
+
+        $("#wishlists-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+            responsive:{
+                0:{
+                    items:2
+                }
+            }
+        });
+    }
+
+    function create_wishlist_html(wishlist) {
+        let button_1 = `
+                            <button class="wishlist-next-btn p-2" onclick="wishlist_next('${wishlist.guid}')">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        `
+        let button_2 = `
+                            <button class="wishlist-prev-btn p-2" onclick="wishlist_prev('${wishlist.guid}')">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                        `
+        let main_div_enabled = `
+                                    <div class="wishlist-box p-3" id="wishlist-${wishlist.guid}">
+                                `
+
+        let main_div_disabled = `
+                                    <div class="wishlist-box p-3 unavailable" id="wishlist-${wishlist.guid}">
+                                `
+        let html = `
+                    <a onclick="wishlist_clicked('${wishlist.guid}')">
+                        ${ wishlist.available ? main_div_enabled : main_div_disabled}
+                            <div class="row wishlist-container">
+                                <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
+                                    <img src="${wishlist.image}" class="img-fluid book-img" />
+                                </div>
+                            </div>
+                            <div class="wishlist-overlay wishlist-hidden-overlay">
+                                ${wishlist.position !== "last" ? button_1 : ''}
+                                ${wishlist.position !== "first" ? button_2 : ''}
+                                <button class="wishlist-remove-btn p-2" onclick="wishlist_remove('${wishlist.guid}')">
+                                    <i class="fa fa-times" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </a>
+                `
+        return html
+    }
+
+    function create_dumps(dumps) {
+        $("#dump-carousel").empty();
+
+        for (let i = 0; i < dumps.length; i++) {
+            let html = create_dump_html(dumps[i])
+
+            $("#dump-carousel").append(html);
+        }
+        
+        $("#dump-carousel").owlCarousel("destroy")
+
+        $("#dump-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+            responsive:{
+                0:{
+                    items:2
+                }
+            }
+        });
+    }
+
+    function create_dump_html(dump) {
+        let html = `
+                    <a onclick="dump_clicked('${dump.guid}')">
+                        <div class="dump-box p-3" id="dump-${dump.guid}">
+                            <div class="row dump-container">
+                                <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
+                                    <img src="${dump.image}" class="img-fluid book-img" />
+                                </div>
+                            </div>
+                            <div class="dump-overlay dump-hidden-overlay">
+                                <button class="dump-read-btn p-2" onclick="dump_action_read('${dump.guid}')">
+                                    Read Before
+                                </button>
+                                <button class="dump-dislike-btn p-2" onclick="dump_action_dislike('${dump.guid}')">
+                                    <i class="fas fa-thumbs-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </a>
+                `
+        return html
+    }
+</script>

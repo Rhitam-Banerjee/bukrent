@@ -1,17 +1,21 @@
-import csv
-
-from app import db
+from app.models.user import *
+from app.models.buckets import *
+from app.models.order import *
+from app.models.books import Book
 
 from app.models.annotations import Annotation
 from app.models.author import Author
-from app.models.books import Book
 from app.models.category import Category
 from app.models.details import Detail
 from app.models.publishers import Publisher
 from app.models.reviews import Review
 from app.models.series import Series
 from app.models.format import Format
-from app.models.user import User, Address
+
+from app import db
+
+import datetime
+import csv
 
 def get_multi_age_groups(ages):
     age_groups = []
@@ -32,7 +36,6 @@ def get_multi_age_groups(ages):
         if age_group[5]:
             final_age_group[5] = True
     return final_age_group
-        
 
 def get_age_categories(detail):
     if detail[0].replace(" ", "") in ["0-5", "0-2", "1+"]:
@@ -67,7 +70,7 @@ def get_age_groups(age_group):
         return [False, False, False, False, False, True]
     return [False, False, False, False, False, False]
 
-def seed():
+def add_books():
     print("Processing")
 
     ############################# Books
@@ -76,7 +79,7 @@ def seed():
     print("Processing Books")
 
     books = []
-    with open("app/data/new/books.csv", mode="r") as file:
+    with open("scripts/data/25_aug/books/books.csv", mode="r") as file:
         csv_file = csv.reader(file)
         for line in csv_file:
             books.append(line)
@@ -100,110 +103,13 @@ def seed():
         current_dict["borrowed_json"] = None
         current_dict["suggestion_json"] = None
 
-    ################################# Bestseller
-    print("Processing Bestsellers")
-
-    bestsellers = []
-    with open("app/data/data_3/bestseller.csv", mode="r") as file:
-        csv_file = csv.reader(file)
-        for line in csv_file:
-            bestsellers.append(line)
-
-    bestsellers = bestsellers[1:]
-
-    for bestseller in bestsellers:
-        current_dict = book_dict.get(bestseller[0])
-        if current_dict:
-            bestseller_groups = get_age_groups(bestseller[2])
-            current_dict["bestseller_json"] = {
-                "amazon_bestseller": True,
-                "bestseller_age1": bestseller_groups[0],
-                "bestseller_age2": bestseller_groups[1],
-                "bestseller_age3": bestseller_groups[2],
-                "bestseller_age4": bestseller_groups[3],
-                "bestseller_age5": bestseller_groups[4],
-                "bestseller_age6": bestseller_groups[5]
-            }
-
-    ###################################### Most Borrowed
-    print("Processing Most Borrowed")
-    
-    most_borrowed = []
-    with open("app/data/data_3/borrowed.csv", mode="r") as file:
-        csv_file = csv.reader(file)
-        for line in csv_file:
-            most_borrowed.append(line)
-
-    most_borrowed = most_borrowed[1:]
-
-    for borrowed in most_borrowed:
-        current_dict = book_dict.get(borrowed[0])
-        if current_dict:
-            borrowed_groups = get_age_groups(borrowed[1])
-            current_dict["borrowed_json"] = {
-                "most_borrowed": True,
-                "borrowed_age1": borrowed_groups[0],
-                "borrowed_age2": borrowed_groups[1],
-                "borrowed_age3": borrowed_groups[2],
-                "borrowed_age4": borrowed_groups[3],
-                "borrowed_age5": borrowed_groups[4],
-                "borrowed_age6": borrowed_groups[5]
-            }
-
-    ###################################### Suggestions
-    print("Processing Suggestions")
-    
-    suggestions = []
-    with open("app/data/data_3/suggestions.csv", mode="r") as file:
-        csv_file = csv.reader(file)
-        for line in csv_file:
-            suggestions.append(line)
-
-    suggestions = suggestions[1:]
-
-    suggestion_dict = {}
-    for suggestion in suggestions:
-        for index, isbn in enumerate(suggestion):
-            if index == 0:
-                age_group = "0-2"
-            elif index == 1:
-                age_group = "3-5"
-            elif index == 2:
-                age_group = "6-8"
-            elif index == 3:
-                age_group = "6-8"
-            elif index == 4:
-                age_group = "9-11"
-            elif index == 5:
-                age_group = "12-14"
-            elif index == 6:
-                age_group = "15+"
-            if isbn:
-                if suggestion_dict.get(isbn):
-                    suggestion_dict[isbn].append(age_group)
-                else:
-                    suggestion_dict[isbn] = [age_group]
-
-    for isbn, age_groups in suggestion_dict.items():
-        current_dict = book_dict.get(isbn)
-        if current_dict:
-            suggestion_groups = get_multi_age_groups(age_groups)
-            current_dict["suggestion_json"] = {
-                "suggestion_age1": suggestion_groups[0],
-                "suggestion_age2": suggestion_groups[1],
-                "suggestion_age3": suggestion_groups[2],
-                "suggestion_age4": suggestion_groups[3],
-                "suggestion_age5": suggestion_groups[4],
-                "suggestion_age6": suggestion_groups[5]
-            }
-
     ########################################## Annotations
     annotation_dict = {}
 
     print("Processing Annotations")
 
     annotations = []
-    with open("app/data/new/annotations.csv", mode="r") as file:
+    with open("scripts/data/25_aug/books/annotations.csv", mode="r") as file:
         csv_file = csv.reader(file)
         for line in csv_file:
             annotations.append(line)
@@ -244,7 +150,7 @@ def seed():
     author_dict = {}
     print("Processing Authors")
     authors = []
-    with open("app/data/new/creators.csv", mode="r") as file:
+    with open("scripts/data/25_aug/books/creators.csv", mode="r") as file:
         csv_file = csv.reader(file)
         for line in csv_file:
             authors.append(line)
@@ -272,7 +178,7 @@ def seed():
 
     ##################################### Categories
     categories = []
-    with open("app/data/new/categories.csv", mode="r") as file:
+    with open("scripts/data/25_aug/books/categories.csv", mode="r") as file:
         csv_file = csv.reader(file)
         for line in csv_file:
             categories.append(line)
@@ -288,7 +194,7 @@ def seed():
     print("Processing Product Details")
 
     details = []
-    with open("app/data/new/product_details.csv", mode="r") as file:
+    with open("scripts/data/25_aug/books/product_details.csv", mode="r") as file:
         csv_file = csv.reader(file)
         for line in csv_file:
             details.append(line)
@@ -346,7 +252,7 @@ def seed():
     print("Processing Reviews")
 
     reviews = []
-    with open("app/data/new/reviews.csv", mode="r") as file:
+    with open("scripts/data/25_aug/books/reviews.csv", mode="r") as file:
         csv_file = csv.reader(file)
         for line in csv_file:
             reviews.append(line)
@@ -443,31 +349,20 @@ def seed():
             author_data[item]["total_books"] += 1
 
     for name, data in author_data.items():
-        Author.create(
-            name,
-            data["author_type"],
-            data["age1"],
-            data["age2"],
-            data["age3"],
-            data["age4"],
-            data["age5"],
-            data["age6"],
-            data["total_books"],
-            data["display"]
-        )
-
-    Author.create(
-        "Unknown",
-        "author",
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        0,
-        False
-    )
+        author_obj = Author.query.filter_by(name=name).first()
+        if not author_obj:
+            Author.create(
+                name,
+                data["author_type"],
+                data["age1"],
+                data["age2"],
+                data["age3"],
+                data["age4"],
+                data["age5"],
+                data["age6"],
+                data["total_books"],
+                data["display"]
+            )
 
     #### Seeding Categories
     print("Seeding Categories")
@@ -492,58 +387,18 @@ def seed():
             pass
 
     for name, data in category_data.items():
-        Category.create(
-            name,
-            data["age1"],
-            data["age2"],
-            data["age3"],
-            data["age4"],
-            data["age5"],
-            data["age6"],
-            data["total_books"],
-            data["display"]
-        )
-
-    ########################### Seeding Preference Categories
-    preference = []
-    with open("app/data/preferences.csv", mode="r") as file:
-        csv_file = csv.reader(file)
-        for line in csv_file:
-            preference.append(line)
-
-    pref_dict = {}
-    for pref in preference:
-        if pref_dict.get(pref[0]):
-            if pref[1] not in pref_dict[pref[0]]:
-                pref_dict[pref[0]].append(pref[1])
-        else:
-            pref_dict[pref[0]] = [pref[1]]
-
-    for name, age_groups in pref_dict.items():
-        category = Category.query.filter_by(name=name).first()
-        ages = get_multi_age_groups(age_groups)
-        if category:
-            category.age1 = ages[0]
-            category.age2 = ages[1]
-            category.age3 = ages[2]
-            category.age4 = ages[3]
-            category.age5 = ages[4]
-            category.age6 = ages[5]
-            category.display = True
-
-            db.session.add(category)
-            db.session.commit()
-        else:
+        category_obj = Category.query.filter_by(name=name).first()
+        if not category_obj:
             Category.create(
                 name,
-                ages[0],
-                ages[1],
-                ages[2],
-                ages[3],
-                ages[4],
-                ages[5],
-                0,
-                True
+                data["age1"],
+                data["age2"],
+                data["age3"],
+                data["age4"],
+                data["age5"],
+                data["age6"],
+                data["total_books"],
+                data["display"]
             )
 
     #### Seeding Publishers
@@ -566,17 +421,19 @@ def seed():
             publisher_data[item]["total_books"] += 1
 
     for name, data in publisher_data.items():
-        Publisher.create(
-            name,
-            data["age1"],
-            data["age2"],
-            data["age3"],
-            data["age4"],
-            data["age5"],
-            data["age6"],
-            data["total_books"],
-            data["display"]
-        )
+        publisher_obj = Publisher.query.filter_by(name=name).first()
+        if not publisher_obj:
+            Publisher.create(
+                name,
+                data["age1"],
+                data["age2"],
+                data["age3"],
+                data["age4"],
+                data["age5"],
+                data["age6"],
+                data["total_books"],
+                data["display"]
+            )
 
     #### Seeding Series
     print("Seeding Series")
@@ -629,106 +486,113 @@ def seed():
         else:
             age_groups = [False, False, False, False, False, False]
             display = False
-        Series.create(
-            name,
-            age_groups[0],
-            age_groups[1],
-            age_groups[2],
-            age_groups[3],
-            age_groups[4],
-            age_groups[5],
-            data["total_books"],
-            display
-        )
-
+        
+        series_obj = Series.query.filter_by(name=name).first()
+        if not series_obj:
+            Series.create(
+                name,
+                age_groups[0],
+                age_groups[1],
+                age_groups[2],
+                age_groups[3],
+                age_groups[4],
+                age_groups[5],
+                data["total_books"],
+                display
+            )
+    
     #### Seeding Books
     print("Seeding Books")
 
     for book_isbn, book_data in book_dict.items():
-        if not detail_dict.get(book_isbn):
-            print(book_isbn)
-            continue
-        series = book_data["series_id"]
-        series_name = series_dict.get(series)
-        series_id = None
-        if series_name:
-            series_name = series_name["name"]
-            series_id = Series.query.filter_by(name=series_name).first().id
+        existing_book_obj = Book.query.filter_by(isbn=book_isbn).first()
 
-        Book.create(
-            book_data["name"],
-            book_data["image"],
-            book_isbn,
-            book_data["rating"],
-            book_data["reviews"],
-            book_data["format"],
-            book_data["language"],
-            book_data["price"],
-            book_data["description"],
-            1,
-            series_id,
-            book_data["bestseller_json"],
-            book_data["borrowed_json"],
-            book_data["suggestion_json"]
-        )
+        if not existing_book_obj:
+            if not detail_dict.get(book_isbn):
+                print(book_isbn)
+                continue
+            series = book_data["series_id"]
+            series_name = series_dict.get(series)
+            series_id = None
+            if series_name:
+                series_name = series_name["name"]
+                series_id = Series.query.filter_by(name=series_name).first().id
 
-        book_obj = Book.query.filter_by(isbn=book_isbn).first()
+            Book.create(
+                book_data["name"],
+                book_data["image"],
+                book_isbn,
+                book_data["rating"],
+                book_data["reviews"],
+                book_data["format"],
+                book_data["language"],
+                book_data["price"],
+                book_data["description"],
+                1,
+                series_id,
+                book_data["bestseller_json"],
+                book_data["borrowed_json"],
+                book_data["suggestion_json"]
+            )
 
-        categories = book_data.get("categories")
-        if categories:
-            for item in categories:
-                obj = Category.query.filter_by(name=item).first()
-                obj.books.append(book_obj)
-                db.session.add(obj)
-                db.session.commit()
+            book_obj = Book.query.filter_by(isbn=book_isbn).first()
 
-        publishers = publisher_dict.get(book_isbn)
-        if publishers:
-            for item in publishers:
-                obj = Publisher.query.filter_by(name=item).first()
-                obj.books.append(book_obj)
-                db.session.add(obj)
-                db.session.commit()
-        
-        authors = author_dict.get(book_isbn)
-        if authors:
-            total_authors = len(authors["authors"]) + len(authors["illustrators"])
-            if total_authors == 0:
+            categories = book_data.get("categories")
+            if categories:
+                for item in categories:
+                    obj = Category.query.filter_by(name=item).first()
+                    obj.books.append(book_obj)
+                    db.session.add(obj)
+                    db.session.commit()
+
+            publishers = publisher_dict.get(book_isbn)
+            if publishers:
+                for item in publishers:
+                    obj = Publisher.query.filter_by(name=item).first()
+                    obj.books.append(book_obj)
+                    db.session.add(obj)
+                    db.session.commit()
+            
+            authors = author_dict.get(book_isbn)
+            if authors:
+                total_authors = len(authors["authors"]) + len(authors["illustrators"])
+                if total_authors == 0:
+                    obj = Author.query.filter_by(name="Unknown").first()
+                    obj.books.append(book_obj)
+                    db.session.add(obj)
+                    db.session.commit()
+                else:
+                    for item in authors["authors"]:
+                        obj = Author.query.filter_by(name=item).first()
+                        obj.books.append(book_obj)
+                        db.session.add(obj)
+                        db.session.commit()
+                    for item in authors["illustrators"]:
+                        obj = Author.query.filter_by(name=item).first()
+                        obj.books.append(book_obj)
+                        db.session.add(obj)
+                        db.session.commit()
+            else:
                 obj = Author.query.filter_by(name="Unknown").first()
                 obj.books.append(book_obj)
                 db.session.add(obj)
                 db.session.commit()
-            else:
-                for item in authors["authors"]:
-                    obj = Author.query.filter_by(name=item).first()
-                    obj.books.append(book_obj)
-                    db.session.add(obj)
-                    db.session.commit()
-                for item in authors["illustrators"]:
-                    obj = Author.query.filter_by(name=item).first()
-                    obj.books.append(book_obj)
-                    db.session.add(obj)
-                    db.session.commit()
-        else:
-            obj = Author.query.filter_by(name="Unknown").first()
-            obj.books.append(book_obj)
-            db.session.add(obj)
-            db.session.commit()
 
     #### Seeding Annotations
     print("Seeding Annotations")
 
     for isbn, data in annotation_dict.items():
         book_obj = Book.query.filter_by(isbn=isbn).first()
-        Annotation.create(
-            data.get("table_of_contents"),
-            data.get("review_text"),
-            data.get("review_quote"),
-            data.get("flap_copy"),
-            data.get("back_cover_copy"),
-            data.get("about_author"),
-            book_obj.id
-        )
+        if not book_obj.annotation:
+            Annotation.create(
+                data.get("table_of_contents"),
+                data.get("review_text"),
+                data.get("review_quote"),
+                data.get("flap_copy"),
+                data.get("back_cover_copy"),
+                data.get("about_author"),
+                book_obj.id
+            )
 
     #### Seeding Details
     print("Seeding Product Details")
@@ -739,22 +603,23 @@ def seed():
             bestseller_rank = int(data.get("bestseller_rank"))
         except:
             bestseller_rank = 10000000
-        Detail.create(
-            data.get("age_category"),
-            data.get("for_age"),
-            data.get("pages"),
-            data.get("language"),
-            data.get("dimensions"),
-            data.get("publisher"),
-            data.get("publication_date"),
-            bestseller_rank,
-            data.get("publication_location"),
-            data.get("edition_statement"),
-            data.get("edition"),
-            data.get("imprint"),
-            data.get("illustration_notes"),
-            book_obj.id
-        )
+        if not book_obj.details:
+            Detail.create(
+                data.get("age_category"),
+                data.get("for_age"),
+                data.get("pages"),
+                data.get("language"),
+                data.get("dimensions"),
+                data.get("publisher"),
+                data.get("publication_date"),
+                bestseller_rank,
+                data.get("publication_location"),
+                data.get("edition_statement"),
+                data.get("edition"),
+                data.get("imprint"),
+                data.get("illustration_notes"),
+                book_obj.id
+            )
 
     #### Seeding Reviews
     print("Seeding Reviews")
@@ -762,32 +627,157 @@ def seed():
     for isbn, data in review_dict.items():
         book_obj = Book.query.filter_by(isbn=isbn).first()
         for review in data:
-            Review.create(
-                review["review"],
-                review["author"],
-                book_obj.id
-            )
+            review_obj = Review.query.filter_by(review=review["review"]).first()
+            if not review_obj:
+                Review.create(
+                    review["review"],
+                    review["author"],
+                    book_obj.id
+                )
+            else:
+                if review_obj.book_id != book_obj.id:
+                    Review.create(
+                        review["review"],
+                        review["author"],
+                        book_obj.id
+                    )
 
-    ########################################## Seeding Formats
-    format_dict = {}
+def aug_25():
+    buckets = DeliveryBucket.query.all()
+    for bucket in buckets:
+        bucket.delete()
 
-    print("Processing Formats")
+    wishlists = Wishlist.query.all()
+    for wishlist in wishlists:
+        wishlist.delete()
 
-    formats = []
-    with open("app/data/formats.csv", mode="r") as file:
+    suggestions = Suggestion.query.all()
+    for suggestion in suggestions:
+        suggestion.delete()
+
+    dumps = Dump.query.all()
+    for dump in dumps:
+        dump.delete()
+
+    orders = Order.query.all()
+    for order in orders:
+        order.delete()
+
+    books = Book.query.all()
+    for book in books:
+        book.stock_available = 1
+        db.session.add(book)
+        db.session.commit()
+
+    users_data = []
+    with open("scripts/data/25_aug/users.csv", mode="r") as file:
         csv_file = csv.reader(file)
         for line in csv_file:
-            formats.append(line)
+            users_data.append(line)
 
-    for format_name in formats:
-        Format.create(
-            format_name[0],
-            True,
-            True,
-            True,
-            True,
-            True,
-            True,
-            0,
-            True
-        )
+    users_data = users_data[1:]
+
+    for user_data in users_data:
+        first_name = user_data[0].split(" ")[0]
+        try:
+            last_name = user_data[0].split(" ")[1]
+        except:
+            last_name = ""
+        
+        mobile_number = user_data[1]
+        plan_id = user_data[2]
+
+        password = user_data[3]
+        day = user_data[4]
+
+        if day == "sat":
+            last_day = datetime.datetime.strptime("20-08-2022", "%d-%m-%Y")
+            next_day = datetime.datetime.strptime("27-08-2022", "%d-%m-%Y")
+        if day == "wed":
+            last_day = datetime.datetime.strptime("24-08-2022", "%d-%m-%Y")
+            next_day = datetime.datetime.strptime("31-08-2022", "%d-%m-%Y")
+
+        user_obj = User.query.filter_by(mobile_number=mobile_number).first()
+        if not user_obj:
+            user_obj = User.create(first_name, last_name, mobile_number)
+
+        if not user_obj.password:
+            user_obj.password = password
+        
+        user_obj.is_subscribed = True
+        user_obj.security_deposit = True
+        user_obj.plan_id = plan_id
+        user_obj.next_delivery_date = next_day
+        user_obj.last_delivery_date = last_day
+        user_obj.next_order_confirmed = False
+        db.session.add(user_obj)
+        db.session.commit()
+
+    suggestions_data = []
+    with open("scripts/data/25_aug/isbn.csv", mode="r") as file:
+        csv_file = csv.reader(file)
+        for line in csv_file:
+            suggestions_data.append(line)
+
+    suggestions_data = suggestions_data[1:]
+
+    user_suggestion_dict = {}
+    for mobile_number in suggestions_data[0]:
+        user_suggestion_dict[mobile_number] = []
+
+    for mobile_number, empty_list in user_suggestion_dict.items():
+        user_obj = User.query.filter_by(mobile_number=mobile_number).first()
+        column = suggestions_data[0].index(mobile_number)
+        row = 0
+        while row < int(suggestions_data[1][column]):
+            if suggestions_data[row+2][column]:
+                empty_list.append(suggestions_data[row+2][column])
+                row += 1
+    
+    total_suggestions = 0
+    for mobile_number, isbn_list in user_suggestion_dict.items():
+        user_obj = User.query.filter_by(mobile_number=mobile_number).first()
+        for isbn in isbn_list:
+            book = Book.query.filter_by(isbn=isbn).first()
+            if not book:
+                isbn_list.remove(isbn)
+            else:
+                age_group = None
+                if book.suggestion_age1:
+                    age_group = 1
+                elif book.suggestion_age2:
+                    age_group = 2
+                elif book.suggestion_age3:
+                    age_group = 3
+                elif book.suggestion_age4:
+                    age_group = 4
+                elif book.suggestion_age5:
+                    age_group = 5
+                elif book.suggestion_age6:
+                    age_group = 6
+                if not age_group:
+                    if book.bestseller_age1:
+                        age_group = 1
+                    elif book.bestseller_age2:
+                        age_group = 2
+                    elif book.bestseller_age3:
+                        age_group = 3
+                    elif book.bestseller_age4:
+                        age_group = 4
+                    elif book.bestseller_age5:
+                        age_group = 5
+                    elif book.bestseller_age6:
+                        age_group = 6
+                    if not age_group:
+                        book.suggestion_age3 = True
+                        db.session.add(book)
+                        db.session.commit()
+
+                        age_group = 3
+
+                Suggestion.create(user_obj.id, book.id, age_group)
+        print(f"{mobile_number} has {len(isbn_list)} books")
+        total_suggestions += len(isbn_list)
+
+    print(f"Total suggestions - {total_suggestions}")
+    print(f"Suggestions Created - {len(Suggestion.query.all())}")

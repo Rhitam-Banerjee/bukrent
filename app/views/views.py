@@ -301,8 +301,10 @@ def library():
     return render_template(
         "/library/library.html",
         all_children=all_children,
-        next_bucket=user.get_next_bucket(),
-        retain_books=user.get_previous_books(),
+        # next_bucket=user.get_next_bucket(),
+        next_bucket=[],
+        # retain_books=user.get_previous_books(),
+        retain_books=[],
         suggestions=user.get_suggestions(),
         wishlists=user.get_wishlist(),
         dumps=user.get_dump_data(),

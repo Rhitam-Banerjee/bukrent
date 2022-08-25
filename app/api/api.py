@@ -441,13 +441,13 @@ def add_children():
         for child in children:
             user.add_child(child)
 
-        age_groups = []
-        for child in children:
-            age_groups.append(child.get("age_group"))
+        # age_groups = []
+        # for child in children:
+        #     age_groups.append(child.get("age_group"))
 
-        age_groups = list(set(age_groups))
+        # age_groups = list(set(age_groups))
 
-        user.add_age_groups(age_groups)
+        # user.add_age_groups(age_groups)
 
         return jsonify({
             "status": "success",
@@ -507,9 +507,16 @@ def suggestion_to_wishlist():
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
         user.suggestion_to_wishlist(guid)
+
+        suggestions = user.get_suggestions()
+        wishlists = user.get_wishlist()
+
         return jsonify({
-            "status": "success"
+            "status": "success",
+            "suggestions": suggestions,
+            "wishlists": wishlists
         }), 201
+
     except Exception as e:
         return jsonify({
             "message": str(e),
@@ -522,8 +529,14 @@ def suggestion_to_dump():
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
         user.suggestion_to_dump(guid)
+
+        suggestions = user.get_suggestions()
+        dumps = user.get_dump_data()
+
         return jsonify({
-            "status": "success"
+            "status": "success",
+            "suggestions": suggestions,
+            "dumps": dumps
         }), 201
     except Exception as e:
         return jsonify({
@@ -537,8 +550,12 @@ def dump_action_read():
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
         user.dump_action_read(guid)
+
+        dumps = user.get_dump_data()
+
         return jsonify({
-            "status": "success"
+            "status": "success",
+            "dumps": dumps
         }), 201
     except Exception as e:
         return jsonify({
@@ -552,8 +569,12 @@ def dump_action_dislike():
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
         user.dump_action_dislike(guid)
+
+        dumps = user.get_dump_data()
+
         return jsonify({
-            "status": "success"
+            "status": "success",
+            "dumps": dumps
         }), 201
     except Exception as e:
         return jsonify({
@@ -567,8 +588,12 @@ def wishlist_next():
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
         user.wishlist_next(guid)
+
+        wishlists = user.get_wishlist()
+
         return jsonify({
-            "status": "success"
+            "status": "success",
+            "wishlists": wishlists
         }), 201
     except Exception as e:
         return jsonify({
@@ -582,8 +607,12 @@ def wishlist_prev():
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
         user.wishlist_prev(guid)
+
+        wishlists = user.get_wishlist()
+
         return jsonify({
-            "status": "success"
+            "status": "success",
+            "wishlists": wishlists
         }), 201
     except Exception as e:
         return jsonify({
@@ -597,8 +626,14 @@ def wishlist_remove():
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
         user.wishlist_remove(guid)
+
+        wishlists = user.get_wishlist()
+        dumps = user.get_dump_data()
+
         return jsonify({
-            "status": "success"
+            "status": "success",
+            "wishlists": wishlists,
+            "dumps": dumps
         }), 201
     except Exception as e:
         return jsonify({
