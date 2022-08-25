@@ -791,7 +791,7 @@ def populate_suggestions():
 
     for suggestion_isbn in suggestions_data:
         user_obj = User.query.filter_by(mobile_number='8826144375').first()
-        book = Book.query.filter_by(isbn=suggestion_isbn).first()
+        book = Book.query.filter_by(isbn=suggestion_isbn[0]).first()
         if not book:
             continue
         else:
