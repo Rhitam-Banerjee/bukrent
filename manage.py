@@ -47,8 +47,9 @@ def script_create_orders():
 
 @cli.command()
 def script_25_aug():
-    add_books()
-    aug_25()
+    # add_books()
+    # aug_25()
+    def populate_suggestions()
 
 if __name__ == '__main__':
     cli()

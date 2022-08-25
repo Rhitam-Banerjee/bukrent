@@ -10,6 +10,7 @@ from sqlalchemy import and_
 
 from datetime import date, timedelta
 
+import random
 import os
 
 class CategoryPreferences(db.Model):
@@ -653,6 +654,7 @@ class User(db.Model):
 
                 book_list.append(temp_dict)
 
+        random.shuffle(book_list)
         return book_list
 
     def get_dump_data(self):

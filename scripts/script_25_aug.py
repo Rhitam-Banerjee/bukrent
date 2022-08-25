@@ -781,3 +781,18 @@ def aug_25():
 
     print(f"Total suggestions - {total_suggestions}")
     print(f"Suggestions Created - {len(Suggestion.query.all())}")
+
+def populate_suggestions():
+    suggestions_data = []
+    with open("scripts/data/25_aug/shreya.csv", mode="r") as file:
+        csv_file = csv.reader(file)
+        for line in csv_file:
+            suggestions_data.append(line)
+
+    for suggestion_isbn in suggestions_data:
+        user_obj = User.query.filter_by(mobile_number='8826144375').first()
+        book = Book.query.filter_by(isbn=suggestion_isbn).first()
+        if not book:
+            continue
+        else:
+            Suggestion.create(user_obj.id, book.id, 1)
