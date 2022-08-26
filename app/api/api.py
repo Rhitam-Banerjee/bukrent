@@ -552,10 +552,12 @@ def dump_action_read():
         user.dump_action_read(guid)
 
         dumps = user.get_dump_data()
+        read_books = user.get_read_books()
 
         return jsonify({
             "status": "success",
-            "dumps": dumps
+            "dumps": dumps,
+            "read_books": read_books
         }), 201
     except Exception as e:
         return jsonify({

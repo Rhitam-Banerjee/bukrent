@@ -158,4 +158,45 @@
                 `
         return html
     }
+
+    function create_read_books(read_books) {
+        $("#read-carousel").empty();
+
+        for (let i = 0; i < read_books.length; i++) {
+            let html = create_read_html(read_books[i])
+
+            $("#read-carousel").append(html);
+        }
+        
+        $("#read-carousel").owlCarousel("destroy")
+
+        $("#read-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+            responsive:{
+                0:{
+                    items:2
+                }
+            }
+        });
+    }
+
+    function create_read_html(read) {
+        let html = `
+                    <a>
+                        <div class="read-box p-3 unavailable" id="read-${read.guid}">
+                            <div class="row read-container">
+                                <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
+                                    <img src="${read.image}" class="img-fluid book-img" />
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                `
+
+        return html
+    }
 </script>

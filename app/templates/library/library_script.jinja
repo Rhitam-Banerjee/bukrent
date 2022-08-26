@@ -44,6 +44,19 @@
                 }
             }
         });
+
+        $("#read-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+            responsive:{
+                0:{
+                    items:2
+                }
+            }
+        });
     });
 
     $(function(){
@@ -141,6 +154,14 @@
                 let suggestions = result.suggestions
                 let wishlists = result.wishlists
 
+                if (wishlists.length > 0) {
+                    $("#wishlist-placeholder-1").addClass("section-hidden");
+                    $("#wishlist-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#wishlist-placeholder-1").removeClass("section-hidden");
+                    $("#wishlist-placeholder-2").addClass("section-hidden");
+                }
+
                 create_suggestions(suggestions)
                 create_wishlists(wishlists)
             },
@@ -177,6 +198,14 @@
             success: function (result) {
                 let suggestions = result.suggestions
                 let dumps = result.dumps
+
+                if (dumps.length > 0) {
+                    $("#dump-placeholder-1").addClass("section-hidden");
+                    $("#dump-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#dump-placeholder-1").removeClass("section-hidden");
+                    $("#dump-placeholder-2").addClass("section-hidden");
+                }
 
                 create_suggestions(suggestions)
                 create_dumps(dumps)
@@ -221,8 +250,26 @@
             },
             success: function (result) {
                 let dumps = result.dumps
+                let read_books = result.read_books
+
+                if (dumps.length > 0) {
+                    $("#dump-placeholder-1").addClass("section-hidden");
+                    $("#dump-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#dump-placeholder-1").removeClass("section-hidden");
+                    $("#dump-placeholder-2").addClass("section-hidden");
+                }
+
+                if (read_books.length > 0) {
+                    $("#read-placeholder-1").addClass("section-hidden");
+                    $("#read-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#read-placeholder-1").removeClass("section-hidden");
+                    $("#read-placeholder-2").addClass("section-hidden");
+                }
 
                 create_dumps(dumps)
+                create_read_books(read_books)
             },
             error: function (result) {
                 Swal.fire(
@@ -256,6 +303,14 @@
             },
             success: function (result) {
                 let dumps = result.dumps
+
+                if (dumps.length > 0) {
+                    $("#dump-placeholder-1").addClass("section-hidden");
+                    $("#dump-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#dump-placeholder-1").removeClass("section-hidden");
+                    $("#dump-placeholder-2").addClass("section-hidden");
+                }
 
                 create_dumps(dumps)
             },
@@ -370,6 +425,22 @@
             success: function (result) {
                 let wishlists = result.wishlists
                 let dumps = result.dumps
+
+                if (wishlists.length > 0) {
+                    $("#wishlist-placeholder-1").addClass("section-hidden");
+                    $("#wishlist-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#wishlist-placeholder-1").removeClass("section-hidden");
+                    $("#wishlist-placeholder-2").addClass("section-hidden");
+                }
+
+                if (dumps.length > 0) {
+                    $("#dump-placeholder-1").addClass("section-hidden");
+                    $("#dump-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#dump-placeholder-1").removeClass("section-hidden");
+                    $("#dump-placeholder-2").addClass("section-hidden");
+                }
 
                 create_wishlists(wishlists)
                 create_dumps(dumps)

@@ -674,6 +674,22 @@ class User(db.Model):
 
         return book_list
 
+    def get_read_books(self):
+        read_books = Dump.query.filter(and_(Dump.user_id==self.id, Dump.read_before==True)).all()
+
+        book_list = []
+        for read_book in read_books:
+            temp_dict = {
+                "name": read_book.book.name,
+                "guid": read_book.book.guid,
+                "isbn": read_book.book.isbn,
+                "image": read_book.book.image
+            }
+
+            book_list.append(temp_dict)
+
+        return book_list
+
     def get_wishlist(self):
         wishlists = Wishlist.query.filter_by(user_id=self.id).order_by(Wishlist.priority_order.asc()).all()
         book_list = []

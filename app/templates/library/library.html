@@ -110,7 +110,7 @@
             <div class="row">
                 {% for retain in retain_books %}
                 <div class="col-3 col-md-3 col-lg-3 unavailable">
-                    <a onclick="retain_clicked(`{{retain.get('guid')}}`)">
+                    <!-- <a onclick="retain_clicked(`{{retain.get('guid')}}`)"> -->
                         <div class="retain-box p-2" id="retain-{{retain.get('guid')}}">
                             <div class="row retain-container">
                                 <div class="col-12 col-md-12 col-lg-12 text-center book-img-container-small">
@@ -128,7 +128,7 @@
                             </div>
                             {% endif %}
                         </div>
-                    </a>
+                    <!-- </a> -->
                 </div>
                 {% endfor %}
             </div>
@@ -176,7 +176,10 @@
         </div>
 
         {% if wishlists | length == 0 %}
-        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3" id="wishlist-placeholder-1">
+        {% else %}
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3 section-hidden" id="wishlist-placeholder-1">
+        {% endif %}
             <div class="row">
                 <div class="col-6 col-md-6 col-lg-6 text-start ps-4" style="line-height: 10px;">
                     <p class="gray-text gray-text-large">Link Books <span class="gray-text gray-text-small">to</span></p>
@@ -187,8 +190,11 @@
                 </div>
             </div>
         </div>
+        {% if wishlists | length == 0 %}
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3 section-hidden" id="wishlist-placeholder-2">
         {% else %}
-        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3" id="wishlist-placeholder-2">
+        {% endif %}
             <div id="wishlists-carousel" class="owl-carousel owl-theme">
             {% for wishlist in wishlists %}
                 <a onclick="wishlist_clicked(`{{wishlist.get('guid')}}`)">
@@ -230,7 +236,46 @@
             {% endfor %}
             </div>
         </div>
+
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
+            <p class="section-title">Rate Previous Books</p>
+            <hr style="margin-top: -10px;"/>
+        </div>
+
+        {% if read_books | length == 0 %}
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3" id="read-placeholder-1">
+        {% else %}
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3 section-hidden" id="read-placeholder-1">
         {% endif %}
+            <div class="row">
+                <div class="col-6 col-md-6 col-lg-6 text-start ps-4" style="line-height: 10px;">
+                    <p class="gray-text gray-text-large">No Books</p>
+                    <p class="gray-text gray-text-small" style="line-height: 20px;">to rate right now</p>
+                </div>
+                <div class="col-6 col-md-6 col-lg-6 text-center">
+                    <img src="/static/images/read_books.svg" class="img-fluid" />
+                </div>
+            </div>
+        </div>
+        {% if read_books | length == 0 %}
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3 section-hidden" id="read-placeholder-2">
+        {% else %}
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3" id="read-placeholder-2">
+        {% endif %}
+            <div id="read-carousel" class="owl-carousel owl-theme">
+            {% for read in read_books %}
+                <a>
+                    <div class="read-box p-3 unavailable" id="read-{{read.get('guid')}}">
+                        <div class="row read-container">
+                            <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
+                                <img src="{{read.get('image')}}" class="img-fluid book-img" />
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+            </div>
+        </div>
 
         <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
             <p class="section-title">Book Dump</p>
@@ -238,7 +283,10 @@
         </div>
 
         {% if dumps | length == 0 %}
-        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3 pb-5">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3 pb-5" id="dump-placeholder-1">
+        {% else %}
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3 pb-5 section-hidden" id="dump-placeholder-1">
+        {% endif %}
             <div class="row">
                 <div class="col-6 col-md-6 col-lg-6 text-start ps-4" style="line-height: 10px;">
                     <p class="gray-text gray-text-small">Book Dump</p>
@@ -249,8 +297,11 @@
                 </div>
             </div>
         </div>
+        {% if dumps | length == 0 %}
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3 pb-5 section-hidden" id="dump-placeholder-2">
         {% else %}
-        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3 pb-5">
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3 pb-5" id="dump-placeholder-2">
+        {% endif %}
             <div id="dump-carousel" class="owl-carousel owl-theme">
             {% for dump in dumps %}
                 <a onclick="dump_clicked(`{{dump.get('guid')}}`)">
@@ -273,7 +324,6 @@
             {% endfor %}
             </div>
         </div>
-        {% endif %}
     </div>
 </div>
 
