@@ -8,6 +8,7 @@ from seed_users import *
 from script_order import *
 from scripts.script_25_aug import *
 from scripts.script_26_aug import *
+from scripts.script_30_aug import *
 
 from app.models.annotations import Annotation
 from app.models.author import Author
@@ -55,6 +56,10 @@ def script_25_aug():
 @cli.command()
 def script_26_aug():
     aug_26_1()
+
+@cli.command()
+def script_30_aug():
+    aug_30_1()
 
 if __name__ == '__main__':
     cli()

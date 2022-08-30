@@ -321,39 +321,41 @@ class User(db.Model):
     def add_age_groups(self, age_groups):
         from app.models.books import Book
 
-        final_suggestions = []
-        for age_group in age_groups:
-            if age_group == 1:
-                self.has_child_1 = True
-                books = Book.query.filter_by(suggestion_age1=True).all()
-            if age_group == 2:
-                self.has_child_2 = True
-                books = Book.query.filter_by(suggestion_age2=True).all()
-            if age_group == 3:
-                self.has_child_3 = True
-                books = Book.query.filter_by(suggestion_age3=True).all()
-            if age_group == 4:
-                self.has_child_4 = True
-                books = Book.query.filter_by(suggestion_age4=True).all()
-            if age_group == 5:
-                self.has_child_5 = True
-                books = Book.query.filter_by(suggestion_age5=True).all()
-            if age_group == 6:
-                self.has_child_6 = True
-                books = Book.query.filter_by(suggestion_age6=True).all()
+        suggestions = Suggestion.query.filter_by(user_id=self.id).all()
+        if len(suggestions) == 0:
+            final_suggestions = []
+            for age_group in age_groups:
+                if age_group == 1:
+                    self.has_child_1 = True
+                    books = Book.query.filter_by(suggestion_age1=True).all()
+                if age_group == 2:
+                    self.has_child_2 = True
+                    books = Book.query.filter_by(suggestion_age2=True).all()
+                if age_group == 3:
+                    self.has_child_3 = True
+                    books = Book.query.filter_by(suggestion_age3=True).all()
+                if age_group == 4:
+                    self.has_child_4 = True
+                    books = Book.query.filter_by(suggestion_age4=True).all()
+                if age_group == 5:
+                    self.has_child_5 = True
+                    books = Book.query.filter_by(suggestion_age5=True).all()
+                if age_group == 6:
+                    self.has_child_6 = True
+                    books = Book.query.filter_by(suggestion_age6=True).all()
 
-            for book in books:
-                if book not in final_suggestions:
-                    final_suggestions.append({
-                        "book": book,
-                        "age_group": age_group
-                    })
+                for book in books:
+                    if book not in final_suggestions:
+                        final_suggestions.append({
+                            "book": book,
+                            "age_group": age_group
+                        })
 
-        db.session.add(self)
-        db.session.commit()
-        
-        for suggestion in final_suggestions:
-            Suggestion.create(self.id, suggestion["book"].id, suggestion["age_group"])
+            db.session.add(self)
+            db.session.commit()
+            
+            for suggestion in final_suggestions:
+                Suggestion.create(self.id, suggestion["book"].id, suggestion["age_group"])
 
     def update_details(self, email, password):
         self.email = email

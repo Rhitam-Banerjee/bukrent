@@ -441,13 +441,13 @@ def add_children():
         for child in children:
             user.add_child(child)
 
-        # age_groups = []
-        # for child in children:
-        #     age_groups.append(child.get("age_group"))
+        age_groups = []
+        for child in children:
+            age_groups.append(child.get("age_group"))
 
-        # age_groups = list(set(age_groups))
+        age_groups = list(set(age_groups))
 
-        # user.add_age_groups(age_groups)
+        user.add_age_groups(age_groups)
 
         return jsonify({
             "status": "success",
