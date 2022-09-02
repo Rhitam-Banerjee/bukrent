@@ -314,6 +314,26 @@ def library():
         user=user
     )
 
+@views.route("/browse")
+def browse():
+    user = User.query.filter_by(guid=session.get("current_user")).first()
+    if not user:
+        return redirect(url_for('views.home'))
+    if len(user.child) == 0:
+        return redirect(url_for('views.add_children'))
+
+    all_preferences = True
+    for child in user.child:
+        if not child.preferences:
+            all_preferences = False
+    
+    if not all_preferences:
+        return redirect(url_for('views.preferences'))
+    return render_template(
+        "/home_new/home_new.html",
+        user=user
+    )
+
 @views.route("/happy-reading")
 def happy_reading():
     user = User.query.filter_by(guid=session.get("current_user")).first()
@@ -453,18 +473,6 @@ def get_user_data():
             } for child in children
         ]
     }), 200
-
-@views.route("/browse")
-def browse():
-    current_user = session.get("current_user")
-    user = None
-    if current_user:
-        user = User.query.filter_by(guid=current_user).first()
-    return render_template(
-        "/home_new/home_new.html",
-        current_user=current_user,
-        user=user
-    )
 
 @views.route("/book-details")
 def book_details():

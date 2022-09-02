@@ -4,6 +4,8 @@ import uuid
 from app.models.books import BookAuthor
 from app.models.user import AuthorPreferences
 
+from sqlalchemy import or_
+
 class Author(db.Model):
     __tablename__ = "authors"
     id = db.Column(db.Integer, primary_key=True)
@@ -56,7 +58,14 @@ class Author(db.Model):
             elif age_group == 6:
                 authors = Author.query.filter_by(age6=True).all()
         else:
-            authors = Author.query.filter_by(display=True).all()
+            authors = Author.query.filter(or_(
+                Author.age1==True,
+                Author.age2==True,
+                Author.age3==True,
+                Author.age4==True,
+                Author.age5==True,
+                Author.age6==True
+            )).all()
         
         final_authors = []
         for author in authors:
@@ -64,29 +73,5 @@ class Author(db.Model):
                 "name": author.name,
                 "guid": author.guid
             })
-
-        return final_authors
-
-    @staticmethod
-    def get_all_authors(age_group):
-        if age_group:
-            if age_group == 1:
-                authors = Author.query.filter_by(age1=True).all()[10:]
-            elif age_group == 2:
-                authors = Author.query.filter_by(age2=True).all()[10:]
-            elif age_group == 3:
-                authors = Author.query.filter_by(age3=True).all()[10:]
-            elif age_group == 4:
-                authors = Author.query.filter_by(age4=True).all()[10:]
-            elif age_group == 5:
-                authors = Author.query.filter_by(age5=True).all()[10:]
-            elif age_group == 6:
-                authors = Author.query.filter_by(age6=True).all()[10:]
-        else:
-            authors = Author.query.filter_by(display=True).all()[10:]
-        
-        final_authors = []
-        for author in authors:
-            final_authors.append(author.name)
 
         return final_authors

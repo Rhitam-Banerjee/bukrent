@@ -169,10 +169,10 @@ class Book(db.Model):
         return final_books
 
     @staticmethod
-    def get_author_books(author):
+    def get_author_books(guid):
         from app.models.author import Author
 
-        books = Author.query.filter_by(name=author).first().books[:10]
+        books = Author.query.filter_by(guid=guid).first().books[:10]
         final_books = []
 
         for book in books:
@@ -181,10 +181,10 @@ class Book(db.Model):
         return final_books
 
     @staticmethod
-    def get_publisher_books(publisher):
+    def get_publisher_books(guid):
         from app.models.publishers import Publisher
 
-        books = Publisher.query.filter_by(name=publisher).first().books[:10]
+        books = Publisher.query.filter_by(guid=guid).first().books[:10]
         final_books = []
 
         for book in books:
@@ -193,10 +193,10 @@ class Book(db.Model):
         return final_books
 
     @staticmethod
-    def get_series_books(series):
+    def get_series_books(guid):
         from app.models.series import Series
 
-        books = Series.query.filter_by(name=series).first().books
+        books = Series.query.filter_by(guid=guid).first().books
         final_books = []
 
         for book in books:
@@ -205,10 +205,10 @@ class Book(db.Model):
         return final_books
 
     @staticmethod
-    def get_genres_books(genres):
+    def get_genres_books(guid):
         from app.models.category import Category
 
-        books = Category.query.filter_by(name=genres).first().books[:10]
+        books = Category.query.filter_by(guid=guid).first().books[:10]
         final_books = []
 
         for book in books:

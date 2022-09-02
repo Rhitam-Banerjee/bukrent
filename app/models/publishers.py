@@ -56,30 +56,9 @@ class Publisher(db.Model):
         
         final_publishers = []
         for publisher in publishers:
-            final_publishers.append(publisher.name)
-
-        return final_publishers
-
-    @staticmethod
-    def get_all_publishers(age_group):
-        if age_group:
-            if age_group == 1:
-                publishers = Publisher.query.filter_by(age1=True).all()[10:]
-            elif age_group == 2:
-                publishers = Publisher.query.filter_by(age2=True).all()[10:]
-            elif age_group == 3:
-                publishers = Publisher.query.filter_by(age3=True).all()[10:]
-            elif age_group == 4:
-                publishers = Publisher.query.filter_by(age4=True).all()[10:]
-            elif age_group == 5:
-                publishers = Publisher.query.filter_by(age5=True).all()[10:]
-            elif age_group == 6:
-                publishers = Publisher.query.filter_by(age6=True).all()[10:]
-        else:
-            publishers = Publisher.query.filter_by(display=True).all()[10:]
-        
-        final_publishers = []
-        for publisher in publishers:
-            final_publishers.append(publisher.name)
+            final_publishers.append({
+                "name": publisher.name,
+                "guid": publisher.guid
+            })
 
         return final_publishers

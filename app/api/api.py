@@ -1002,14 +1002,6 @@ def get_authors():
         "status": "success"
     }), 200
 
-@api.route("/get-all-authors", methods=["POST"])
-def get_all_authors():
-    age_group = request.json.get("age_group")
-    return jsonify({
-        "data": Author.get_all_authors(age_group),
-        "status": "success"
-    }), 200
-
 @api.route("/get-publishers", methods=["POST"])
 def get_publishers():
     age_group = request.json.get("age_group")
@@ -1018,35 +1010,30 @@ def get_publishers():
         "status": "success"
     }), 200
 
-@api.route("/get-all-publishers", methods=["POST"])
-def get_all_publishers():
-    age_group = request.json.get("age_group")
-    return jsonify({
-        "data": Publisher.get_all_publishers(age_group),
-        "status": "success"
-    }), 200
-
 @api.route("/get-author-books", methods=["POST"])
 def get_author_books():
-    author = request.json.get("author")
+    guid = request.json.get("guid")
     return jsonify({
-        "data": Book.get_author_books(author),
+        "data": Book.get_author_books(guid),
+        "name": Author.query.filter_by(guid=guid).first().name,
         "status": "success"
     }), 200
 
 @api.route("/get-publisher-books", methods=["POST"])
 def get_publisher_books():
-    publisher = request.json.get("publisher")
+    guid = request.json.get("guid")
     return jsonify({
-        "data": Book.get_publisher_books(publisher),
+        "data": Book.get_publisher_books(guid),
+        "name": Publisher.query.filter_by(guid=guid).first().name,
         "status": "success"
     }), 200
 
 @api.route("/get-series-books", methods=["POST"])
 def get_series_books():
-    series = request.json.get("series")
+    guid = request.json.get("guid")
     return jsonify({
-        "data": Book.get_series_books(series),
+        "data": Book.get_series_books(guid),
+        "name": Series.query.filter_by(guid=guid).first().name,
         "status": "success"
     }), 200
 
@@ -1058,27 +1045,11 @@ def get_series():
         "status": "success"
     }), 200
 
-@api.route("/get-all-series", methods=["POST"])
-def get_all_series():
-    age_group = request.json.get("age_group")
-    return jsonify({
-        "data": Series.get_all_series(age_group),
-        "status": "success"
-    }), 200
-
 @api.route("/get-genres", methods=["POST"])
 def get_genres():
     age_group = request.json.get("age_group")
     return jsonify({
         "data": Category.get_genres(age_group),
-        "status": "success"
-    }), 200
-
-@api.route("/get-all-genres", methods=["POST"])
-def get_all_genres():
-    age_group = request.json.get("age_group")
-    return jsonify({
-        "data": Category.get_all_genres(age_group),
         "status": "success"
     }), 200
 
@@ -1092,9 +1063,10 @@ def get_formats():
 
 @api.route("/get-genres-books", methods=["POST"])
 def get_genres_books():
-    genres = request.json.get("genres")
+    guid = request.json.get("guid")
     return jsonify({
-        "data": Book.get_genres_books(genres),
+        "data": Book.get_genres_books(guid),
+        "name": Category.query.filter_by(guid=guid).first().name,
         "status": "success"
     }), 200
 
