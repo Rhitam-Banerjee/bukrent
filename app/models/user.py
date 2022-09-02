@@ -378,6 +378,15 @@ class User(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def add_to_wishlist(self, guid):
+        from app.models.books import Book
+
+        book = Book.query.filter_by(guid=guid).first()
+        
+        existing = Wishlist.query.filter(and_(Wishlist.user_id==self.id, Wishlist.book_id==book.id)).first()
+        if not existing:
+            Wishlist.create(self.id, book.id, 1)
+
     def suggestion_to_wishlist(self, guid):
         from app.models.books import Book
 

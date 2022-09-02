@@ -84,6 +84,15 @@
                 width: 50%;
             }
 
+            .browse-btn {
+                color: white;
+                border: none;
+                padding: 0.8em;
+                position: absolute;
+                top: 10px;
+                right: 10px;
+            }
+
             .step-img {
                 width: 100%;
             }
@@ -223,6 +232,9 @@
                             <img src="/static/images/logo.png" width="150px" class="img-fluid" />
                         </a>
                     </div>
+                    <a class="nav-link pe-4 browse-btn" href="{{url_for('views.browse')}}">
+                        <b>Browse</b>
+                    </a>
                 </nav>
             </header>
             <main>

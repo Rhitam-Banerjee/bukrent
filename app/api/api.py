@@ -493,7 +493,23 @@ def submit_preferences():
                     "redirect": f"{url_for('views.preferences')}?guid={child_obj.guid}"
                 }), 201
         return jsonify({
-            "redirect": url_for('views.happy_reading')
+            "redirect": url_for('views.library')
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/add-to-wishlist", methods=["POST"])
+def add_to_wishlist():
+    try:
+        guid = request.json.get("guid")
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user.add_to_wishlist(guid)
+
+        return jsonify({
+            "status": "success"
         }), 201
     except Exception as e:
         return jsonify({

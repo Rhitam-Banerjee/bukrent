@@ -220,7 +220,7 @@ def preferences():
             all_preferences = False
     
     if all_preferences:
-        return redirect(url_for('views.happy_reading'))
+        return redirect(url_for('views.library'))
     else:
         guid = request.args.get("guid")
         all_children = Child.query.filter_by(user_id=user.id).order_by(Child.dob.desc()).all()
@@ -334,17 +334,17 @@ def browse():
         user=user
     )
 
-@views.route("/happy-reading")
-def happy_reading():
-    user = User.query.filter_by(guid=session.get("current_user")).first()
-    if not user:
-        return redirect(url_for('views.home'))
-    if len(user.child) == 0:
-        return redirect(url_for('views.add_children'))
-    return render_template(
-        "happy_reading/happy_reading.html",
-        user=user
-    )
+# @views.route("/happy-reading")
+# def happy_reading():
+#     user = User.query.filter_by(guid=session.get("current_user")).first()
+#     if not user:
+#         return redirect(url_for('views.home'))
+#     if len(user.child) == 0:
+#         return redirect(url_for('views.add_children'))
+#     return render_template(
+#         "happy_reading/happy_reading.html",
+#         user=user
+#     )
 
 @views.route("/terms-and-conditions")
 def terms_and_conditions():
