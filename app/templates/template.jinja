@@ -647,11 +647,15 @@
                         $("#loader").show();
                     },
                     success: function (result) {
-                        Swal.fire(
-                            'Added',
-                            "Book has been added to your wishlist",
-                            'success'
-                        )
+                        if (result.redirect) {
+                            window.location.href = result.redirect
+                        } else {
+                            Swal.fire(
+                                'Added',
+                                "Book has been added to your wishlist",
+                                'success'
+                            )
+                        }
                     },
                     error: function (result) {
                         Swal.fire(

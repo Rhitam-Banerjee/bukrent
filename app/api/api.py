@@ -506,6 +506,13 @@ def add_to_wishlist():
     try:
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        if not user:
+            return jsonify({
+                "redirect": url_for('views.home'),
+                "status": "success"
+            }), 200
+
         user.add_to_wishlist(guid)
 
         return jsonify({

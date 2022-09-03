@@ -316,22 +316,8 @@ def library():
 
 @views.route("/browse")
 def browse():
-    user = User.query.filter_by(guid=session.get("current_user")).first()
-    if not user:
-        return redirect(url_for('views.home'))
-    if len(user.child) == 0:
-        return redirect(url_for('views.add_children'))
-
-    all_preferences = True
-    for child in user.child:
-        if not child.preferences:
-            all_preferences = False
-    
-    if not all_preferences:
-        return redirect(url_for('views.preferences'))
     return render_template(
-        "/home_new/home_new.html",
-        user=user
+        "/home_new/home_new.html"
     )
 
 # @views.route("/happy-reading")
