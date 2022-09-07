@@ -10,6 +10,7 @@ from app.models.details import Detail
 from app.models.publishers import Publisher
 from app.models.reviews import Review
 from app.models.series import Series
+from app.models.format import Format
 from app.models.user import User, Address
 
 def get_multi_age_groups(ages):
@@ -97,6 +98,7 @@ def seed():
         current_dict["categories"] = []
         current_dict["bestseller_json"] = None
         current_dict["borrowed_json"] = None
+        current_dict["suggestion_json"] = None
 
     ################################# Bestseller
     print("Processing Bestsellers")
@@ -146,6 +148,53 @@ def seed():
                 "borrowed_age4": borrowed_groups[3],
                 "borrowed_age5": borrowed_groups[4],
                 "borrowed_age6": borrowed_groups[5]
+            }
+
+    ###################################### Suggestions
+    print("Processing Suggestions")
+    
+    suggestions = []
+    with open("app/data/data_3/suggestions.csv", mode="r") as file:
+        csv_file = csv.reader(file)
+        for line in csv_file:
+            suggestions.append(line)
+
+    suggestions = suggestions[1:]
+
+    suggestion_dict = {}
+    for suggestion in suggestions:
+        for index, isbn in enumerate(suggestion):
+            if index == 0:
+                age_group = "0-2"
+            elif index == 1:
+                age_group = "3-5"
+            elif index == 2:
+                age_group = "6-8"
+            elif index == 3:
+                age_group = "6-8"
+            elif index == 4:
+                age_group = "9-11"
+            elif index == 5:
+                age_group = "12-14"
+            elif index == 6:
+                age_group = "15+"
+            if isbn:
+                if suggestion_dict.get(isbn):
+                    suggestion_dict[isbn].append(age_group)
+                else:
+                    suggestion_dict[isbn] = [age_group]
+
+    for isbn, age_groups in suggestion_dict.items():
+        current_dict = book_dict.get(isbn)
+        if current_dict:
+            suggestion_groups = get_multi_age_groups(age_groups)
+            current_dict["suggestion_json"] = {
+                "suggestion_age1": suggestion_groups[0],
+                "suggestion_age2": suggestion_groups[1],
+                "suggestion_age3": suggestion_groups[2],
+                "suggestion_age4": suggestion_groups[3],
+                "suggestion_age5": suggestion_groups[4],
+                "suggestion_age6": suggestion_groups[5]
             }
 
     ########################################## Annotations
@@ -429,14 +478,14 @@ def seed():
             for item in data.get("categories"):
                 if not category_data.get(item):
                     category_data[item] = {
-                        "age1": True,
-                        "age2": True,
-                        "age3": True,
-                        "age4": True,
-                        "age5": True,
-                        "age6": True,
+                        "age1": False,
+                        "age2": False,
+                        "age3": False,
+                        "age4": False,
+                        "age5": False,
+                        "age6": False,
                         "total_books": 0,
-                        "display": True
+                        "display": False
                     }
                 category_data[item]["total_books"] += 1
         except:
@@ -454,6 +503,48 @@ def seed():
             data["total_books"],
             data["display"]
         )
+
+    ########################### Seeding Preference Categories
+    preference = []
+    with open("app/data/preferences.csv", mode="r") as file:
+        csv_file = csv.reader(file)
+        for line in csv_file:
+            preference.append(line)
+
+    pref_dict = {}
+    for pref in preference:
+        if pref_dict.get(pref[0]):
+            if pref[1] not in pref_dict[pref[0]]:
+                pref_dict[pref[0]].append(pref[1])
+        else:
+            pref_dict[pref[0]] = [pref[1]]
+
+    for name, age_groups in pref_dict.items():
+        category = Category.query.filter_by(name=name).first()
+        ages = get_multi_age_groups(age_groups)
+        if category:
+            category.age1 = ages[0]
+            category.age2 = ages[1]
+            category.age3 = ages[2]
+            category.age4 = ages[3]
+            category.age5 = ages[4]
+            category.age6 = ages[5]
+            category.display = True
+
+            db.session.add(category)
+            db.session.commit()
+        else:
+            Category.create(
+                name,
+                ages[0],
+                ages[1],
+                ages[2],
+                ages[3],
+                ages[4],
+                ages[5],
+                0,
+                True
+            )
 
     #### Seeding Publishers
     print("Seeding Publishers")
@@ -574,9 +665,11 @@ def seed():
             book_data["language"],
             book_data["price"],
             book_data["description"],
+            1,
             series_id,
             book_data["bestseller_json"],
-            book_data["borrowed_json"]
+            book_data["borrowed_json"],
+            book_data["suggestion_json"]
         )
 
         book_obj = Book.query.filter_by(isbn=book_isbn).first()
@@ -675,47 +768,26 @@ def seed():
                 book_obj.id
             )
 
-    ##################### Seeding Users
-    print("Seeding Users")
-    users = []
-    with open("data.csv", mode="r") as file:
+    ########################################## Seeding Formats
+    format_dict = {}
+
+    print("Processing Formats")
+
+    formats = []
+    with open("app/data/formats.csv", mode="r") as file:
         csv_file = csv.reader(file)
         for line in csv_file:
-            users.append(line)
+            formats.append(line)
 
-    users = users[1:]
-
-    for user in users:
-        user_obj = User(
-            guid=user[1],
-            name=user[2],
-            age=user[3],
-            child_name=user[4],
-            mobile_number=user[5],
-            email="",
-            password=user[2],
-            newsletter=True if user[6] == "True" else False,
-            is_subscribed=False if user[7] == "False" else True,
-            security_deposit=False if user[8] == "False" else True,
-            customer_id=user[9],
-            plan_id=user[10],
-            subscription_id=user[11]
+    for format_name in formats:
+        Format.create(
+            format_name[0],
+            True,
+            True,
+            True,
+            True,
+            True,
+            True,
+            0,
+            True
         )
-        db.session.add(user_obj)
-        db.session.commit()
-
-        user_obj.add_cart_and_wishlist()
-
-        if user[12] == "True":
-            address = Address(
-                guid=user[14],
-                house_number=user[15],
-                area=user[16],
-                city=user[17],
-                pincode=user[18],
-                country=user[19],
-                landmark=user[20],
-                user_id=user_obj.id
-            )
-            db.session.add(address)
-            db.session.commit()

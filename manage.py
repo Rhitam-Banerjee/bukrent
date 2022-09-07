@@ -4,6 +4,11 @@ from flask import current_app
 
 from seed_4 import *
 from export import *
+from seed_users import *
+from script_order import *
+from scripts.script_25_aug import *
+from scripts.script_26_aug import *
+from scripts.script_30_aug import *
 
 from app.models.annotations import Annotation
 from app.models.author import Author
@@ -31,8 +36,30 @@ def seed_db():
     seed()
 
 @cli.command()
-def export():
+def export_db():
     export()
+
+@cli.command()
+def seed_users_data():
+    seed_users()
+
+@cli.command()
+def script_create_orders():
+    create_orders()
+
+@cli.command()
+def script_25_aug():
+    add_books()
+    aug_25()
+    # populate_suggestions()
+
+@cli.command()
+def script_26_aug():
+    aug_26_1()
+
+@cli.command()
+def script_30_aug():
+    aug_30_1()
 
 if __name__ == '__main__':
     cli()

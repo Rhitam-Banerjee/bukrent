@@ -1,0 +1,38 @@
+<script>
+    $(function(){
+        $("#signup_button").click(function(){
+            let data = {
+                first_name: $("#first_name").val(),
+                last_name: $("#last_name").val()
+            }
+
+            $.ajax({
+                url: "{{url_for('api.signup')}}",
+                type: "post",
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: 'application/json',
+                beforeSend: function(){
+                    $('.main-container').addClass('blur');
+                    $(':button').prop('disabled', true);
+                    $("#loader").show();
+                },
+                success: function (result) {
+                    window.location.href = result.redirect;
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                },
+                complete:function(data){
+                    $('.main-container').removeClass('blur');
+                    $(':button').prop('disabled', false);
+                    $("#loader").hide();
+                }
+            })
+        })
+    })
+</script>

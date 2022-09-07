@@ -1,20 +1,13 @@
-{% extends "template.jinja" %}
+{% extends "template_new.jinja" %}
 {% block main %}
 
 {% include("terms_and_conditions/terms_and_conditions_script.jinja") %}
 {% include("terms_and_conditions/terms_and_conditions_style.jinja") %}
 
-<!-- Top Text Section -->
-<div class="no-mobile row">
-    <div class="col-12 col-md-12 col-lg-12 title-box text-center p-3">
-        <span class="big-title-text">50%</span> Books purchased are <span class="big-title-text">never</span> completed
-    </div>
-</div>
-
 <div class="container">
     <div class="row mt-4">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title">Terms and Conditions</p>
+        <div class="col-12 col-md-12 col-lg-12 text-center mt-3 mt-md-1 mt-lg-0">
+            <p style="font-size: 1.5rem;"><b>Terms and Conditions</b></p>
         </div>
     </div>
 
@@ -68,13 +61,13 @@
 
     <div class="row mt-4">
         <div class="col-12 col-md-12 col-lg-12">
-            If the book is lost - Total Cost of the Book
+            <b>If the book is lost - Total Cost of the Book</b>
         </div>
         <div class="col-12 col-md-12 col-lg-12">
-            Scribbling or torn page in Children’s books - Rs. 30
+            <b>Scribbling or torn page in Children’s books - Rs. 30</b>
         </div>
         <div class="col-12 col-md-12 col-lg-12">
-            Fine damage or torn page of any other book - 60% of the cost of the book            
+            <b>Fine damage or torn page of any other book - 50% of the cost of the book</b>            
         </div>
     </div>
 
@@ -107,7 +100,7 @@
 
     <div class="row mt-4">
         <div class="col-12 col-md-12 col-lg-12">
-            <b>9. Temporary suspension of membership</b>
+            <b>8. Temporary suspension of membership</b>
         </div>
         <div class="col-12 col-md-12 col-lg-12">
             Through a feature called “Subscription Holiday”, Bukrent allows the member to pause the membership (temporary suspension), for a duration of 1 month, 2 months or 3 months before expiration of membership. During Subscription Holiday period, a member will not be able to use the library. To utilise this feature, a member is required to fill up the Subscription Holiday Form either at the branch or online. All issued books and magazines should be returned to the Bukrent branch before the start date of Subscription Holiday. Members who pay for Yearly and Half-yearly terms will receive free Subscription Holidays of 2 months and 1 month respectively, and are required to pay Rs. 50/- per month there after. Quarterly members are required to pay Rs. 50/- per month to avail the feature.
@@ -116,7 +109,7 @@
 
     <div class="row mt-4">
         <div class="col-12 col-md-12 col-lg-12">
-            <b>10. Changes to Terms of Use</b>
+            <b>9. Changes to Terms of Use</b>
         </div>
         <div class="col-12 col-md-12 col-lg-12">
             Bukrent reserves the right, from time to time, with or without notice, to change these Terms of Use in its sole and absolute discretion. The most current version of these Terms of Use can be reviewed by clicking on the “Terms of Use” located at the bottom of the pages of the Bukrent.in website. The most current version of the Terms of Use will supercede all previous versions. Your continued use of our service after changes are made means that you agree to be bound by such changes.
@@ -125,7 +118,7 @@
 
     <div class="row mt-4">
         <div class="col-12 col-md-12 col-lg-12">
-            <b>11.Data Security Policy</b>
+            <b>10. Data Security Policy</b>
         </div>
         <div class="col-12 col-md-12 col-lg-12">
             Information provided by a member, while signing up to Bukrent services, such as identification and contact details, will be for the exclusive use of Bukrent. Bukrent may use this information to send regular communications about service related, third party source or any other relevant information. Bukrent uses the information collected from you to provide you with access to our services and services from our affiliates and to monitor your use of such services.
@@ -133,93 +126,10 @@
     </div>
 
     <div class="row mt-4">
-        <div class="col-12 col-md-12 col-lg-12">
-            The ‘Terms of Use’ of Bukrent is critical in its continuous efforts to offer a unique reading experience to members. Please read the conditions & stipulations set forth in this document, We look forward to your co-operation in adhering to the same. Thank you for your membership. We will strive to provide you best-in-class reading experience at Bukrent.
+        <div class="col-12 col-md-12 col-lg-12 mb-5">
+            <b>The ‘Terms of Use’ of Bukrent is critical in its continuous efforts to offer a unique reading experience to members. Please read the conditions & stipulations set forth in this document, We look forward to your co-operation in adhering to the same. Thank you for your membership. We will strive to provide you best-in-class reading experience at Bukrent.</b>
         </div>
     </div>
 </div>
-
-<!-- How It Works? -->
-<!-- For Desktop -->
-<div class="no-mobile">
-    <div class="row">
-        <div class="col-12 col-md-12 col-lg-12">
-            <img src="/static/images/next.png" class="img-fluid" />
-        </div>
-    </div>
-</div>
-<!-- For Mobile -->
-<div class="no-desktop">
-    <div id="next-steps-carousel" class="owl-carousel owl-theme">
-        <div class="step-box">
-            <img src="/static/images/next1.png" class="img-fluid" />
-        </div>
-        <div class="step-box">
-            <img src="/static/images/next2.png" class="img-fluid" />
-        </div>
-        <div class="step-box">
-            <img src="/static/images/next3.png" class="img-fluid" />
-        </div>
-        <div class="step-box">
-            <img src="/static/images/next4.png" class="img-fluid" />
-        </div>
-    </div>
-</div>
-
-{% if user %}
-    {% if not user.is_subscribed %}
-    <!-- Become A Subscriber -->
-    <div class="container">
-        <div class="row my-3">
-            <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-                <p class="section-title">Become a subscriber</p>
-            </div>
-        </div>
-        <div class="row my-3">
-            <div class="col-4 col-md-4 col-lg-4">
-                <a onclick="choose_plan(1)">
-                    <img src="/static/images/subscription1.png" class="img-fluid banner-img" />
-                </a>
-            </div>
-            <div class="col-4 col-md-4 col-lg-4">
-                <a onclick="choose_plan(2)">
-                    <img src="/static/images/subscription2.png" class="img-fluid banner-img" />
-                </a>
-            </div>
-            <div class="col-4 col-md-4 col-lg-4">
-                <a onclick="choose_plan(3)">
-                    <img src="/static/images/subscription3.png" class="img-fluid banner-img" />
-                </a>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-{% else %}
-<!-- Become A Subscriber -->
-<div class="container">
-    <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title">Become a subscriber</p>
-        </div>
-    </div>
-    <div class="row my-3">
-        <div class="col-4 col-md-4 col-lg-4">
-            <a onclick="choose_plan(1)">
-                <img src="/static/images/subscription1.png" class="img-fluid banner-img" />
-            </a>
-        </div>
-        <div class="col-4 col-md-4 col-lg-4">
-            <a onclick="choose_plan(2)">
-                <img src="/static/images/subscription2.png" class="img-fluid banner-img" />
-            </a>
-        </div>
-        <div class="col-4 col-md-4 col-lg-4">
-            <a onclick="choose_plan(3)">
-                <img src="/static/images/subscription3.png" class="img-fluid banner-img" />
-            </a>
-        </div>
-    </div>
-</div>
-{% endif %}
 
 {% endblock %}

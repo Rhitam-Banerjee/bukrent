@@ -1,20 +1,13 @@
-{% extends "template.jinja" %}
+{% extends "template_new.jinja" %}
 {% block main %}
 
 {% include("privacy_policy/privacy_policy_script.jinja") %}
 {% include("privacy_policy/privacy_policy_style.jinja") %}
 
-<!-- Top Text Section -->
-<div class="no-mobile row">
-    <div class="col-12 col-md-12 col-lg-12 title-box text-center p-3">
-        <span class="big-title-text">50%</span> Books purchased are <span class="big-title-text">never</span> completed
-    </div>
-</div>
-
 <div class="container">
     <div class="row mt-4">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title">Privacy Policy</p>
+        <div class="col-12 col-md-12 col-lg-12 text-center mt-3 mt-md-1 mt-lg-0">
+            <p style="font-size: 1.5rem;"><b>Privacy Policy</b></p>
         </div>
     </div>
 
@@ -130,93 +123,10 @@
         <div class="col-12 col-md-12 col-lg-12">
             <b>Cancel / Refund</b>
         </div>
-        <div class="col-12 col-md-12 col-lg-12">
+        <div class="col-12 col-md-12 col-lg-12 mb-5">
             Please reach out to customer care in case of refund / cancellation related queries.
         </div>
     </div>
 </div>
-
-<!-- How It Works? -->
-<!-- For Desktop -->
-<div class="no-mobile">
-    <div class="row">
-        <div class="col-12 col-md-12 col-lg-12">
-            <img src="/static/images/next.png" class="img-fluid" />
-        </div>
-    </div>
-</div>
-<!-- For Mobile -->
-<div class="no-desktop">
-    <div id="next-steps-carousel" class="owl-carousel owl-theme">
-        <div class="step-box">
-            <img src="/static/images/next1.png" class="img-fluid" />
-        </div>
-        <div class="step-box">
-            <img src="/static/images/next2.png" class="img-fluid" />
-        </div>
-        <div class="step-box">
-            <img src="/static/images/next3.png" class="img-fluid" />
-        </div>
-        <div class="step-box">
-            <img src="/static/images/next4.png" class="img-fluid" />
-        </div>
-    </div>
-</div>
-
-{% if user %}
-    {% if not user.is_subscribed %}
-    <!-- Become A Subscriber -->
-    <div class="container">
-        <div class="row my-3">
-            <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-                <p class="section-title">Become a subscriber</p>
-            </div>
-        </div>
-        <div class="row my-3">
-            <div class="col-4 col-md-4 col-lg-4">
-                <a onclick="choose_plan(1)">
-                    <img src="/static/images/subscription1.png" class="img-fluid banner-img" />
-                </a>
-            </div>
-            <div class="col-4 col-md-4 col-lg-4">
-                <a onclick="choose_plan(2)">
-                    <img src="/static/images/subscription2.png" class="img-fluid banner-img" />
-                </a>
-            </div>
-            <div class="col-4 col-md-4 col-lg-4">
-                <a onclick="choose_plan(3)">
-                    <img src="/static/images/subscription3.png" class="img-fluid banner-img" />
-                </a>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-{% else %}
-<!-- Become A Subscriber -->
-<div class="container">
-    <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title">Become a subscriber</p>
-        </div>
-    </div>
-    <div class="row my-3">
-        <div class="col-4 col-md-4 col-lg-4">
-            <a onclick="choose_plan(1)">
-                <img src="/static/images/subscription1.png" class="img-fluid banner-img" />
-            </a>
-        </div>
-        <div class="col-4 col-md-4 col-lg-4">
-            <a onclick="choose_plan(2)">
-                <img src="/static/images/subscription2.png" class="img-fluid banner-img" />
-            </a>
-        </div>
-        <div class="col-4 col-md-4 col-lg-4">
-            <a onclick="choose_plan(3)">
-                <img src="/static/images/subscription3.png" class="img-fluid banner-img" />
-            </a>
-        </div>
-    </div>
-</div>
-{% endif %}
 
 {% endblock %}

@@ -1,3 +1,7 @@
 <script>
-
+    $(function(){
+        $("#next_button").click(function(){
+            window.location.href = "{{url_for('views.add_address')}}"
+        })
+    })
 </script>

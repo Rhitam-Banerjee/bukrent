@@ -1,0 +1,77 @@
+<script>
+    $(document).ready(function(){
+        $("#next-steps-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: false,
+            dots: false,
+            autoplay:true,
+            autoplayTimeout:3000,
+            autoplayHoverPause:true,
+            responsive:{
+                0:{
+                    items:1,
+                    loop: true
+                }
+            }
+        });
+    })
+
+    $(function(){
+        $("#mobile_number1").on("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                $("#basic-addon1").click()
+            }
+        })
+
+        $("#mobile_number2").on("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                $("#basic-addon2").click()
+            }
+        })
+
+        $("#basic-addon2").click(function(){
+            submit_mobile($("#mobile_number2").val())
+        })
+
+        $("#basic-addon1").click(function(){
+            submit_mobile($("#mobile_number1").val())
+        })
+    })
+
+    function submit_mobile(mobile_number) {
+        let data = {
+            mobile_number: mobile_number
+        }
+
+        $.ajax({
+            url: "{{url_for('api.submit_mobile')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                window.location.href = result.redirect;
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
+</script>

@@ -1,0 +1,92 @@
+{% extends "template_new.jinja" %}
+{% block main %}
+
+{% include("home/home_script.jinja") %}
+{% include("home/home_style.jinja") %}
+
+<div class="row">
+    <div class="col-12 col-md-12 col-lg-12 bg-container">
+        <div class="row">
+            <div class="col-12 col-md-12 col-lg-12 text-center align-middle pt-3">
+                <p style="font-size: 0.75rem; color: white;"><b>One stop Destination for Young Readers</b></p>
+                <h1 style="color: white;"><b>Online Book Library</b></h1>
+                <p style="font-size: 1rem; color: white;"><b>Weekly Doorstep Delivery</b></p>
+            </div>
+            <div class="col-8 col-md-6 col-lg-4 offset-2 offset-md-3 offset-lg-4">
+                <form>
+                    <div class="input-group">
+                        <input type="number" class="form-control" placeholder="Mobile Number" aria-label="Recipient's Mobile Number" aria-describedby="basic-addon1" name="mobile_number" id="mobile_number1" />
+                        <span class="input-group-btn p-2" id="basic-addon1">Go</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="no-mobile">
+        <div class="row">
+            <div class="col-12 col-md-12 col-lg-12">
+                <img src="/static/images/next.png" class="img-fluid" />
+            </div>
+        </div>
+    </div>
+    <!-- For Mobile -->
+    <div class="no-desktop">
+        <div id="next-steps-carousel" class="owl-carousel owl-theme">
+            <div class="step-box">
+                <img src="/static/images/next1.png" class="img-fluid" />
+            </div>
+            <div class="step-box">
+                <img src="/static/images/next2.png" class="img-fluid" />
+            </div>
+            <div class="step-box">
+                <img src="/static/images/next3.png" class="img-fluid" />
+            </div>
+            <div class="step-box">
+                <img src="/static/images/next4.png" class="img-fluid" />
+            </div>
+        </div>
+    </div>
+
+    <div class="no-desktop">
+        <!-- <div class="col-12 col-md-12 col-lg-12 p-2" id="band-1"></div> -->
+        <div class="col-12 col-md-12 col-lg-12 position-relative">
+            <img src="/static/images/home1.gif" class="img-fluid position-relative" />
+            <p class="position-absolute absolute-line-1 absolute-left" style="font-size: 1rem; color: white;"><b>Order from Comfort of your Home!</b></p>
+            <p class="position-absolute absolute-line-2 absolute-left" style="font-size: 0.75rem; color: white;">Tired of travelling around the city!</p>
+            <p class="position-absolute absolute-line-3 absolute-left" style="font-size: 0.75rem; color: white;">Leave this to us!</p>
+        </div>
+    </div>
+
+    <div class="no-desktop">
+        <!-- <div class="col-12 col-md-12 col-lg-12 p-2" id="band-2"></div> -->
+        <div class="col-12 col-md-12 col-lg-12 position-relative">
+            <img src="/static/images/home2.gif" class="img-fluid position-relative" />
+            <p class="position-absolute absolute-line-1 absolute-right" style="font-size: 1rem; color: white;"><b>Smart Recommendation System</b></p>
+            <p class="position-absolute absolute-line-2 absolute-right" style="font-size: 0.75rem; color: white;">Confused about what to order!</p>
+            <p class="position-absolute absolute-line-3 absolute-right" style="font-size: 0.75rem; color: white;">Leave this to us!</p>
+        </div>
+    </div>
+
+    <div class="no-desktop">
+        <!-- <div class="col-12 col-md-12 col-lg-12 p-2" id="band-3"></div> -->
+        <div class="col-12 col-md-12 col-lg-12 position-relative">
+            <img src="/static/images/home3.gif" class="img-fluid position-relative" />
+            <p class="position-absolute absolute-line-1 absolute-left" style="font-size: 1rem; color: white;"><b>Pick up and Drop at your Doorstep</b></p>
+            <p class="position-absolute absolute-line-2 absolute-left" style="font-size: 0.75rem; color: white;">Occupied with other things!</p>
+            <p class="position-absolute absolute-line-3 absolute-left" style="font-size: 0.75rem; color: white;">Leave this to us!</p>
+        </div>
+    </div>
+
+    <div class="no-desktop">
+        <!-- <div class="col-12 col-md-12 col-lg-12 p-2" id="band-4"></div> -->
+        <div class="col-12 col-md-12 col-lg-12 position-relative">
+            <img src="/static/images/home4.gif" class="img-fluid position-relative" />
+            <p class="position-absolute absolute-line-1 absolute-right" style="font-size: 1rem; color: white;"><b>Love adding New Books everyday</b></p>
+            <p class="position-absolute absolute-line-2 absolute-right" style="font-size: 0.75rem; color: white;">Did not find the book! Share the name!</p>
+            <p class="position-absolute absolute-line-3 absolute-right" style="font-size: 0.75rem; color: white;">Leave this to us!</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

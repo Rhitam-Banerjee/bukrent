@@ -1,0 +1,320 @@
+<script>
+    let child_number = 1;
+    let selected_age;
+
+    $(document).ready(function(){
+        add_child_form(child_number);
+    })
+
+    function add_child_form(number) {
+        let html = `
+                    <div class="row mt-4" id="child${number}-form">
+                        <div class="col-12 col-md-12 col-lg-12">
+                            <p><b>Child's Name</b></p>
+                        </div>
+                        <div class="col-12 col-md-12 col-lg-12">
+                            <input type="text" name="child_name${number}" id="child_name${number}" class="form-control" />
+                        </div>
+                        <div class="col-12 col-md-12 col-lg-12 pt-4">
+                            <p><b>Child's DOB</b></p>
+                        </div>
+                        <div class="col-12 col-md-12 col-lg-12">
+                            <input type="date" name="child_dob${number}" id="child_dob${number}" class="form-control" />
+                        </div>
+                        <div class="col-12 col-md-12 col-lg-12 pt-4">
+                            <p><b>Select Age Group</b></p>
+                        </div>
+                        <div id="age-carousel" class="owl-carousel owl-theme">
+                            <div class="age-box age-1">
+                                <div class="row">
+                                    <a onclick="select_age(1)">
+                                        <div class="col-12 col-md-12 col-lg-12 text-center age-text-big">
+                                            0-2
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 text-center age-text-small">
+                                            Years
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 text-center">
+                                            <img src="/static/images/age1.png" class="img-fluid" />
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="age-box age-2">
+                                <div class="row">
+                                    <a onclick="select_age(2)">
+                                        <div class="col-12 col-md-12 col-lg-12 text-center age-text-big">
+                                            3-5
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 text-center age-text-small">
+                                            Years
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 text-center">
+                                            <img src="/static/images/age2.png" class="img-fluid" />
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="age-box age-3">
+                                <div class="row">
+                                    <a onclick="select_age(3)">
+                                        <div class="col-12 col-md-12 col-lg-12 text-center age-text-big">
+                                            6-8
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 text-center age-text-small">
+                                            Years
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 text-center">
+                                            <img src="/static/images/age3.png" class="img-fluid" />
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="age-box age-4">
+                                <div class="row">
+                                    <a onclick="select_age(4)">
+                                        <div class="col-12 col-md-12 col-lg-12 text-center age-text-big">
+                                            9-11
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 text-center age-text-small">
+                                            Years
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 text-center">
+                                            <img src="/static/images/age4.png" class="img-fluid" />
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="age-box age-5">
+                                <div class="row">
+                                    <a onclick="select_age(5)">
+                                        <div class="col-12 col-md-12 col-lg-12 text-center age-text-big">
+                                            12-14
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 text-center age-text-small">
+                                            Years
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 text-center">
+                                            <img src="/static/images/age5.png" class="img-fluid" />
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="age-box age-6">
+                                <div class="row">
+                                    <a onclick="select_age(6)">
+                                        <div class="col-12 col-md-12 col-lg-12 text-center age-text-big">
+                                            15+
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 text-center age-text-small">
+                                            Years
+                                        </div>
+                                        <div class="col-12 col-md-12 col-lg-12 text-center">
+                                            <img src="/static/images/age6.png" class="img-fluid" />
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+        $("#children_data").append(html);
+        $("#age-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            responsive:{
+                0:{
+                    items:3
+                }
+            }
+        });
+    }
+
+    function select_age(age) {
+        $(".age-1").css("background-color", "white")
+        $(".age-1").css("color", "#FF7C72")
+
+        $(".age-2").css("background-color", "white")
+        $(".age-2").css("color", "#fa7e0a")
+
+        $(".age-3").css("background-color", "white")
+        $(".age-3").css("color", "#FFD631")
+
+        $(".age-4").css("background-color", "white")
+        $(".age-4").css("color", "#8ACE38")
+
+        $(".age-5").css("background-color", "white")
+        $(".age-5").css("color", "#74C7FF")
+
+        $(".age-6").css("background-color", "white")
+        $(".age-6").css("color", "#CB85C2")
+
+        if (age == 1) {
+            $(".age-1").css("background-color", "#FF7C72")
+            $(".age-1").css("color", "white")
+            selected_age = 1
+        }
+        else if (age == 2) {
+            $(".age-2").css("background-color", "#fa7e0a")
+            $(".age-2").css("color", "white")
+            selected_age = 2
+        }
+        else if (age == 3) {
+            $(".age-3").css("background-color", "#FFD631")
+            $(".age-3").css("color", "white")
+            selected_age = 3
+        }
+        else if (age == 4) {
+            $(".age-4").css("background-color", "#8ACE38")
+            $(".age-4").css("color", "white")
+            selected_age = 4
+        }
+        else if (age == 5) {
+            $(".age-5").css("background-color", "#74C7FF")
+            $(".age-5").css("color", "white")
+            selected_age = 5
+        }
+        else if (age == 6) {
+            $(".age-6").css("background-color", "#CB85C2")
+            $(".age-6").css("color", "white")
+            selected_age = 6
+        }
+    }
+
+    $(function(){
+        $("#add_button").click(function(){
+            compress_html(`child${child_number}-form`, `#child_name${child_number}`, calcAge($(`#child_dob${child_number}`).val()), $(`#child_dob${child_number}`).val(), $(`#child_name${child_number}`).val())
+            child_number++;
+            add_child_form(child_number);
+        })
+
+        $("#finish_button").click(function(){
+            let data = {
+                children: []
+            }
+
+            for (let i = 1; i < child_number; i++) {
+                let child_obj = {
+                    name: $(`#child${i}-form`).data("name"),
+                    dob: $(`#child${i}-form`).data("dob"),
+                    age_group: $(`#child${i}-form`).data("age-group"),
+                }
+                data.children.push(child_obj)
+            }
+
+            if ($(`#child_name${child_number}`).val()) {
+                data.children.push(
+                    {
+                        name: $(`#child_name${child_number}`).val(),
+                        dob: $(`#child_dob${child_number}`).val(),
+                        age_group: selected_age
+                    }
+                )
+            }
+
+            $.ajax({
+                url: "{{url_for('api.add_children')}}",
+                type: "post",
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: 'application/json',
+                beforeSend: function(){
+                    $('.main-container').addClass('blur');
+                    $(':button').prop('disabled', true);
+                    $("#loader").show();
+                },
+                success: function (result) {
+                    window.location.href = `{{url_for('views.preferences')}}?guid=${result.guid}`
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                },
+                complete:function(data){
+                    $('.main-container').removeClass('blur');
+                    $(':button').prop('disabled', false);
+                    $("#loader").hide();
+                }
+            })
+        })
+    })
+
+    function calcAge(dateString) {
+        var birthday = +new Date(dateString);
+        return ~~((Date.now() - birthday) / (31557600000));
+    }
+
+    function compress_html(id, name_id, age, dob, name) {
+        let features;
+        if (selected_age == 1) {
+            features = {
+                age_group: 1,
+                color: "#FF7C72",
+                image: "/static/images/age1.png"
+            }
+        } else if (selected_age == 2) {
+            features = {
+                age_group: 2,
+                color: "#fa7e0a",
+                image: "/static/images/age2.png"
+            }
+        } else if (selected_age == 3) {
+            features = {
+                age_group: 3,
+                color: "#FFD631",
+                image: "/static/images/age3.png"
+            }
+        } else if (selected_age == 4) {
+            features = {
+                age_group: 4,
+                color: "#8ACE38",
+                image: "/static/images/age4.png"
+            }
+        } else if (selected_age == 5) {
+            features = {
+                age_group: 5,
+                color: "#74C7FF",
+                image: "/static/images/age5.png"
+            }
+        } else if (selected_age == 6) {
+            features = {
+                age_group: 6,
+                color: "#CB85C2",
+                image: "/static/images/age6.png"
+            }
+        }
+        let html = `
+            <div class="col-3 col-md-3 col-lg-3 text-center">
+                <img src="${features.image}" class="img-fluid" />
+            </div>
+            <div class="col-9 col-md-9 col-lg-9 text-center align-middle">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-lg-12 age-text-big ">
+                        ${$(name_id).val()}
+                    </div>
+                    <div class="col-12 col-md-12 col-lg-12 age-text-small">
+                        ${age} Years
+                    </div>
+                </div>
+            </div>
+        `
+        $(`#${id}`).empty();
+        $(`#${id}`).append(html);
+        $(`#${id}`).css("background-color", features.color);
+        $(`#${id}`).css("color", "white");
+
+        $(`#${id}`).data("age-group", features.age_group);
+        $(`#${id}`).data("name", name);
+        $(`#${id}`).data("dob", dob);
+    }
+</script>

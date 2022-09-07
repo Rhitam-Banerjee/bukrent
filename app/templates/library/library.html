@@ -1,0 +1,330 @@
+{% extends "template_new.jinja" %}
+{% block main %}
+
+{% include("library/library_script.jinja") %}
+{% include("library/library_style.jinja") %}
+
+{% include("library/create_script.jinja") %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 library-title pt-2 text-center">
+            <p class="section-title">Your Library</p>
+        </div>
+
+        <!-- <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-2 text-center mt-3" style="flex: wrap;">
+            {% for child in all_children %}
+            <button class="child-name-tag tag-{{child.age_group}}" style="position: relative;">
+                {{child.name}}
+                <div class="arrow-left" style="position: absolute;"></div>
+            </button>
+            {% endfor %}
+        </div> -->
+
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
+            <p class="section-title">Next Delivery Bucket</p>
+            <hr style="margin-top: -10px;"/>
+        </div>
+
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
+            {% if next_bucket | length == 0 %}
+            <div class="row">
+                <div class="col-6 col-md-6 col-lg-6 text-start ps-4" style="line-height: 10px;">
+                    <p class="gray-text gray-text-small">Rearrange your</p>
+                    <p class="gray-text gray-text-large">Wishlist</p>
+                    <p class="gray-text gray-text-small">For next delivery</p>
+                </div>
+                <div class="col-6 col-md-6 col-lg-6 text-center">
+                    <img src="/static/images/next_bucket.svg" class="img-fluid" />
+                </div>
+            </div>
+            {% else %}
+            <div class="row">
+                {% for bucket in next_bucket %}
+                <div class="col-3 col-md-3 col-lg-3">
+                    <a onclick="bucket_clicked(`{{bucket.get('guid')}}`)">
+                        <div class="bucket-box p-2" id="bucket-{{bucket.get('guid')}}">
+                            <div class="row bucket-container">
+                                <div class="col-12 col-md-12 col-lg-12 text-center book-img-container-small">
+                                    <img src="{{bucket.get('image')}}" class="img-fluid book-img" />
+                                </div>
+                            </div>
+                            {% if not user.next_order_confirmed %}
+                            <!-- <button class="book-tag tag-{{bucket.get('age_group')}}" style="position: relative;">
+                                <div class="arrow-bottom" style="position: absolute;"></div>
+                            </button> -->
+                            <div class="bucket-overlay bucket-hidden-overlay">
+                                <button class="bucket-remove-btn p-2" onclick="bucket_remove(`{{bucket.get('guid')}}`)">
+                                    Remove
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center mt-2">
+            <p class="delivery-date">Next Delivery - {{next_delivery_date}}</p>
+        </div>
+
+        <!-- <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center mt-2">
+            <input type="date" class="form-control date-hidden" id="change_delivery_date" value="{{next_delivery_date_input}}" min="{{next_delivery_date_input}}" />
+        </div>
+
+        {% if not user.next_order_confirmed %}
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-center mt-2">
+            <div class="row">
+                <div class="col-6 col-md-6 col-lg-6 text-center">
+                    <button class="gray-btn" id="change-order" style="height: 50px; float: right;">
+                        Change
+                    </button>
+                </div>
+                <div class="col-6 col-md-6 col-lg-6 text-center">
+                    <button class="orange-btn" id="confirm-order" style="height: 50px; float: left;">Confirm</button>
+                </div>
+            </div>
+        </div>
+        {% endif %} -->
+
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
+            <p class="section-title">Retain Current Books</p>
+            <hr style="margin-top: -10px;"/>
+        </div>
+
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
+            {% if retain_books | length == 0 %}
+            <div class="row">
+                <div class="col-6 col-md-6 col-lg-6 text-start ps-4" style="line-height: 10px;">
+                    <p class="gray-text gray-text-large">No Books</p>
+                    <p class="gray-text gray-text-small">Borrowed yet</p>
+                </div>
+                <div class="col-6 col-md-6 col-lg-6 text-center">
+                    <img src="/static/images/retain_books.svg" class="img-fluid" />
+                </div>
+            </div>
+            {% else %}
+            <div class="row">
+                {% for retain in retain_books %}
+                <div class="col-3 col-md-3 col-lg-3 unavailable">
+                    <!-- <a onclick="retain_clicked(`{{retain.get('guid')}}`)"> -->
+                        <div class="retain-box p-2" id="retain-{{retain.get('guid')}}">
+                            <div class="row retain-container">
+                                <div class="col-12 col-md-12 col-lg-12 text-center book-img-container-small">
+                                    <img src="{{retain.get('image')}}" class="img-fluid book-img" />
+                                </div>
+                            </div>
+                            <!-- <button class="book-tag tag-{{retain.get('age_group')}}" style="position: relative;">
+                                <div class="arrow-bottom" style="position: absolute;"></div>
+                            </button> -->
+                            {% if not user.next_order_confirmed %}
+                            <div class="retain-overlay retain-hidden-overlay">
+                                <button class="retain-book-btn p-2" onclick="retain_book(`{{retain.get('guid')}}`)">
+                                    Remove
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    <!-- </a> -->
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
+            <p class="section-title">Our Suggestions</p>
+            <hr style="margin-top: -10px;"/>
+        </div>
+
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
+            <div id="suggestions-carousel" class="owl-carousel owl-theme">
+            {% for suggestion in suggestions %}
+                <a onclick="suggestion_clicked(`{{suggestion.get('guid')}}`)">
+                    <div class="suggestion-box p-3" id="suggestion-{{suggestion.get('guid')}}">
+                        <div class="row suggestion-container">
+                            <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
+                                <img src="{{suggestion.get('image')}}" class="img-fluid book-img" />
+                            </div>
+                            <!-- <div class="col-12 col-md-12 col-lg-12 mt-2 text-center">
+                                <img src="/static/images/tag_bestseller.svg" class="img-fluid" style="width: 40px;" />
+                            </div> -->
+                        </div>
+                        <!-- <button class="book-tag tag-{{suggestion.get('age_group')}}" style="position: relative;">
+                            <div class="arrow-bottom" style="position: absolute;"></div>
+                        </button> -->
+                        <div class="suggestion-overlay suggestion-hidden-overlay">
+                            <button class="suggestion-wishlist-btn p-2" onclick="suggestion_to_wishlist(`{{suggestion.get('guid')}}`)">
+                                <i class="fa-regular fa-heart" aria-hidden="true"></i>
+                            </button>
+                            <button class="suggestion-dump-btn p-2" onclick="suggestion_to_dump(`{{suggestion.get('guid')}}`)">
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
+            <p class="section-title">Wishlist</p>
+            <hr style="margin-top: -10px;"/>
+        </div>
+
+        {% if wishlists | length == 0 %}
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3" id="wishlist-placeholder-1">
+        {% else %}
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3 section-hidden" id="wishlist-placeholder-1">
+        {% endif %}
+            <div class="row">
+                <div class="col-6 col-md-6 col-lg-6 text-start ps-4" style="line-height: 10px;">
+                    <p class="gray-text gray-text-large">Link Books <span class="gray-text gray-text-small">to</span></p>
+                    <p class="gray-text gray-text-small" style="line-height: 20px;">add them in your wishlist</p>
+                </div>
+                <div class="col-6 col-md-6 col-lg-6 text-center">
+                    <img src="/static/images/wishlist.svg" class="img-fluid" />
+                </div>
+            </div>
+        </div>
+        {% if wishlists | length == 0 %}
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3 section-hidden" id="wishlist-placeholder-2">
+        {% else %}
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3" id="wishlist-placeholder-2">
+        {% endif %}
+            <div id="wishlists-carousel" class="owl-carousel owl-theme">
+            {% for wishlist in wishlists %}
+                <a onclick="wishlist_clicked(`{{wishlist.get('guid')}}`)">
+                    {% if wishlist.get("available") %}
+                    <div class="wishlist-box p-3" id="wishlist-{{wishlist.get('guid')}}">
+                    {% else %}
+                    <div class="wishlist-box p-3 unavailable" id="wishlist-{{wishlist.get('guid')}}">
+                    {% endif %}
+                        <div class="row wishlist-container">
+                            <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
+                                <img src="{{wishlist.get('image')}}" class="img-fluid book-img" />
+                            </div>
+                            <!-- <div class="col-12 col-md-12 col-lg-12 mt-2 text-center">
+                                <img src="/static/images/tag_bestseller.svg" class="img-fluid" style="width: 40px;" />
+                            </div> -->
+                        </div>
+                        {% if wishlist.get("available") %}
+                        <!-- <button class="book-tag tag-{{wishlist.get('age_group')}}" style="position: relative;">
+                            <div class="arrow-bottom" style="position: absolute;"></div>
+                        </button> -->
+                        <div class="wishlist-overlay wishlist-hidden-overlay">
+                            {% if wishlist.get("position") != "last" %}
+                            <button class="wishlist-next-btn p-2" onclick="wishlist_next(`{{wishlist.get('guid')}}`)">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                            {% endif %}
+                            {% if wishlist.get("position") != "first" %}
+                            <button class="wishlist-prev-btn p-2" onclick="wishlist_prev(`{{wishlist.get('guid')}}`)">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            {% endif %}
+                            <button class="wishlist-remove-btn p-2" onclick="wishlist_remove(`{{wishlist.get('guid')}}`)">
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </a>
+            {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
+            <p class="section-title">Rate Previous Books</p>
+            <hr style="margin-top: -10px;"/>
+        </div>
+
+        {% if read_books | length == 0 %}
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3" id="read-placeholder-1">
+        {% else %}
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3 section-hidden" id="read-placeholder-1">
+        {% endif %}
+            <div class="row">
+                <div class="col-6 col-md-6 col-lg-6 text-start ps-4" style="line-height: 10px;">
+                    <p class="gray-text gray-text-large">No Books</p>
+                    <p class="gray-text gray-text-small" style="line-height: 20px;">to rate right now</p>
+                </div>
+                <div class="col-6 col-md-6 col-lg-6 text-center">
+                    <img src="/static/images/read_books.svg" class="img-fluid" />
+                </div>
+            </div>
+        </div>
+        {% if read_books | length == 0 %}
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3 section-hidden" id="read-placeholder-2">
+        {% else %}
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3" id="read-placeholder-2">
+        {% endif %}
+            <div id="read-carousel" class="owl-carousel owl-theme">
+            {% for read in read_books %}
+                <a>
+                    <div class="read-box p-3 unavailable" id="read-{{read.get('guid')}}">
+                        <div class="row read-container">
+                            <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
+                                <img src="{{read.get('image')}}" class="img-fluid book-img" />
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3">
+            <p class="section-title">Book Dump</p>
+            <hr style="margin-top: -10px;"/>
+        </div>
+
+        {% if dumps | length == 0 %}
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3 pb-5" id="dump-placeholder-1">
+        {% else %}
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-start title-box-black mt-3 pb-5 section-hidden" id="dump-placeholder-1">
+        {% endif %}
+            <div class="row">
+                <div class="col-6 col-md-6 col-lg-6 text-start ps-4" style="line-height: 10px;">
+                    <p class="gray-text gray-text-small">Book Dump</p>
+                    <p class="gray-text gray-text-large">is Empty</p>
+                </div>
+                <div class="col-6 col-md-6 col-lg-6 text-center">
+                    <img src="/static/images/book_dump.svg" class="img-fluid" />
+                </div>
+            </div>
+        </div>
+        {% if dumps | length == 0 %}
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3 pb-5 section-hidden" id="dump-placeholder-2">
+        {% else %}
+        <div class="col-10 col-md-8 col-lg-6 offset-1 offset-md-2 offset-lg-3 text-start title-box-black mt-3 pb-5" id="dump-placeholder-2">
+        {% endif %}
+            <div id="dump-carousel" class="owl-carousel owl-theme">
+            {% for dump in dumps %}
+                <a onclick="dump_clicked(`{{dump.get('guid')}}`)">
+                    <div class="dump-box p-3" id="dump-{{dump.get('guid')}}">
+                        <div class="row dump-container">
+                            <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
+                                <img src="{{dump.get('image')}}" class="img-fluid book-img" />
+                            </div>
+                        </div>
+                        <div class="dump-overlay dump-hidden-overlay">
+                            <button class="dump-read-btn p-2" onclick="dump_action_read(`{{dump.get('guid')}}`)">
+                                Read Before
+                            </button>
+                            <button class="dump-dislike-btn p-2" onclick="dump_action_dislike(`{{dump.get('guid')}}`)">
+                                <i class="fas fa-thumbs-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

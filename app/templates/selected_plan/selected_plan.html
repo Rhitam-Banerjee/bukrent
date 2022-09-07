@@ -1,0 +1,44 @@
+{% extends "template_new.jinja" %}
+{% block main %}
+
+{% include("selected_plan/selected_plan_script.jinja") %}
+{% include("selected_plan/selected_plan_style.jinja") %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <img src="/static/images/select.svg" class="img-fluid step-img" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-5">
+            <h4><b>Selected Plan</b></h4>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <img src="/static/images/{{plan_image}}" class="img-fluid banner-img" />
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-3">
+            <h4><b>Select Card Type</b></h4>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+            <div class="row">
+                <div class="col-6 col-md-6 col-lg-6">
+                    <a onclick="choose_card(1)">
+                        <img src="/static/images/card1.svg" class="img-fluid step-img" />
+                    </a>
+                </div>
+                <div class="col-6 col-md-6 col-lg-6">
+                    <a onclick="choose_card(2)">
+                        <img src="/static/images/card2.svg" class="img-fluid step-img" />
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 text-end">
+            <b><p class="detail-small-text">Click on a card to choose</p></b>
+        </div>
+        <div class="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3 pt-3 pb-5 text-center">
+            <button class="white-btn m-2 py-3" id="plan_button">Change Plan</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,544 @@
+<script>
+    let suggestion_current_guid = null;
+    let dump_current_guid = null;
+    let wishlist_current_guid = null;
+    let bucket_current_guid = null;
+    let retain_current_guid = null;
+
+    $(document).ready(function(){
+        $("#suggestions-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+            responsive:{
+                0:{
+                    items:2
+                }
+            }
+        });
+
+        $("#dump-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+            responsive:{
+                0:{
+                    items:2
+                }
+            }
+        });
+
+        $("#wishlists-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+            responsive:{
+                0:{
+                    items:2
+                }
+            }
+        });
+
+        $("#read-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:25,
+            nav: true,
+            dots: false,
+            navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+            responsive:{
+                0:{
+                    items:2
+                }
+            }
+        });
+    });
+
+    $(function(){
+        $("#change-order").click(function(){
+            $("#change_delivery_date").toggleClass("date-hidden");
+        })
+
+        $("#change_delivery_date").change(function(){
+            let data = {
+                delivery_date: $("#change_delivery_date").val()
+            };
+
+            $.ajax({
+                url: "{{url_for('api.change_delivery_date')}}",
+                type: "post",
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: 'application/json',
+                beforeSend: function(){
+                    $('.main-container').addClass('blur');
+                    $(':button').prop('disabled', true);
+                    $("#loader").show();
+                },
+                success: function (result) {
+                    window.location.reload();
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                },
+                complete:function(data){
+                    $('.main-container').removeClass('blur');
+                    $(':button').prop('disabled', false);
+                    $("#loader").hide();
+                }
+            })
+        })
+
+        $("#confirm-order").click(function(){
+            $.ajax({
+                url: "{{url_for('api.confirm_order')}}",
+                type: "post",
+                contentType: 'application/json',
+                beforeSend: function(){
+                    $('.main-container').addClass('blur');
+                    $(':button').prop('disabled', true);
+                    $("#loader").show();
+                },
+                success: function (result) {
+                    window.location.reload();
+                },
+                error: function (result) {
+                    Swal.fire(
+                        'Uh Oh!',
+                        result.responseJSON.message,
+                        'error'
+                    )
+                },
+                complete:function(data){
+                    $('.main-container').removeClass('blur');
+                    $(':button').prop('disabled', false);
+                    $("#loader").hide();
+                }
+            })
+        })
+    })
+
+    function suggestion_clicked(guid) {
+        if (suggestion_current_guid) {
+            $(`#suggestion-${suggestion_current_guid}`).find("div.suggestion-overlay").addClass("suggestion-hidden-overlay")
+        }
+        suggestion_current_guid = `${guid}`
+        let book_box = $(`#suggestion-${guid}`).find("div.suggestion-overlay").toggleClass("suggestion-hidden-overlay")
+    }
+
+    function suggestion_to_wishlist(guid) {
+        let data = {
+            "guid": guid
+        }
+        $.ajax({
+            url: "{{url_for('api.suggestion_to_wishlist')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                let suggestions = result.suggestions
+                let wishlists = result.wishlists
+
+                if (wishlists.length > 0) {
+                    $("#wishlist-placeholder-1").addClass("section-hidden");
+                    $("#wishlist-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#wishlist-placeholder-1").removeClass("section-hidden");
+                    $("#wishlist-placeholder-2").addClass("section-hidden");
+                }
+
+                create_suggestions(suggestions)
+                create_wishlists(wishlists)
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
+
+    function suggestion_to_dump(guid) {
+        let data = {
+            "guid": guid
+        }
+        $.ajax({
+            url: "{{url_for('api.suggestion_to_dump')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                let suggestions = result.suggestions
+                let dumps = result.dumps
+
+                if (dumps.length > 0) {
+                    $("#dump-placeholder-1").addClass("section-hidden");
+                    $("#dump-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#dump-placeholder-1").removeClass("section-hidden");
+                    $("#dump-placeholder-2").addClass("section-hidden");
+                }
+
+                create_suggestions(suggestions)
+                create_dumps(dumps)
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
+
+    function dump_clicked(guid) {
+        if (dump_current_guid) {
+            $(`#dump-${dump_current_guid}`).find("div.dump-overlay").addClass("dump-hidden-overlay")
+        }
+        dump_current_guid = `${guid}`
+        let book_box = $(`#dump-${guid}`).find("div.dump-overlay").toggleClass("dump-hidden-overlay")
+    }
+
+    function dump_action_read(guid) {
+        let data = {
+            "guid": guid
+        }
+        $.ajax({
+            url: "{{url_for('api.dump_action_read')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                let dumps = result.dumps
+                let read_books = result.read_books
+
+                if (dumps.length > 0) {
+                    $("#dump-placeholder-1").addClass("section-hidden");
+                    $("#dump-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#dump-placeholder-1").removeClass("section-hidden");
+                    $("#dump-placeholder-2").addClass("section-hidden");
+                }
+
+                if (read_books.length > 0) {
+                    $("#read-placeholder-1").addClass("section-hidden");
+                    $("#read-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#read-placeholder-1").removeClass("section-hidden");
+                    $("#read-placeholder-2").addClass("section-hidden");
+                }
+
+                create_dumps(dumps)
+                create_read_books(read_books)
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
+
+    function dump_action_dislike(guid) {
+        let data = {
+            "guid": guid
+        }
+        $.ajax({
+            url: "{{url_for('api.dump_action_dislike')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                let dumps = result.dumps
+
+                if (dumps.length > 0) {
+                    $("#dump-placeholder-1").addClass("section-hidden");
+                    $("#dump-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#dump-placeholder-1").removeClass("section-hidden");
+                    $("#dump-placeholder-2").addClass("section-hidden");
+                }
+
+                create_dumps(dumps)
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
+
+    function wishlist_clicked(guid) {
+        if (wishlist_current_guid) {
+            $(`#wishlist-${wishlist_current_guid}`).find("div.wishlist-overlay").addClass("wishlist-hidden-overlay")
+        }
+        wishlist_current_guid = `${guid}`
+        let book_box = $(`#wishlist-${guid}`).find("div.wishlist-overlay").toggleClass("wishlist-hidden-overlay")
+    }
+
+    function wishlist_next(guid) {
+        let data = {
+            "guid": guid
+        }
+        $.ajax({
+            url: "{{url_for('api.wishlist_next')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                let wishlists = result.wishlists
+
+                create_wishlists(wishlists)
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
+
+    function wishlist_prev(guid) {
+        let data = {
+            "guid": guid
+        }
+        $.ajax({
+            url: "{{url_for('api.wishlist_prev')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                let wishlists = result.wishlists
+
+                create_wishlists(wishlists)
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
+
+    function wishlist_remove(guid) {
+        let data = {
+            "guid": guid
+        }
+        $.ajax({
+            url: "{{url_for('api.wishlist_remove')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                let wishlists = result.wishlists
+                let dumps = result.dumps
+
+                if (wishlists.length > 0) {
+                    $("#wishlist-placeholder-1").addClass("section-hidden");
+                    $("#wishlist-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#wishlist-placeholder-1").removeClass("section-hidden");
+                    $("#wishlist-placeholder-2").addClass("section-hidden");
+                }
+
+                if (dumps.length > 0) {
+                    $("#dump-placeholder-1").addClass("section-hidden");
+                    $("#dump-placeholder-2").removeClass("section-hidden");
+                } else {
+                    $("#dump-placeholder-1").removeClass("section-hidden");
+                    $("#dump-placeholder-2").addClass("section-hidden");
+                }
+
+                create_wishlists(wishlists)
+                create_dumps(dumps)
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
+
+    function bucket_clicked(guid) {
+        if (bucket_current_guid) {
+            $(`#bucket-${bucket_current_guid}`).find("div.bucket-overlay").addClass("bucket-hidden-overlay")
+        }
+        bucket_current_guid = `${guid}`
+        let book_box = $(`#bucket-${guid}`).find("div.bucket-overlay").toggleClass("bucket-hidden-overlay")
+    }
+
+    function bucket_remove(guid) {
+        let data = {
+            "guid": guid
+        }
+        $.ajax({
+            url: "{{url_for('api.bucket_remove')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                window.location.reload();
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
+
+    function retain_clicked(guid) {
+        if (retain_current_guid) {
+            $(`#retain-${retain_current_guid}`).find("div.retain-overlay").addClass("retain-hidden-overlay")
+        }
+        retain_current_guid = `${guid}`
+        let book_box = $(`#retain-${guid}`).find("div.retain-overlay").toggleClass("retain-hidden-overlay")
+    }
+
+    function retain_book(guid) {
+        let data = {
+            "guid": guid
+        }
+        $.ajax({
+            url: "{{url_for('api.retain_book')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                window.location.reload();
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
+</script>
