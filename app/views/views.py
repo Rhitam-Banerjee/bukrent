@@ -468,7 +468,7 @@ def get_wishlist_data():
 
     for user in users:
         data[user.mobile_number] = []
-        wishlists = users.get_wishlist()[:4]
+        wishlists = user.get_wishlist()[:4]
         for wishlist in wishlists:
             data[user.mobile_number].append(wishlist.book.isbn)
 
