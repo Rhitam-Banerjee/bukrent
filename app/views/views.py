@@ -460,6 +460,22 @@ def get_user_data():
         ]
     }), 200
 
+@views.route("/get-wishlist")
+def get_wishlist_data():
+    users = User.query.filter_by(is_subscribed=True).all()
+
+    data = {}
+
+    for user in users:
+        data[user.mobile_number] = []
+        wishlists = users.get_wishlist()[:4]
+        for wishlist in wishlists:
+            data[user.mobile_number].append(wishlist.book.isbn)
+
+    return jsonify({
+        "data": data
+    }), 200
+
 @views.route("/book-details")
 def book_details():
     guid = request.args.get("guid")
