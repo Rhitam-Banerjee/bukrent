@@ -470,7 +470,7 @@ def get_wishlist_data():
         data[user.mobile_number] = []
         wishlists = user.get_wishlist()[:4]
         for wishlist in wishlists:
-            data[user.mobile_number].append(wishlist.book.isbn)
+            data[user.mobile_number].append(wishlist.get("isbn"))
 
     return jsonify({
         "data": data
