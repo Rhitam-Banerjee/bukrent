@@ -1153,3 +1153,31 @@ def launch():
         "message": "Saved!",
         "status": "success"
     }), 201
+
+@api.route("/get-amazon-bestsellers-mock")
+def get_amazon_bestsellers_mock():
+    return jsonify({
+        "data": Book.get_amazon_bestsellers(None),
+        "status": "success"
+    }), 200
+
+@api.route("/get-most-borrowed-mock")
+def get_most_borrowed_mock():
+    return jsonify({
+        "data": Book.get_most_borrowed(None),
+        "status": "success"
+    }), 200
+
+@api.route("/get-authors-mock")
+def get_authors_mock():
+    return jsonify({
+        "data": Author.get_authors(None),
+        "status": "success"
+    }), 200
+
+@api.route("/get-series-mock")
+def get_series_mock():
+    return jsonify({
+        "data": Series.get_series(None),
+        "status": "success"
+    }), 200
