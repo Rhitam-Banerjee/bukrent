@@ -316,8 +316,11 @@ def library():
 
 @views.route("/browse")
 def browse():
+    user = User.query.filter_by(guid=session.get("current_user")).first()
     return render_template(
-        "/home_new/home_new.html"
+        "/home_new/home_new.html",
+        cart_btn=True,
+        user=user
     )
 
 # @views.route("/happy-reading")
@@ -562,8 +565,23 @@ def order_placed():
 def search_result():
     search = request.args.get("query")
     all_books = Book.query.filter(Book.name.ilike(f"%{search}%")).all()
-    all_authors = Author.query.filter(Author.name.like(f"%{search}%")).all()
-    all_publishers = Publisher.query.filter(Publisher.name.like(f"%{search}%")).all()
+
+    authors = Author.query.filter(Author.name.ilike(f"%{search}%")).all()
+    series = Series.query.filter(Series.name.ilike(f"%{search}%")).all()
+    publishers = Publisher.query.filter(Publisher.name.ilike(f"%{search}%")).all()
+
+    for author in authors:
+        for book in author.books:
+            all_books.append(book)
+
+    for serie in series:
+        for book in serie.books:
+            all_books.append(book)
+
+    for publisher in publishers:
+        for book in publisher.books:
+            all_books.append(book)
+
     current_user = session.get("current_user")
     user = None
     if current_user:
@@ -572,8 +590,7 @@ def search_result():
         "/search_result/search_result.html",
         current_user = current_user,
         all_books = all_books,
-        all_authors = all_authors,
-        all_publishers = all_publishers,
         query = search,
-        user = user
+        user = user,
+        cart_btn=True
     )

@@ -41,20 +41,20 @@ class Series(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_series(age_group):
+    def get_series(age_group, start, end):
         if age_group:
             if age_group == 1:
-                series = Series.query.filter_by(age1=True).all()
+                series = Series.query.filter_by(age1=True).all()[start:end]
             elif age_group == 2:
-                series = Series.query.filter_by(age2=True).all()
+                series = Series.query.filter_by(age2=True).all()[start:end]
             elif age_group == 3:
-                series = Series.query.filter_by(age3=True).all()
+                series = Series.query.filter_by(age3=True).all()[start:end]
             elif age_group == 4:
-                series = Series.query.filter_by(age4=True).all()
+                series = Series.query.filter_by(age4=True).all()[start:end]
             elif age_group == 5:
-                series = Series.query.filter_by(age5=True).all()
+                series = Series.query.filter_by(age5=True).all()[start:end]
             elif age_group == 6:
-                series = Series.query.filter_by(age6=True).all()
+                series = Series.query.filter_by(age6=True).all()[start:end]
         else:
             series = Series.query.filter(or_(
                 Series.age1==True,
@@ -63,7 +63,7 @@ class Series(db.Model):
                 Series.age4==True,
                 Series.age5==True,
                 Series.age6==True
-            )).all()
+            )).all()[start:end]
         
         final_series = []
         for serie in series:

@@ -20,15 +20,16 @@
     $(document).ready(function() {
         $("#age-carousel").owlCarousel({
             responsiveClass:true,
-            margin:25,
+            margin:10,
             nav: true,
             dots: false,
+            navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
             responsive:{
                 0:{
-                    items:3
+                    items:4
                 },
                 480:{
-                    items:4
+                    items:5
                 },
                 1024:{
                     items:6
@@ -72,44 +73,54 @@
     function change_age_group(new_age_group) {
         if (age_group) {
             if (age_group == 1) {
-                $(".age-1").css("background-color", "#FF7C72")
+                $(".age-1").css("background-color", "white")
+                $(".age-1").css("color", "black")
             }
             if (age_group == 2) {
-                $(".age-2").css("background-color", "#fa7e0a")
+                $(".age-2").css("background-color", "white")
+                $(".age-2").css("color", "black")
             }
             if (age_group == 3) {
-                $(".age-3").css("background-color", "#FFD631")
+                $(".age-3").css("background-color", "white")
             }
             if (age_group == 4) {
-                $(".age-4").css("background-color", "#8ACE38")
+                $(".age-4").css("background-color", "white")
+                $(".age-4").css("color", "black")
             }
             if (age_group == 5) {
-                $(".age-5").css("background-color", "#74C7FF")
+                $(".age-5").css("background-color", "white")
+                $(".age-5").css("color", "black")
             }
             if (age_group == 6) {
-                $(".age-6").css("background-color", "#CB85C2")
+                $(".age-6").css("background-color", "white")
+                $(".age-6").css("color", "black")
             }
         }
 
         age_group = new_age_group;
 
         if (age_group == 1) {
-            $(".age-1").css("background-color", "#D7665A")
+            $(".age-1").css("background-color", "#FF7C72")
+            $(".age-1").css("color", "white")
         }
         if (age_group == 2) {
-            $(".age-2").css("background-color", "#DD832A")
+            $(".age-2").css("background-color", "#fa7e0a")
+            $(".age-2").css("color", "white")
         }
         if (age_group == 3) {
-            $(".age-3").css("background-color", "#C8A102")
+            $(".age-3").css("background-color", "#FFD631")
         }
         if (age_group == 4) {
-            $(".age-4").css("background-color", "#75A040")
+            $(".age-4").css("background-color", "#8ACE38")
+            $(".age-4").css("color", "white")
         }
         if (age_group == 5) {
-            $(".age-5").css("background-color", "#499FD2")
+            $(".age-5").css("background-color", "#74C7FF")
+            $(".age-5").css("color", "white")
         }
         if (age_group == 6) {
-            $(".age-6").css("background-color", "#7A4172")
+            $(".age-6").css("background-color", "#CB85C2")
+            $(".age-6").css("color", "white")
         }
 
         get_amazon_bestsellers(age_group);

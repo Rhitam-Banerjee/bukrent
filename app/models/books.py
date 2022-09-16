@@ -121,22 +121,22 @@ class Book(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_most_borrowed(age_group):
+    def get_most_borrowed(age_group, start, end):
         if age_group:
             if age_group == 1:
-                books = Book.query.filter_by(borrowed_age1=True).order_by(Book.id.desc()).all()[:10]
+                books = Book.query.filter_by(borrowed_age1=True).order_by(Book.id.desc()).all()[start:end]
             elif age_group == 2:
-                books = Book.query.filter_by(borrowed_age2=True).order_by(Book.id.desc()).all()[:10]
+                books = Book.query.filter_by(borrowed_age2=True).order_by(Book.id.desc()).all()[start:end]
             elif age_group == 3:
-                books = Book.query.filter_by(borrowed_age3=True).order_by(Book.id.desc()).all()[:10]
+                books = Book.query.filter_by(borrowed_age3=True).order_by(Book.id.desc()).all()[start:end]
             elif age_group == 4:
-                books = Book.query.filter_by(borrowed_age4=True).order_by(Book.id.desc()).all()[:10]
+                books = Book.query.filter_by(borrowed_age4=True).order_by(Book.id.desc()).all()[start:end]
             elif age_group == 5:
-                books = Book.query.filter_by(borrowed_age5=True).order_by(Book.id.desc()).all()[:10]
+                books = Book.query.filter_by(borrowed_age5=True).order_by(Book.id.desc()).all()[start:end]
             elif age_group == 6:
-                books = Book.query.filter_by(borrowed_age6=True).order_by(Book.id.desc()).all()[:10]
+                books = Book.query.filter_by(borrowed_age6=True).order_by(Book.id.desc()).all()[start:end]
         else:
-            books = Book.query.filter_by(most_borrowed=True).order_by(Book.id.desc()).all()[:10]
+            books = Book.query.filter_by(most_borrowed=True).order_by(Book.id.desc()).all()[start:end]
         
         final_books = []
         for book in books:
@@ -145,22 +145,22 @@ class Book(db.Model):
         return final_books
 
     @staticmethod
-    def get_all_most_borrowed(age_group):
+    def get_bestsellers(age_group, start, end):
         if age_group:
             if age_group == 1:
-                books = Book.query.filter_by(borrowed_age1=True).order_by(Book.id.desc()).all()[10:]
+                books = Book.query.filter_by(bestseller_age1=True).all()[start:end]
             elif age_group == 2:
-                books = Book.query.filter_by(borrowed_age2=True).order_by(Book.id.desc()).all()[10:]
+                books = Book.query.filter_by(bestseller_age2=True).all()[start:end]
             elif age_group == 3:
-                books = Book.query.filter_by(borrowed_age3=True).order_by(Book.id.desc()).all()[10:]
+                books = Book.query.filter_by(bestseller_age3=True).all()[start:end]
             elif age_group == 4:
-                books = Book.query.filter_by(borrowed_age4=True).order_by(Book.id.desc()).all()[10:]
+                books = Book.query.filter_by(bestseller_age4=True).all()[start:end]
             elif age_group == 5:
-                books = Book.query.filter_by(borrowed_age5=True).order_by(Book.id.desc()).all()[10:]
+                books = Book.query.filter_by(bestseller_age5=True).all()[start:end]
             elif age_group == 6:
-                books = Book.query.filter_by(borrowed_age6=True).order_by(Book.id.desc()).all()[10:]
+                books = Book.query.filter_by(bestseller_age6=True).all()[start:end]
         else:
-            books = Book.query.filter_by(most_borrowed=True).order_by(Book.id.desc()).all()[10:]
+            books = Book.query.filter_by(amazon_bestseller=True).all()[start:end]
         
         final_books = []
         for book in books:
@@ -169,10 +169,10 @@ class Book(db.Model):
         return final_books
 
     @staticmethod
-    def get_author_books(guid):
+    def get_author_books(guid, start, end):
         from app.models.author import Author
 
-        books = Author.query.filter_by(guid=guid).first().books[:10]
+        books = Author.query.filter_by(guid=guid).first().books[start:end]
         final_books = []
 
         for book in books:
@@ -193,10 +193,10 @@ class Book(db.Model):
         return final_books
 
     @staticmethod
-    def get_series_books(guid):
+    def get_series_books(guid, start, end):
         from app.models.series import Series
 
-        books = Series.query.filter_by(guid=guid).first().books
+        books = Series.query.filter_by(guid=guid).first().books[start:end]
         final_books = []
 
         for book in books:
@@ -211,54 +211,6 @@ class Book(db.Model):
         books = Category.query.filter_by(guid=guid).first().books[:10]
         final_books = []
 
-        for book in books:
-            final_books.append(book.to_json())
-
-        return final_books
-
-    @staticmethod
-    def get_amazon_bestsellers(age_group):
-        if age_group:
-            if age_group == 1:
-                books = Book.query.filter_by(bestseller_age1=True).all()[:10]
-            elif age_group == 2:
-                books = Book.query.filter_by(bestseller_age2=True).all()[:10]
-            elif age_group == 3:
-                books = Book.query.filter_by(bestseller_age3=True).all()[:10]
-            elif age_group == 4:
-                books = Book.query.filter_by(bestseller_age4=True).all()[:10]
-            elif age_group == 5:
-                books = Book.query.filter_by(bestseller_age5=True).all()[:10]
-            elif age_group == 6:
-                books = Book.query.filter_by(bestseller_age6=True).all()[:10]
-        else:
-            books = Book.query.filter_by(amazon_bestseller=True).all()[:10]
-        
-        final_books = []
-        for book in books:
-            final_books.append(book.to_json())
-
-        return final_books
-
-    @staticmethod
-    def get_all_amazon_bestsellers(age_group):
-        if age_group:
-            if age_group == 1:
-                books = Book.query.filter_by(bestseller_age1=True).all()[10:]
-            elif age_group == 2:
-                books = Book.query.filter_by(bestseller_age2=True).all()[10:]
-            elif age_group == 3:
-                books = Book.query.filter_by(bestseller_age3=True).all()[10:]
-            elif age_group == 4:
-                books = Book.query.filter_by(bestseller_age4=True).all()[10:]
-            elif age_group == 5:
-                books = Book.query.filter_by(bestseller_age5=True).all()[10:]
-            elif age_group == 6:
-                books = Book.query.filter_by(bestseller_age6=True).all()[10:]
-        else:
-            books = Book.query.filter_by(amazon_bestseller=True).all()[10:]
-        
-        final_books = []
         for book in books:
             final_books.append(book.to_json())
 

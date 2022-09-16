@@ -1,4 +1,4 @@
-{% extends "template.jinja" %}
+{% extends "template_new.jinja" %}
 {% block main %}
 
 {% include("search_result/search_result_script.jinja") %}
@@ -16,36 +16,33 @@
         </div>
     </div>
 
-    <!-- Displaying Book Results -->
+    {% if all_books | length > 0 %}
     <div class="row my-3">
         <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
             <p class="section-title">Books</p>
         </div>
     </div>
-    {% if all_books | length > 0 %}
-    <div id="books-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
+    <div id="books-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5 px-5">
         {% for book in all_books %}
         {% if book.name | length > 30 %}
             {% set name = book.name[:27] + "..." %}
         {% else %}
             {% set name = book.name %}
         {% endif %}
-        <div class="book-box">
-            <div class="row">
-                <div class="col-12 col-md-12 col-lg-12">
-                    <img src="{{book.image}}" class="img-fluid book-img" />
+        <a onclick="book_clicked('{{book.guid}}')">
+            <div class="book-box p-2 book-{{book.guid}}">
+                <div class="row book-container">
+                    <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
+                        <img src="{{book.image}}" class="img-fluid book-img" />
+                    </div>
                 </div>
-                <div class="col-12 col-md-12 col-lg-12 mt-2">
-                    <p class="book-name">{{name}}</p>
-                </div>
-                <div class="col-6 col-md-6 col-lg-6">
-                    <p class="book-author-name">{{book.authors[0].name}}</p>
-                </div>
-                <div class="col-6 col-md-6 col-lg-6">
-                    <p class="book-rating"><i class="fa-solid fa-star"></i> {{book.rating}}</p>
+                <div class="book-overlay book-hidden-overlay">
+                    <button class="book-wishlist-btn p-2" onclick="book_to_wishlist('{{book.guid}}')">
+                        <i class="fa-regular fa-heart" aria-hidden="true"></i>
+                    </button>
                 </div>
             </div>
-        </div>
+        </a>
         {% endfor %}
     </div>
     {% else %}
@@ -55,7 +52,7 @@
         </div>
         {% if user %}
         <div class="col-12 col-md-6 col-lg-6 mt-2">
-            <input type="text" name="name" id="name" class="form-control" placeholder="Name" value="{{user.name}}" readonly />
+            <input type="text" name="name" id="name" class="form-control" placeholder="Name" value="{{user.first_name}} {{user.last_name}}" readonly />
         </div>
         <div class="col-12 col-md-6 col-lg-6 mt-2">
             <input type="number" name="mobile_number" id="mobile_number" class="form-control" placeholder="Mobile Number" value="{{user.mobile_number}}" readonly />

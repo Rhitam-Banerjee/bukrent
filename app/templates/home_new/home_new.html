@@ -1,18 +1,20 @@
-{% extends "template.jinja" %}
+{% extends "template_new.jinja" %}
 {% block main %}
 
-{% include("home_new/home_new_script.jinja") %}
+{% include("home_new/home_script_new.jinja") %}
 {% include("home_new/home_new_style.jinja") %}
 
-<!-- Top Text Section -->
-<!-- <div class="no-mobile row">
-    <div class="col-12 col-md-12 col-lg-12 title-box text-center p-3">
-        <span class="big-title-text">50%</span> Books purchased are <span class="big-title-text">never</span> completed
-    </div>
-</div> -->
+<div class="mt-5 mb-3 px-3">
+    <form>
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Search by author, title, series" aria-label="Book Search" aria-describedby="search-btn" name="search" id="search" />
+            <span class="input-group-btn p-2" id="search-btn"><i class="fa-solid fa-magnifying-glass mt-1"></i></span>
+        </div>
+    </form>
+</div>
 
 <!-- Select By Age Section -->
-<div class="container">
+<div class="container px-4">
     <div class="row my-3">
         <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
             <p class="section-title">Select By Age</p>
@@ -29,8 +31,8 @@
                     <div class="col-12 col-md-12 col-lg-12 text-center age-text-small">
                         Years
                     </div>
-                    <div class="col-12 col-md-12 col-lg-12 text-center">
-                        <img src="/static/images/age1.png" class="img-fluid" />
+                    <div class="col-12 col-md-12 col-lg-12 text-center py-2">
+                        <img src="/static/images/age1.png" class="img-fluid age-box-img" />
                     </div>
                 </a>
             </div>
@@ -45,8 +47,8 @@
                     <div class="col-12 col-md-12 col-lg-12 text-center age-text-small">
                         Years
                     </div>
-                    <div class="col-12 col-md-12 col-lg-12 text-center">
-                        <img src="/static/images/age2.png" class="img-fluid" />
+                    <div class="col-12 col-md-12 col-lg-12 text-center py-2">
+                        <img src="/static/images/age2.png" class="img-fluid age-box-img" />
                     </div>
                 </a>
             </div>
@@ -61,8 +63,8 @@
                     <div class="col-12 col-md-12 col-lg-12 text-center age-text-small">
                         Years
                     </div>
-                    <div class="col-12 col-md-12 col-lg-12 text-center">
-                        <img src="/static/images/age3.png" class="img-fluid" />
+                    <div class="col-12 col-md-12 col-lg-12 text-center py-2">
+                        <img src="/static/images/age3.png" class="img-fluid age-box-img" />
                     </div>
                 </a>
             </div>
@@ -77,8 +79,8 @@
                     <div class="col-12 col-md-12 col-lg-12 text-center age-text-small">
                         Years
                     </div>
-                    <div class="col-12 col-md-12 col-lg-12 text-center">
-                        <img src="/static/images/age4.png" class="img-fluid" />
+                    <div class="col-12 col-md-12 col-lg-12 text-center py-2">
+                        <img src="/static/images/age4.png" class="img-fluid age-box-img" />
                     </div>
                 </a>
             </div>
@@ -93,8 +95,8 @@
                     <div class="col-12 col-md-12 col-lg-12 text-center age-text-small">
                         Years
                     </div>
-                    <div class="col-12 col-md-12 col-lg-12 text-center">
-                        <img src="/static/images/age5.png" class="img-fluid" />
+                    <div class="col-12 col-md-12 col-lg-12 text-center py-2">
+                        <img src="/static/images/age5.png" class="img-fluid age-box-img" />
                     </div>
                 </a>
             </div>
@@ -109,79 +111,20 @@
                     <div class="col-12 col-md-12 col-lg-12 text-center age-text-small">
                         Years
                     </div>
-                    <div class="col-12 col-md-12 col-lg-12 text-center">
-                        <img src="/static/images/age6.png" class="img-fluid" />
+                    <div class="col-12 col-md-12 col-lg-12 text-center py-2">
+                        <img src="/static/images/age6.png" class="img-fluid age-box-img" />
                     </div>
                 </a>
             </div>
         </div>
     </div>
-
-    <!-- Amazon Bestsellers -->
-    <a name="amazon_bestsellers"><div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title bestseller-title">Amazon Bestsellers</p>
-        </div>
-    </div></a>
-
-    <div id="amazon-bestseller-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
-        
-    </div>
 </div>
 
-<!-- How It Works? -->
-<!-- For Desktop -->
-<!-- <div class="no-mobile">
-    <div class="row">
-        <div class="col-12 col-md-12 col-lg-12">
-            <img src="/static/images/next.png" class="img-fluid" />
-        </div>
-    </div>
-</div> -->
-<!-- For Mobile -->
-<div class="no-desktop">
-    <div id="next-steps-carousel" class="owl-carousel owl-theme">
-        <div class="step-box">
-            <img src="/static/images/next1.png" class="img-fluid" />
-        </div>
-        <div class="step-box">
-            <img src="/static/images/next2.png" class="img-fluid" />
-        </div>
-        <div class="step-box">
-            <img src="/static/images/next3.png" class="img-fluid" />
-        </div>
-        <div class="step-box">
-            <img src="/static/images/next4.png" class="img-fluid" />
-        </div>
-    </div>
-</div>
-
-<!-- Type Of Books -->
-<div class="container">
-    <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title">Type of Books</p>
-        </div>
-    </div>
-
-    <div id="formats-carousel" class="owl-carousel owl-theme">
-
-    </div>
-</div>
-
-<!-- Top Text Section -->
-<!-- <div class="no-mobile row">
-    <div class="col-12 col-md-12 col-lg-12 title-box2 text-center p-3">
-        <span class="big-title-text2">Reading</span> to mind is what <span class="big-title-text2">exercise</span> is to Body
-    </div>
-</div> -->
-
-<!-- Most Borrowed Books -->
-<div class="container">
+<div class="most-borrowed-container p-4 pt-0">
     <div id="most-borrowed-section">
         <div class="row my-3">
             <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-                <p class="section-title borrowed-title">Most Borrowed Books</p>
+                <p class="section-title">Most Borrowed Books</p>
             </div>
         </div>
 
@@ -189,114 +132,114 @@
             
         </div>
     </div>
+</div>
 
-    <!-- Amazon Bestselling Authors -->
-    <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title authors-title">Amazon Bestselling Authors</p>
-        </div>
+<div class="row my-3">
+    <div class="col-12 col-md-12 col-lg-12 text-start section-title-box mt-3 mt-md-1 mt-lg-0">
+        <p class="section-title">Authors</p>
+        <div style="height: 1px; background-color: black; margin-top: -15px;"></div>
     </div>
 
-    <a name="author_books"><div id="amazon-authors-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
-        
-    </div></a>
-
-    <!-- Book By Author -->
-    <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title" id="book-by-author">John Doe</p>
-        </div>
-    </div>
-
-    <div id="author-books-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
-        
+    <div id="author-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5 px-5 pt-5">
+            
     </div>
 </div>
 
-<!-- Top Text Section -->
-<div class="no-mobile row">
-    <div class="col-12 col-md-12 col-lg-12 title-box3 text-center p-3">
-        <span class="big-title-text3">80%</span> of Readers develop the habit at <span class="big-title-text3">age 10</span>
+<div class="author-books-container p-4">
+    <div id="author-books-section">
+        <div id="author-books-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
+            
+        </div>
     </div>
 </div>
 
-<!-- Amazon Publications -->
+<div class="row my-3">
+    <div class="col-12 col-md-12 col-lg-12 text-start section-title-box mt-3 mt-md-1 mt-lg-0">
+        <p class="section-title">Series</p>
+        <div style="height: 1px; background-color: black; margin-top: -15px;"></div>
+    </div>
+
+    <div id="series-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5 px-5 pt-5">
+            
+    </div>
+</div>
+
+<div class="series-books-container p-4">
+    <div id="series-books-section">
+        <div id="series-books-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
+            
+        </div>
+    </div>
+</div>
+
+<div class="bestseller-container p-4 pt-0">
+    <div id="bestseller-section">
+        <div class="row mb-3">
+            <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
+                <p class="section-title">Amazon Bestsellers</p>
+            </div>
+        </div>
+
+        <div id="bestseller-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
+            
+        </div>
+    </div>
+</div>
+
+{% if user %}
+    {% if not user.is_subscribed %}
+    <!-- Choose your Plan -->
+    <div class="container">
+        <div class="row my-3">
+            <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
+                <p class="section-title">Choose your Plan</p>
+            </div>
+        </div>
+        <div class="row my-3">
+            <div class="col-4 col-md-4 col-lg-4">
+                <a onclick="window.location.href='/select-plan'">
+                    <img src="/static/images/subscription1.svg" class="img-fluid banner-img" />
+                </a>
+            </div>
+            <div class="col-4 col-md-4 col-lg-4">
+                <a onclick="window.location.href='/select-plan'">
+                    <img src="/static/images/subscription2.svg" class="img-fluid banner-img" />
+                </a>
+            </div>
+            <div class="col-4 col-md-4 col-lg-4">
+                <a onclick="window.location.href='/select-plan'">
+                    <img src="/static/images/subscription3.svg" class="img-fluid banner-img" />
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% else %}
+<!-- Choose your Plan -->
 <div class="container">
     <div class="row my-3">
         <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title publisher-title">Amazon Bestselling Publications</p>
+            <p class="section-title">Choose your Plan</p>
         </div>
     </div>
-
-    <a name="publisher_books"><div id="amazon-publications-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
-        
-    </div></a>
-
-    <!-- Book By Publisher -->
     <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title" id="book-by-publisher">John Doe</p>
+        <div class="col-4 col-md-4 col-lg-4">
+            <a onclick="window.location.href='/select-plan'">
+                <img src="/static/images/subscription1.svg" class="img-fluid banner-img" />
+            </a>
         </div>
-    </div>
-
-    <div id="publisher-books-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
-        
+        <div class="col-4 col-md-4 col-lg-4">
+            <a onclick="window.location.href='/select-plan'">
+                <img src="/static/images/subscription2.svg" class="img-fluid banner-img" />
+            </a>
+        </div>
+        <div class="col-4 col-md-4 col-lg-4">
+            <a onclick="window.location.href='/select-plan'">
+                <img src="/static/images/subscription3.svg" class="img-fluid banner-img" />
+            </a>
+        </div>
     </div>
 </div>
-
-<!-- Top Text Section -->
-<div class="no-mobile row">
-    <div class="col-12 col-md-12 col-lg-12 title-box4 text-center p-3">
-        <span class="big-title-text4">80%</span> of Readers develop the habit at <span class="big-title-text4">age 10</span>
-    </div>
-</div>
-
-<!-- Amazon Series -->
-<div class="container">
-    <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title series-title">Amazon Bestselling Series</p>
-        </div>
-    </div>
-
-    <a name="series_books"><div id="amazon-series-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
-        
-    </div></a>
-
-    <!-- Book By Series -->
-    <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title" id="book-by-series">John Doe</p>
-        </div>
-    </div>
-
-    <div id="series-books-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
-        
-    </div>
-</div>
-
-<!-- Amazon Genres -->
-<div class="container">
-    <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title genres-title">Genres</p>
-        </div>
-    </div>
-
-    <a name="genre_books"><div id="amazon-genres-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
-        
-    </div></a>
-
-    <!-- Book By Genres -->
-    <div class="row my-3">
-        <div class="col-12 col-md-12 col-lg-12 text-center section-title-box mt-3 mt-md-1 mt-lg-0">
-            <p class="section-title" id="book-by-genres">John Doe</p>
-        </div>
-    </div>
-
-    <div id="genres-books-carousel" class="owl-carousel owl-theme my-0 my-md-3 my-lg-5">
-        
-    </div>
-</div>
+{% endif %}
 
 {% endblock %}

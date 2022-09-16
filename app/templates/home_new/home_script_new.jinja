@@ -1,0 +1,688 @@
+<script>
+    let current_guid = null;
+    let selected_author_guid = null;
+    let selected_series_guid = null;
+
+    let age_group = 0;
+
+    let borrowed_start = 0;
+    let borrowed_end = 10;
+    let last_borrowed_fetched = 0;
+    let borrowed_position = 0;
+
+    let bestseller_start = 0;
+    let bestseller_end = 10;
+    let last_bestseller_fetched = 0;
+    let bestseller_position = 0;
+
+    let author_start = 0;
+    let author_end = 10;
+    let last_author_fetched = 0;
+    let author_position = 0;
+
+    let author_books_start = 0;
+    let author_books_end = 10;
+    let last_author_books_fetched = 0;
+    let author_books_position = 0;
+
+    let series_start = 0;
+    let series_end = 10;
+    let last_series_fetched = 0;
+    let series_position = 0;
+
+    let series_books_start = 0;
+    let series_books_end = 10;
+    let last_series_books_fetched = 0;
+    let series_books_position = 0;
+
+    $(function() {
+        $('#most-borrowed-carousel').on('change.owl.carousel', function(e) {
+            if (e.item.index > 0) {
+                borrowed_position = e.item.index;
+            }
+            if (e.item.index > last_borrowed_fetched && e.item.index%5 === 0) {
+                last_borrowed_fetched = e.item.index;
+                get_most_borrowed(age_group, borrowed_start, borrowed_end);
+            }
+        });
+
+        $('#bestseller-carousel').on('change.owl.carousel', function(e) {
+            if (e.item.index > 0) {
+                bestseller_position = e.item.index;
+            }
+            if (e.item.index > last_bestseller_fetched && e.item.index%5 === 0) {
+                last_bestseller_fetched = e.item.index;
+                get_bestsellers(age_group, bestseller_start, bestseller_end);
+            }
+        });
+
+        $('#author-carousel').on('change.owl.carousel', function(e) {
+            if (e.item.index > 0) {
+                author_position = e.item.index;
+            }
+            if (e.item.index > last_author_fetched && e.item.index%5 === 0) {
+                last_author_fetched = e.item.index;
+                get_authors(age_group, author_start, author_end);
+            }
+        });
+
+        $('#author-books-carousel').on('change.owl.carousel', function(e) {
+            if (e.item.index > 0) {
+                author_books_position = e.item.index;
+            }
+            if (e.item.index > last_author_books_fetched && e.item.index%5 === 0) {
+                last_author_books_fetched = e.item.index;
+                author_clicked(selected_author_guid);
+            }
+        });
+
+        $('#series-carousel').on('change.owl.carousel', function(e) {
+            if (e.item.index > 0) {
+                series_position = e.item.index;
+            }
+            if (e.item.index > last_series_fetched && e.item.index%5 === 0) {
+                last_series_fetched = e.item.index;
+                get_seriess(age_group, series_start, series_end);
+            }
+        });
+
+        $('#series-books-carousel').on('change.owl.carousel', function(e) {
+            if (e.item.index > 0) {
+                series_books_position = e.item.index;
+            }
+            if (e.item.index > last_series_books_fetched && e.item.index%5 === 0) {
+                last_series_books_fetched = e.item.index;
+                series_clicked(selected_series_guid);
+            }
+        });
+
+        $("#search-btn").click(function(){
+            let search_query = $("#search").val();
+            window.location.href = `/search-result?query=${search_query}`
+        })
+    })
+
+    $(document).ready(function() {
+        $("#age-carousel").owlCarousel({
+            responsiveClass:true,
+            margin:10,
+            nav: true,
+            dots: false,
+            navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+            responsive:{
+                0:{
+                    items:4
+                },
+                480:{
+                    items:5
+                },
+                1024:{
+                    items:6
+                }
+            }
+        });
+
+        get_most_borrowed(age_group, borrowed_start, borrowed_end);
+        get_bestsellers(age_group, bestseller_start, bestseller_end);
+        get_authors(age_group, author_start, author_end);
+        get_series(age_group, series_start, series_end);
+    })
+
+    function reset_values() {
+        current_guid = null;
+        selected_author_guid = null;
+        selected_series_guid = null;
+
+        borrowed_start = 0;
+        borrowed_end = 10;
+        last_borrowed_fetched = 0;
+        borrowed_position = 0;
+
+        bestseller_start = 0;
+        bestseller_end = 10;
+        last_bestseller_fetched = 0;
+        bestseller_position = 0;
+
+        author_start = 0;
+        author_end = 10;
+        last_author_fetched = 0;
+        author_position = 0;
+
+        author_books_start = 0;
+        author_books_end = 10;
+        last_author_books_fetched = 0;
+        author_books_position = 0;
+
+        series_start = 0;
+        series_end = 10;
+        last_series_fetched = 0;
+        series_position = 0;
+
+        series_books_start = 0;
+        series_books_end = 10;
+        last_series_books_fetched = 0;
+        series_books_position = 0;
+    }
+
+    function change_age_group(new_age_group) {
+        if (age_group) {
+            if (age_group == 1) {
+                $(".age-1").css("background-color", "white")
+                $(".age-1").css("color", "black")
+            }
+            if (age_group == 2) {
+                $(".age-2").css("background-color", "white")
+                $(".age-2").css("color", "black")
+            }
+            if (age_group == 3) {
+                $(".age-3").css("background-color", "white")
+            }
+            if (age_group == 4) {
+                $(".age-4").css("background-color", "white")
+                $(".age-4").css("color", "black")
+            }
+            if (age_group == 5) {
+                $(".age-5").css("background-color", "white")
+                $(".age-5").css("color", "black")
+            }
+            if (age_group == 6) {
+                $(".age-6").css("background-color", "white")
+                $(".age-6").css("color", "black")
+            }
+        }
+
+        age_group = new_age_group;
+
+        if (age_group == 1) {
+            $(".age-1").css("background-color", "#FF7C72")
+            $(".age-1").css("color", "white")
+        }
+        if (age_group == 2) {
+            $(".age-2").css("background-color", "#fa7e0a")
+            $(".age-2").css("color", "white")
+        }
+        if (age_group == 3) {
+            $(".age-3").css("background-color", "#FFD631")
+        }
+        if (age_group == 4) {
+            $(".age-4").css("background-color", "#8ACE38")
+            $(".age-4").css("color", "white")
+        }
+        if (age_group == 5) {
+            $(".age-5").css("background-color", "#74C7FF")
+            $(".age-5").css("color", "white")
+        }
+        if (age_group == 6) {
+            $(".age-6").css("background-color", "#CB85C2")
+            $(".age-6").css("color", "white")
+        }
+        $(window).scrollTop(300);
+
+        $("#most-borrowed-carousel").empty()
+        $("#bestseller-carousel").empty()
+        $("#author-carousel").empty()
+        $("#author-books-carousel").empty()
+        $("#series-carousel").empty()
+        $("#series-books-carousel").empty()
+
+        reset_values();
+
+        get_most_borrowed(age_group, borrowed_start, borrowed_end);
+        get_bestsellers(age_group, bestseller_start, bestseller_end);
+        get_authors(age_group, author_start, author_end);
+        get_series(age_group, series_start, series_end);
+    }
+
+    function create_book_html(data) {
+        let html = `
+                    <a onclick="book_clicked('${data.guid}')">
+                        <div class="book-box p-2 book-${data.guid}">
+                            <div class="row book-container">
+                                <div class="col-12 col-md-12 col-lg-12 text-center book-img-container">
+                                    <img src="${data.image}" class="img-fluid book-img" />
+                                </div>
+                            </div>
+                            <div class="book-overlay book-hidden-overlay">
+                                <button class="book-wishlist-btn p-2" onclick="book_to_wishlist('${data.guid}')">
+                                    <i class="fa-regular fa-heart" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </a>
+                    `
+        return html
+    }
+
+    function book_clicked(guid) {
+        if (current_guid) {
+            $(`.book-${current_guid}`).each((id, item) => {
+                $(item).find("div.book-overlay").addClass("book-hidden-overlay")
+            })
+        }
+        current_guid = `${guid}`
+        $(`.book-${guid}`).each((id, item) => {
+            $(item).find("div.book-overlay").toggleClass("book-hidden-overlay")
+        })
+    }
+
+    function get_most_borrowed(age_group, borrowed_start, borrowed_end) {
+        $.ajax({
+            url: `{{url_for('api.get_most_borrowed')}}?age=${age_group}&start=${borrowed_start}&end=${borrowed_end}`,
+            type: "get",
+            contentType: 'application/json',
+            success: function (result) {
+                if (result.data.length > 0) {
+                    for (let i = 0; i < result.data.length; i++) {
+                        let html = create_book_html(result.data[i])
+
+                        $("#most-borrowed-carousel").append(html);
+                    }
+
+                    $("#most-borrowed-carousel").owlCarousel("destroy")
+
+                    $("#most-borrowed-carousel").owlCarousel({
+                        responsiveClass:true,
+                        margin:10,
+                        nav: true,
+                        dots: false,
+                        navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+                        responsive:{
+                            0:{
+                                items:4
+                            },
+                            480:{
+                                items:6
+                            },
+                            1024:{
+                                items:8
+                            }
+                        }
+                    });
+
+                    $("#most-borrowed-carousel").trigger('to.owl.carousel', borrowed_position)
+
+                    update_borrowed();
+                }
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function update_borrowed() {
+        borrowed_start = borrowed_start + 10;
+        borrowed_end = borrowed_end + 10;
+    }
+
+    function get_bestsellers(age_group, bestseller_start, bestseller_end) {
+        $.ajax({
+            url: `{{url_for('api.get_bestsellers')}}?age=${age_group}&start=${bestseller_start}&end=${bestseller_end}`,
+            type: "get",
+            contentType: 'application/json',
+            success: function (result) {
+                if (result.data.length > 0) {
+                    for (let i = 0; i < result.data.length; i++) {
+                        let html = create_book_html(result.data[i])
+
+                        $("#bestseller-carousel").append(html);
+                    }
+
+                    $("#bestseller-carousel").owlCarousel("destroy")
+
+                    $("#bestseller-carousel").owlCarousel({
+                        responsiveClass:true,
+                        margin:10,
+                        nav: true,
+                        dots: false,
+                        navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+                        responsive:{
+                            0:{
+                                items:4
+                            },
+                            480:{
+                                items:6
+                            },
+                            1024:{
+                                items:8
+                            }
+                        }
+                    });
+
+                    $("#bestseller-carousel").trigger('to.owl.carousel', bestseller_position)
+
+                    update_bestseller();
+                }
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function update_bestseller() {
+        bestseller_start = bestseller_start + 10;
+        bestseller_end = bestseller_end + 10;
+    }
+
+    function get_authors(age_group, author_start, author_end) {
+        $.ajax({
+            url: `{{url_for('api.get_authors')}}?age=${age_group}&start=${author_start}&end=${author_end}`,
+            type: "get",
+            contentType: 'application/json',
+            success: function (result) {
+                if (result.data.length > 0) {
+                    for (let i = 0; i < result.data.length; i++) {
+                        let html = `
+                            <a onclick="author_clicked('${result.data[i].guid}')">
+                                <div class="text-center">
+                                    <img src="https://bukrent-production.s3.ap-south-1.amazonaws.com/author_images/${result.data[i].name}.jpg" class="img-fluid relative-img" style="border-radius: 5rem;" />
+                                    <p class="mt-2" style="font-size: 0.75rem;">${result.data[i].name}</p>
+                                </div>
+                            </a>
+                        `
+
+                        $("#author-carousel").append(html);
+                    }
+
+                    $("#author-carousel").owlCarousel("destroy")
+
+                    $("#author-carousel").owlCarousel({
+                        responsiveClass:true,
+                        margin:10,
+                        nav: true,
+                        dots: false,
+                        navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+                        responsive:{
+                            0:{
+                                items:4
+                            },
+                            480:{
+                                items:6
+                            },
+                            1024:{
+                                items:8
+                            }
+                        }
+                    });
+
+                    $("#author-carousel").trigger('to.owl.carousel', author_position)
+
+                    update_author();
+
+                    if (last_author_fetched === 0) {
+                        author_clicked(result.data[0].guid)
+                    }
+                }
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function update_author() {
+        author_start = author_start + 10;
+        author_end = author_end + 10;
+    }
+
+    function author_clicked(guid) {
+        if (selected_author_guid === guid) {
+            get_author_books(selected_author_guid);
+        } else {
+            $("#author-books-carousel").empty();
+
+            author_books_start = 0;
+            author_books_end = 10;
+            last_author_books_fetched = 0;
+            author_books_position = 0;
+
+            selected_author_guid = guid;
+            get_author_books(guid);
+        }
+    }
+
+    function get_author_books(guid) {
+        $.ajax({
+            url: `{{url_for('api.get_author_books')}}?guid=${guid}&start=${author_books_start}&end=${author_books_end}`,
+            type: "get",
+            contentType: 'application/json',
+            success: function (result) {
+                if (result.data.length > 0) {
+                    for (let i = 0; i < result.data.length; i++) {
+                        let html = create_book_html(result.data[i])
+
+                        $("#author-books-carousel").append(html);
+                    }
+
+                    $("#author-books-carousel").owlCarousel("destroy")
+
+                    $("#author-books-carousel").owlCarousel({
+                        responsiveClass:true,
+                        margin:10,
+                        nav: true,
+                        dots: false,
+                        navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+                        responsive:{
+                            0:{
+                                items:4
+                            },
+                            480:{
+                                items:6
+                            },
+                            1024:{
+                                items:8
+                            }
+                        }
+                    });
+
+                    $("#author-books-carousel").trigger('to.owl.carousel', author_books_position)
+
+                    update_author_books();
+                }
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function update_author_books() {
+        author_books_start = author_books_start + 10;
+        author_books_end = author_books_end + 10;
+    }
+
+    function get_series(age_group, series_start, series_end) {
+        $.ajax({
+            url: `{{url_for('api.get_series')}}?age=${age_group}&start=${series_start}&end=${series_end}`,
+            type: "get",
+            contentType: 'application/json',
+            success: function (result) {
+                if (result.data.length > 0) {
+                    for (let i = 0; i < result.data.length; i++) {
+                        let html = `
+                            <a onclick="series_clicked('${result.data[i].guid}')">
+                                <div class="text-center">
+                                    <img src="https://bukrent-production.s3.ap-south-1.amazonaws.com/series_images/${result.data[i].name}.jpg" class="img-fluid relative-img" style="border-radius: 5rem;" />
+                                    <p class="mt-2" style="font-size: 0.75rem;">${result.data[i].name}</p>
+                                </div>
+                            </a>
+                        `
+
+                        $("#series-carousel").append(html);
+                    }
+
+                    $("#series-carousel").owlCarousel("destroy")
+
+                    $("#series-carousel").owlCarousel({
+                        responsiveClass:true,
+                        margin:10,
+                        nav: true,
+                        dots: false,
+                        navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+                        responsive:{
+                            0:{
+                                items:4
+                            },
+                            480:{
+                                items:6
+                            },
+                            1024:{
+                                items:8
+                            }
+                        }
+                    });
+
+                    $("#series-carousel").trigger('to.owl.carousel', series_position)
+
+                    update_series();
+
+                    if (last_series_fetched === 0) {
+                        series_clicked(result.data[0].guid)
+                    }
+                }
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function update_series() {
+        series_start = series_start + 10;
+        series_end = series_end + 10;
+    }
+
+    function series_clicked(guid) {
+        if (selected_series_guid === guid) {
+            get_series_books(selected_series_guid);
+        } else {
+            $("#series-books-carousel").empty();
+
+            series_books_start = 0;
+            series_books_end = 10;
+            last_series_books_fetched = 0;
+            series_books_position = 0;
+
+            selected_series_guid = guid;
+            get_series_books(guid);
+        }
+    }
+
+    function get_series_books(guid) {
+        $.ajax({
+            url: `{{url_for('api.get_series_books')}}?guid=${guid}&start=${series_books_start}&end=${series_books_end}`,
+            type: "get",
+            contentType: 'application/json',
+            success: function (result) {
+                if (result.data.length > 0) {
+                    for (let i = 0; i < result.data.length; i++) {
+                        let html = create_book_html(result.data[i])
+
+                        $("#series-books-carousel").append(html);
+                    }
+
+                    $("#series-books-carousel").owlCarousel("destroy")
+
+                    $("#series-books-carousel").owlCarousel({
+                        responsiveClass:true,
+                        margin:10,
+                        nav: true,
+                        dots: false,
+                        navText : ['<i class="fa fa-angle-left" aria-hidden="true"></i>','<i class="fa fa-angle-right" aria-hidden="true"></i>'],
+                        responsive:{
+                            0:{
+                                items:4
+                            },
+                            480:{
+                                items:6
+                            },
+                            1024:{
+                                items:8
+                            }
+                        }
+                    });
+
+                    $("#series-books-carousel").trigger('to.owl.carousel', series_books_position)
+
+                    update_series_books();
+                }
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            }
+        })
+    }
+
+    function update_series_books() {
+        series_books_start = series_books_start + 10;
+        series_books_end = series_books_end + 10;
+    }
+
+    function book_to_wishlist(guid) {
+        let data = {
+            guid: guid
+        }
+
+        $.ajax({
+            url: "{{url_for('api.add_to_wishlist')}}",
+            type: "post",
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: 'application/json',
+            beforeSend: function(){
+                $('.main-container').addClass('blur');
+                $(':button').prop('disabled', true);
+                $("#loader").show();
+            },
+            success: function (result) {
+                if (result.redirect) {
+                    window.location.href = result.redirect;
+                } else {
+                    Swal.fire(
+                        'Book Added',
+                        "",
+                        'success'
+                    )
+                }
+            },
+            error: function (result) {
+                Swal.fire(
+                    'Uh Oh!',
+                    result.responseJSON.message,
+                    'error'
+                )
+            },
+            complete:function(data){
+                $('.main-container').removeClass('blur');
+                $(':button').prop('disabled', false);
+                $("#loader").hide();
+            }
+        })
+    }
+
+</script>

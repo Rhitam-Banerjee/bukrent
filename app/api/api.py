@@ -973,57 +973,121 @@ def logout():
 #             "status": "error"
 #         }), 400
 
-@api.route("/get-amazon-bestsellers", methods=["POST"])
-def get_amazon_bestsellers():
-    age_group = request.json.get("age_group")
-    return jsonify({
-        "data": Book.get_amazon_bestsellers(age_group),
-        "status": "success"
-    }), 200
+# @api.route("/get-amazon-bestsellers", methods=["POST"])
+# def get_amazon_bestsellers():
+#     age_group = request.json.get("age_group")
+#     return jsonify({
+#         "data": Book.get_amazon_bestsellers(age_group),
+#         "status": "success"
+#     }), 200
 
-@api.route("/get-all-amazon-bestsellers", methods=["POST"])
-def get_all_amazon_bestsellers():
-    try:
-        age_group = request.json.get("age_group")
-        return jsonify({
-            "data": Book.get_all_amazon_bestsellers(age_group),
-            "status": "success"
-        }), 200
-    except Exception as e:
-        return jsonify({
-            "data": [],
-            "status": "success"
-        }), 200
-
-@api.route("/get-most-borrowed", methods=["POST"])
+@api.route("/get-most-borrowed")
 def get_most_borrowed():
-    age_group = request.json.get("age_group")
+    age_group = int(request.args.get("age"))
+    start = int(request.args.get("start"))
+    end = int(request.args.get("end"))
+
+    books = Book.get_most_borrowed(age_group, start, end)
+
     return jsonify({
-        "data": Book.get_most_borrowed(age_group),
+        "data": books,
         "status": "success"
     }), 200
 
-@api.route("/get-all-most-borrowed", methods=["POST"])
-def get_all_most_borrowed():
-    try:
-        age_group = request.json.get("age_group")
-        return jsonify({
-            "data": Book.get_all_most_borrowed(age_group),
-            "status": "success"
-        }), 200
-    except Exception as e:
-        return jsonify({
-            "data": [],
-            "status": "success"
-        }), 200
+@api.route("/get-bestsellers")
+def get_bestsellers():
+    age_group = int(request.args.get("age"))
+    start = int(request.args.get("start"))
+    end = int(request.args.get("end"))
 
-@api.route("/get-authors", methods=["POST"])
+    books = Book.get_bestsellers(age_group, start, end)
+
+    return jsonify({
+        "data": books,
+        "status": "success"
+    }), 200
+
+@api.route("/get-authors")
 def get_authors():
-    age_group = request.json.get("age_group")
+    age_group = int(request.args.get("age"))
+    start = int(request.args.get("start"))
+    end = int(request.args.get("end"))
+
+    authors = Author.get_authors(age_group, start, end)
+
     return jsonify({
-        "data": Author.get_authors(age_group),
+        "data": authors,
         "status": "success"
     }), 200
+
+@api.route("/get-author-books")
+def get_author_books():
+    guid = request.args.get("guid")
+    start = int(request.args.get("start"))
+    end = int(request.args.get("end"))
+
+    books = Book.get_author_books(guid, start, end)
+
+    return jsonify({
+        "data": books,
+        "status": "success"
+    }), 200
+
+@api.route("/get-series")
+def get_series():
+    age_group = int(request.args.get("age"))
+    start = int(request.args.get("start"))
+    end = int(request.args.get("end"))
+
+    series = Series.get_series(age_group, start, end)
+
+    return jsonify({
+        "data": series,
+        "status": "success"
+    }), 200
+
+@api.route("/get-series-books")
+def get_series_books():
+    guid = request.args.get("guid")
+    start = int(request.args.get("start"))
+    end = int(request.args.get("end"))
+
+    books = Book.get_series_books(guid, start, end)
+
+    return jsonify({
+        "data": books,
+        "status": "success"
+    }), 200
+
+# @api.route("/get-most-borrowed", methods=["POST"])
+# def get_most_borrowed():
+#     age_group = request.json.get("age_group")
+#     return jsonify({
+#         "data": Book.get_most_borrowed(age_group),
+#         "status": "success"
+#     }), 200
+
+# @api.route("/get-all-most-borrowed", methods=["POST"])
+# def get_all_most_borrowed():
+#     try:
+#         age_group = request.json.get("age_group")
+#         return jsonify({
+#             "data": Book.get_all_most_borrowed(age_group),
+#             "status": "success"
+#         }), 200
+#     except Exception as e:
+#         return jsonify({
+#             "data": [],
+#             "status": "success"
+#         }), 200
+
+# @api.route("/get-authors", methods=["POST"])
+# def get_authors():
+#     age_group = request.json.get("age_group")
+#     return jsonify({
+#         "data": Author.get_authors(age_group),
+#         "status": "success"
+#     }), 200
 
 @api.route("/get-publishers", methods=["POST"])
 def get_publishers():
@@ -1033,14 +1097,14 @@ def get_publishers():
         "status": "success"
     }), 200
 
-@api.route("/get-author-books", methods=["POST"])
-def get_author_books():
-    guid = request.json.get("guid")
-    return jsonify({
-        "data": Book.get_author_books(guid),
-        "name": Author.query.filter_by(guid=guid).first().name,
-        "status": "success"
-    }), 200
+# @api.route("/get-author-books", methods=["POST"])
+# def get_author_books():
+#     guid = request.json.get("guid")
+#     return jsonify({
+#         "data": Book.get_author_books(guid),
+#         "name": Author.query.filter_by(guid=guid).first().name,
+#         "status": "success"
+#     }), 200
 
 @api.route("/get-publisher-books", methods=["POST"])
 def get_publisher_books():
@@ -1051,22 +1115,22 @@ def get_publisher_books():
         "status": "success"
     }), 200
 
-@api.route("/get-series-books", methods=["POST"])
-def get_series_books():
-    guid = request.json.get("guid")
-    return jsonify({
-        "data": Book.get_series_books(guid),
-        "name": Series.query.filter_by(guid=guid).first().name,
-        "status": "success"
-    }), 200
+# @api.route("/get-series-books", methods=["POST"])
+# def get_series_books():
+#     guid = request.json.get("guid")
+#     return jsonify({
+#         "data": Book.get_series_books(guid),
+#         "name": Series.query.filter_by(guid=guid).first().name,
+#         "status": "success"
+#     }), 200
 
-@api.route("/get-series", methods=["POST"])
-def get_series():
-    age_group = request.json.get("age_group")
-    return jsonify({
-        "data": Series.get_series(age_group),
-        "status": "success"
-    }), 200
+# @api.route("/get-series", methods=["POST"])
+# def get_series():
+#     age_group = request.json.get("age_group")
+#     return jsonify({
+#         "data": Series.get_series(age_group),
+#         "status": "success"
+#     }), 200
 
 @api.route("/get-genres", methods=["POST"])
 def get_genres():

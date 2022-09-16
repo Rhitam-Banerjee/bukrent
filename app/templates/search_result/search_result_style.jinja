@@ -15,6 +15,74 @@
         width: 40%;
     }
 
+    .owl-prev {
+        width: 15px;
+        height: 100px;
+        position: absolute;
+        top: 20%;
+        left: 0%;
+        display: block !important;
+        border:0px solid black;
+    }
+
+    .owl-next {
+        width: 15px;
+        height: 100px;
+        position: absolute;
+        top: 20%;
+        right: 0%;
+        display: block !important;
+        border:0px solid black;
+    }
+
+    .book-box {
+        background-color: #f1f1f0;
+        position: relative;
+    }
+
+    .book-container {
+        position: relative;
+    }
+
+    .book-img-container {
+        min-height: 25vh;
+        max-height: 25vh;
+        position: relative;
+    }
+
+    .book-img {
+        border-radius: 0.5rem;
+        position: absolute;
+        bottom: 0;
+        width: 80% !important;
+        left: 10%;
+    }
+
+    .book-overlay {
+        position: absolute;
+        bottom: 0;
+        background: rgb(0, 0, 0);
+        background: rgba(0, 0, 0, 0.5);
+        width: 100%;
+        height: 100%;
+        left: 0;
+        transition: .5s ease;
+    }
+
+    .book-hidden-overlay {
+        display: none;
+    }
+
+    .book-wishlist-btn {
+        position: absolute;
+        background-color: #82ea05;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        width: 40px;
+        height: 40px;
+    }
+
     @media (max-width: 1024px) {
         .cart-button-submit {
             background-color: #fa7e0a;
@@ -22,6 +90,12 @@
             border: 2px solid #fa7e0a;
             border-radius: 1em;
             width: 60%;
+        }
+
+        .book-img-container {
+            min-height: 15vh;
+            max-height: 15vh;
+            position: relative;
         }
     }
 
@@ -32,6 +106,12 @@
             border: 2px solid #fa7e0a;
             border-radius: 1em;
             width: 80%;
+        }
+
+        .book-img-container {
+            min-height: 20vh;
+            max-height: 20vh;
+            position: relative;
         }
     }
 </style>

@@ -43,20 +43,20 @@ class Author(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_authors(age_group):
+    def get_authors(age_group, start, end):
         if age_group:
             if age_group == 1:
-                authors = Author.query.filter_by(age1=True).all()
+                authors = Author.query.filter_by(age1=True).all()[start:end]
             elif age_group == 2:
-                authors = Author.query.filter_by(age2=True).all()
+                authors = Author.query.filter_by(age2=True).all()[start:end]
             elif age_group == 3:
-                authors = Author.query.filter_by(age3=True).all()
+                authors = Author.query.filter_by(age3=True).all()[start:end]
             elif age_group == 4:
-                authors = Author.query.filter_by(age4=True).all()
+                authors = Author.query.filter_by(age4=True).all()[start:end]
             elif age_group == 5:
-                authors = Author.query.filter_by(age5=True).all()
+                authors = Author.query.filter_by(age5=True).all()[start:end]
             elif age_group == 6:
-                authors = Author.query.filter_by(age6=True).all()
+                authors = Author.query.filter_by(age6=True).all()[start:end]
         else:
             authors = Author.query.filter(or_(
                 Author.age1==True,
@@ -65,7 +65,7 @@ class Author(db.Model):
                 Author.age4==True,
                 Author.age5==True,
                 Author.age6==True
-            )).all()
+            )).all()[start:end]
         
         final_authors = []
         for author in authors:
