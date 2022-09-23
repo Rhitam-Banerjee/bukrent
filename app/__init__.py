@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_cors import CORS
 
 # instantiate the extensions
 db = SQLAlchemy()
@@ -13,6 +14,8 @@ def create_app(script_info=None):
     app.config.from_object(app_settings)
     db.init_app(app)
     migrate.init_app(app, db)
+
+    CORS(app)
 
     from app.api.api import api
     app.register_blueprint(api)

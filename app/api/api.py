@@ -666,6 +666,35 @@ def wishlist_remove():
             "status": "error"
         }), 400
 
+@api.route("/create-bucket-list")
+def create_bucket_list():
+    try:
+        mobile_number = request.args.get("mobile_number")
+        if not mobile_number:
+            return jsonify({
+                "message": "Mobile number is required!",
+                "status": "error"
+            }), 400
+        
+        user = User.query.filter_by(mobile_number=mobile_number).first()
+
+        if not user:
+            return jsonify({
+                "message": "No user with the given mobile number found.",
+                "status": "error"
+            }), 400
+
+        user.create_bucket_list()
+        return jsonify({
+            "message": "Buckets Created!",
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
 @api.route("/bucket-remove", methods=["POST"])
 def bucket_remove():
     try:
@@ -696,10 +725,24 @@ def change_delivery_date():
             "status": "error"
         }), 400
 
-@api.route("/confirm-order", methods=["POST"])
+@api.route("/confirm-order")
 def confirm_order():
     try:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        mobile_number = request.args.get("mobile_number")
+        if not mobile_number:
+            return jsonify({
+                "message": "Mobile number is required!",
+                "status": "error"
+            }), 400
+        
+        user = User.query.filter_by(mobile_number=mobile_number).first()
+
+        if not user:
+            return jsonify({
+                "message": "No user with the given mobile number found.",
+                "status": "error"
+            }), 400
+            
         user.confirm_order()
         return jsonify({
             "status": "success"

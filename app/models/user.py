@@ -546,21 +546,66 @@ class User(db.Model):
 
             current_priority_order += 1
 
+    def create_bucket_list(self):
+        try:
+            total_books = self.books_per_week
+
+            wishlists = Wishlist.query.filter_by(user_id=self.id).order_by(Wishlist.priority_order.asc()).all()
+
+            if len(wishlists) < total_books:
+                raise ValueError("Not enough books in wishlist!")
+
+            for book in total_books:
+                wishlist_book = wishlists[book]
+                DeliveryBucket.create(self.id, wishlist_book.id, self.next_delivery_date, wishlist_book.age_group)
+                wishlist.delete()
+
+            wishlists = Wishlist.query.filter_by(user_id=self.id).order_by(Wishlist.priority_order.asc()).all()
+            
+            for i, wishlist in enumerate(wishlists):
+                wishlist.priority_order = i+1
+                db.session.add(wishlist)
+                
+            db.session.commit()
+
+        except Exception as e:
+            raise ValueError(str(e))
+
+    def confirm_order(self):
+        try:
+            buckets = self.delivery_buckets
+
+            for bucket in buckets:
+                if bucket.book.stock_available <= 0:
+                    raise ValueError(f"Book with ISBN {bucket.book.isbn} is out of stock!")
+
+            for bucket in buckets:
+                Order.create(self.id, bucket.book.id, bucket.age_group, self.next_delivery_date)
+                bucket.delete()
+
+            next_delivery_date = self.next_delivery_date
+            self.last_delivery_date = next_delivery_date
+            self.next_delivery_date = next_delivery_date + timedelta(days=7)
+            db.session.add(self)
+            db.session.commit()
+        except Exception as e:
+            raise ValueError(str(e))
+
     def bucket_remove(self, guid):
         from app.models.books import Book
 
         book = Book.query.filter_by(guid=guid).first()
-        bucket = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
+        bucket = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==book.id)).first()
 
+        wishlist = Wishlist.query.filter_by(user_id=self.id).order_by(Wishlist.priority_order.asc()).all()[0]
+
+        if not wishlist:
+            raise ValueError("No book to replace! Add some books in your wishlist.")
+
+        Wishlist.create(self.id, bucket.book_id, bucket.age_group)
         bucket.delete()
 
-        wishlists = Wishlist.query.filter_by(user_id=self.id).order_by(Wishlist.priority_order.asc()).all()
-        for wishlist_obj in wishlists:
-            if wishlist_obj.book != book:
-                existing_bucket = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==wishlist_obj.book.id, DeliveryBucket.delivery_date==self.next_delivery_date)).first()
-                if not existing_bucket:
-                    DeliveryBucket.create(self.id, wishlist_obj.book.id, self.next_delivery_date, wishlist_obj.age_group)
-                    break
+        DeliveryBucket.create(self.id, wishlist.id, self.next_delivery_date, wishlist.age_group)
 
     def change_delivery_date(self, delivery_date):
         current_delivery_date = self.next_delivery_date
@@ -575,48 +620,18 @@ class User(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def confirm_order(self):
-        buckets = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.delivery_date==self.next_delivery_date)).all()
-
-        books_per_week = self.books_per_week
-
-        if len(buckets) != books_per_week:
-            raise ValueError(f"You can order {books_per_week} books per week. Currently there are {len(buckets)} books added!")
-
-        self.next_order_confirmed = True
-        db.session.add(self)
-        db.session.commit()
-
-        start_date = date.today()
-        for bucket in buckets:
-            if not bucket.is_retained:
-                book = bucket.book
-                book.stock_available = book.stock_available - 1
-                db.session.add(book)
-                db.session.commit()
-
-                other_buckets = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id!=self.id, start_date<=DeliveryBucket.delivery_date, DeliveryBucket.book_id==book.id)).all()
-
-                for other_bucket in other_buckets:
-                    other_user = User.query.filter_by(id=other_bucket.user_id).first()
-                    other_bucket.delete()
-
-                    wishlists = Wishlist.query.filter_by(user_id=other_user.id).order_by(Wishlist.priority_order.asc()).all()
-                    for wishlist_obj in wishlists:
-                        if wishlist_obj.book != book and wishlist_obj.book.stock_available > 0:
-                            existing_bucket = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==other_user.id, DeliveryBucket.book_id==wishlist_obj.book.id, DeliveryBucket.delivery_date==other_user.next_delivery_date)).first()
-                            if not existing_bucket:
-                                DeliveryBucket.create(other_user.id, wishlist_obj.book.id, other_user.next_delivery_date, wishlist_obj.age_group)
-                                break
-
     def retain_book(self):
         from app.models.books import Book
 
         book = Book.query.filter_by(guid=guid).first()
-        buckets = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.delivery_date==self.next_delivery_date)).all()
+        buckets = self.delivery_buckets
+
+        if len(buckets) == 0:
+            raise ValueError("No books yet in the bucket. They're updated 2 days before your delivery date!")
 
         for bucket in buckets[::-1]:
             if not bucket.is_retained:
+                Wishlist.create(self.id, bucket.book_id, bucket.age_group)
                 bucket.remove()
                 break
 

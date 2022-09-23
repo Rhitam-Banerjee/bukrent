@@ -238,15 +238,9 @@
     }
 
     function get_authors() {
-        let data = {
-            age_group: {{child.age_group}}
-        }
-
         $.ajax({
-            url: "{{url_for('api.get_authors')}}",
-            type: "post",
-            data: JSON.stringify(data),
-            dataType: 'json',
+            url: `{{url_for('api.get_authors')}}?age={{child.age_group}}&start=0&end=100`,
+            type: "get",
             contentType: 'application/json',
             success: function (result) {
                 for (let i = 0; i < result.data.length; i++) {
@@ -300,15 +294,9 @@
     }
 
     function get_series() {
-        let data = {
-            age_group: {{child.age_group}}
-        }
-
         $.ajax({
-            url: "{{url_for('api.get_series')}}",
-            type: "post",
-            data: JSON.stringify(data),
-            dataType: 'json',
+            url: "{{url_for('api.get_series')}}?age={{child.age_group}}&start=0&end=100",
+            type: "get",
             contentType: 'application/json',
             success: function (result) {
                 for (let i = 0; i < result.data.length; i++) {
