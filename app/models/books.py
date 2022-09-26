@@ -11,6 +11,12 @@ class BookCategory(db.Model):
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
 
+class BookFormat(db.Model):
+    __tablename__ = 'book_formats'
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
+    format_id = db.Column(db.Integer, db.ForeignKey('formats.id'))
+
 class BookAuthor(db.Model):
     __tablename__ = 'book_authors'
     id = db.Column(db.Integer, primary_key=True, index=True)
@@ -60,6 +66,8 @@ class Book(db.Model):
     suggestion_age4 = db.Column(db.Boolean, default=False)
     suggestion_age5 = db.Column(db.Boolean, default=False)
     suggestion_age6 = db.Column(db.Boolean, default=False)
+
+    tag1 = db.Column(db.String, default=False)
     
     details = db.relationship(Detail, lazy=True, uselist=False)
     annotation = db.relationship(Annotation, lazy=True, uselist=False)
@@ -181,10 +189,10 @@ class Book(db.Model):
         return final_books
 
     @staticmethod
-    def get_publisher_books(guid):
-        from app.models.publishers import Publisher
+    def get_publisher_books(guid, start, end):
+        from app.models.publisher import Publisher
 
-        books = Publisher.query.filter_by(guid=guid).first().books[:10]
+        books = Publisher.query.filter_by(guid=guid).first().books[start:end]
         final_books = []
 
         for book in books:
@@ -205,10 +213,10 @@ class Book(db.Model):
         return final_books
 
     @staticmethod
-    def get_genres_books(guid):
-        from app.models.category import Category
+    def get_type_books(guid, start, end):
+        from app.models.format import Format
 
-        books = Category.query.filter_by(guid=guid).first().books[:10]
+        books = Format.query.filter_by(guid=guid).first().books[start:end]
         final_books = []
 
         for book in books:

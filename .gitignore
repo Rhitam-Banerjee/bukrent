@@ -7,3 +7,5 @@ export_data/
 __pycache__
 
 db_dumps
+
+migrations/

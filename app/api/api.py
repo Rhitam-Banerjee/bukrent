@@ -501,6 +501,156 @@ def submit_preferences():
             "status": "error"
         }), 400
 
+@api.route("/get-user-data")
+def get_user_guid():
+    try:
+        mobile_number = request.args.get("mobile")
+        
+        if not mobile_number:
+            return jsonify({
+                "message": "Mobile number is required!",
+                "status": "error"
+            }), 400
+        
+        user = User.query.filter_by(mobile_number=mobile_number).first()
+
+        if not user:
+            return jsonify({
+                "message": "No user with the given mobile number found.",
+                "status": "error"
+            }), 400
+
+        return jsonify({
+            "data": user.to_json(),
+            "status": "success"
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/get-wishlists")
+def get_wishlists():
+    try:
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            guid = request.args.get("guid")
+            user = User.query.filter_by(guid=guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
+        return jsonify({
+            "status": "success",
+            "wishlists": user.get_wishlist()
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/get-suggestions")
+def get_suggestions():
+    try:
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            guid = request.args.get("guid")
+            user = User.query.filter_by(guid=guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
+        return jsonify({
+            "status": "success",
+            "suggestions": user.get_suggestions()
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/get-dumps")
+def get_dumps():
+    try:
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            guid = request.args.get("guid")
+            user = User.query.filter_by(guid=guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
+        return jsonify({
+            "status": "success",
+            "dumps": user.get_dump_data()
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/get-buckets")
+def get_buckets():
+    try:
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            guid = request.args.get("guid")
+            user = User.query.filter_by(guid=guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
+        return jsonify({
+            "status": "success",
+            "wishlists": user.get_next_bucket()
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/get-previous-bucket")
+def get_previous_bucket():
+    try:
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            guid = request.args.get("guid")
+            user = User.query.filter_by(guid=guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
+        return jsonify({
+            "status": "success",
+            "wishlists": user.get_previous_books()
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
 @api.route("/add-to-wishlist", methods=["POST"])
 def add_to_wishlist():
     try:
@@ -508,10 +658,13 @@ def add_to_wishlist():
         user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
-            return jsonify({
-                "redirect": url_for('views.home'),
-                "status": "success"
-            }), 200
+            user_guid = request.json.get("user_guid")
+            user = User.query.filter_by(guid=user_guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
 
         user.add_to_wishlist(guid)
 
@@ -529,6 +682,16 @@ def suggestion_to_wishlist():
     try:
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        if not user:
+            user_guid = request.json.get("user_guid")
+            user = User.query.filter_by(guid=user_guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
         user.suggestion_to_wishlist(guid)
 
         suggestions = user.get_suggestions()
@@ -551,6 +714,16 @@ def suggestion_to_dump():
     try:
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        if not user:
+            user_guid = request.json.get("user_guid")
+            user = User.query.filter_by(guid=user_guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
         user.suggestion_to_dump(guid)
 
         suggestions = user.get_suggestions()
@@ -572,6 +745,16 @@ def dump_action_read():
     try:
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        if not user:
+            user_guid = request.json.get("user_guid")
+            user = User.query.filter_by(guid=user_guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
         user.dump_action_read(guid)
 
         dumps = user.get_dump_data()
@@ -593,6 +776,16 @@ def dump_action_dislike():
     try:
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        if not user:
+            user_guid = request.json.get("user_guid")
+            user = User.query.filter_by(guid=user_guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
         user.dump_action_dislike(guid)
 
         dumps = user.get_dump_data()
@@ -612,6 +805,16 @@ def wishlist_next():
     try:
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        if not user:
+            user_guid = request.json.get("user_guid")
+            user = User.query.filter_by(guid=user_guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
         user.wishlist_next(guid)
 
         wishlists = user.get_wishlist()
@@ -631,6 +834,16 @@ def wishlist_prev():
     try:
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        if not user:
+            user_guid = request.json.get("user_guid")
+            user = User.query.filter_by(guid=user_guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
         user.wishlist_prev(guid)
 
         wishlists = user.get_wishlist()
@@ -650,6 +863,16 @@ def wishlist_remove():
     try:
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        if not user:
+            user_guid = request.json.get("user_guid")
+            user = User.query.filter_by(guid=user_guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
         user.wishlist_remove(guid)
 
         wishlists = user.get_wishlist()
@@ -669,7 +892,7 @@ def wishlist_remove():
 @api.route("/create-bucket-list")
 def create_bucket_list():
     try:
-        mobile_number = request.args.get("mobile_number")
+        mobile_number = request.args.get("mobile")
         if not mobile_number:
             return jsonify({
                 "message": "Mobile number is required!",
@@ -700,6 +923,16 @@ def bucket_remove():
     try:
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        if not user:
+            user_guid = request.json.get("user_guid")
+            user = User.query.filter_by(guid=user_guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
         user.bucket_remove(guid)
         return jsonify({
             "status": "success"
@@ -715,6 +948,16 @@ def change_delivery_date():
     try:
         delivery_date = request.json.get("delivery_date")
         user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        if not user:
+            user_guid = request.json.get("user_guid")
+            user = User.query.filter_by(guid=user_guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
         user.change_delivery_date(delivery_date)
         return jsonify({
             "status": "success"
@@ -728,7 +971,7 @@ def change_delivery_date():
 @api.route("/confirm-order")
 def confirm_order():
     try:
-        mobile_number = request.args.get("mobile_number")
+        mobile_number = request.args.get("mobile")
         if not mobile_number:
             return jsonify({
                 "message": "Mobile number is required!",
@@ -758,6 +1001,16 @@ def retain_book():
     try:
         guid = request.json.get("guid")
         user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        if not user:
+            user_guid = request.json.get("user_guid")
+            user = User.query.filter_by(guid=user_guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
         user.retain_book(guid)
         return jsonify({
             "status": "success"
@@ -1026,179 +1279,193 @@ def logout():
 
 @api.route("/get-most-borrowed")
 def get_most_borrowed():
-    age_group = int(request.args.get("age"))
-    start = int(request.args.get("start"))
-    end = int(request.args.get("end"))
+    try:
+        age_group = int(request.args.get("age"))
+        start = int(request.args.get("start"))
+        end = int(request.args.get("end"))
 
-    books = Book.get_most_borrowed(age_group, start, end)
+        books = Book.get_most_borrowed(age_group, start, end)
 
-    return jsonify({
-        "data": books,
-        "status": "success"
-    }), 200
+        return jsonify({
+            "data": books,
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/get-bestsellers")
 def get_bestsellers():
-    age_group = int(request.args.get("age"))
-    start = int(request.args.get("start"))
-    end = int(request.args.get("end"))
+    try:
+        age_group = int(request.args.get("age"))
+        start = int(request.args.get("start"))
+        end = int(request.args.get("end"))
 
-    books = Book.get_bestsellers(age_group, start, end)
+        books = Book.get_bestsellers(age_group, start, end)
 
-    return jsonify({
-        "data": books,
-        "status": "success"
-    }), 200
+        return jsonify({
+            "data": books,
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/get-authors")
 def get_authors():
-    age_group = int(request.args.get("age"))
-    start = int(request.args.get("start"))
-    end = int(request.args.get("end"))
+    try:
+        age_group = int(request.args.get("age"))
+        start = int(request.args.get("start"))
+        end = int(request.args.get("end"))
 
-    authors = Author.get_authors(age_group, start, end)
+        authors = Author.get_authors(age_group, start, end)
 
-    return jsonify({
-        "data": authors,
-        "status": "success"
-    }), 200
+        return jsonify({
+            "data": authors,
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/get-author-books")
 def get_author_books():
-    guid = request.args.get("guid")
-    start = int(request.args.get("start"))
-    end = int(request.args.get("end"))
+    try:
+        guid = request.args.get("guid")
+        start = int(request.args.get("start"))
+        end = int(request.args.get("end"))
 
-    books = Book.get_author_books(guid, start, end)
+        books = Book.get_author_books(guid, start, end)
 
-    return jsonify({
-        "data": books,
-        "status": "success"
-    }), 200
+        return jsonify({
+            "data": books,
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/get-series")
 def get_series():
-    age_group = int(request.args.get("age"))
-    start = int(request.args.get("start"))
-    end = int(request.args.get("end"))
+    try:
+        age_group = int(request.args.get("age"))
+        start = int(request.args.get("start"))
+        end = int(request.args.get("end"))
 
-    series = Series.get_series(age_group, start, end)
+        series = Series.get_series(age_group, start, end)
 
-    return jsonify({
-        "data": series,
-        "status": "success"
-    }), 200
+        return jsonify({
+            "data": series,
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/get-series-books")
 def get_series_books():
-    guid = request.args.get("guid")
-    start = int(request.args.get("start"))
-    end = int(request.args.get("end"))
+    try:
+        guid = request.args.get("guid")
+        start = int(request.args.get("start"))
+        end = int(request.args.get("end"))
 
-    books = Book.get_series_books(guid, start, end)
+        books = Book.get_series_books(guid, start, end)
 
-    return jsonify({
-        "data": books,
-        "status": "success"
-    }), 200
+        return jsonify({
+            "data": books,
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
-# @api.route("/get-most-borrowed", methods=["POST"])
-# def get_most_borrowed():
-#     age_group = request.json.get("age_group")
-#     return jsonify({
-#         "data": Book.get_most_borrowed(age_group),
-#         "status": "success"
-#     }), 200
-
-# @api.route("/get-all-most-borrowed", methods=["POST"])
-# def get_all_most_borrowed():
-#     try:
-#         age_group = request.json.get("age_group")
-#         return jsonify({
-#             "data": Book.get_all_most_borrowed(age_group),
-#             "status": "success"
-#         }), 200
-#     except Exception as e:
-#         return jsonify({
-#             "data": [],
-#             "status": "success"
-#         }), 200
-
-# @api.route("/get-authors", methods=["POST"])
-# def get_authors():
-#     age_group = request.json.get("age_group")
-#     return jsonify({
-#         "data": Author.get_authors(age_group),
-#         "status": "success"
-#     }), 200
-
-@api.route("/get-publishers", methods=["POST"])
+@api.route("/get-publishers")
 def get_publishers():
-    age_group = request.json.get("age_group")
-    return jsonify({
-        "data": Publisher.get_publishers(age_group),
-        "status": "success"
-    }), 200
+    try:
+        age_group = int(request.args.get("age"))
+        start = int(request.args.get("start"))
+        end = int(request.args.get("end"))
 
-# @api.route("/get-author-books", methods=["POST"])
-# def get_author_books():
-#     guid = request.json.get("guid")
-#     return jsonify({
-#         "data": Book.get_author_books(guid),
-#         "name": Author.query.filter_by(guid=guid).first().name,
-#         "status": "success"
-#     }), 200
+        publishers = Publisher.get_publishers(age_group, start, end)
 
-@api.route("/get-publisher-books", methods=["POST"])
+        return jsonify({
+            "data": publishers,
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/get-publisher-books")
 def get_publisher_books():
-    guid = request.json.get("guid")
-    return jsonify({
-        "data": Book.get_publisher_books(guid),
-        "name": Publisher.query.filter_by(guid=guid).first().name,
-        "status": "success"
-    }), 200
+    try:
+        guid = request.args.get("guid")
+        start = int(request.args.get("start"))
+        end = int(request.args.get("end"))
 
-# @api.route("/get-series-books", methods=["POST"])
-# def get_series_books():
-#     guid = request.json.get("guid")
-#     return jsonify({
-#         "data": Book.get_series_books(guid),
-#         "name": Series.query.filter_by(guid=guid).first().name,
-#         "status": "success"
-#     }), 200
+        books = Book.get_publisher_books(guid, start, end)
 
-# @api.route("/get-series", methods=["POST"])
-# def get_series():
-#     age_group = request.json.get("age_group")
-#     return jsonify({
-#         "data": Series.get_series(age_group),
-#         "status": "success"
-#     }), 200
+        return jsonify({
+            "data": books,
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
-@api.route("/get-genres", methods=["POST"])
-def get_genres():
-    age_group = request.json.get("age_group")
-    return jsonify({
-        "data": Category.get_genres(age_group),
-        "status": "success"
-    }), 200
+@api.route("/get-types")
+def get_types():
+    try:
+        age_group = int(request.args.get("age"))
+        start = int(request.args.get("start"))
+        end = int(request.args.get("end"))
 
-@api.route("/get-formats", methods=["POST"])
-def get_formats():
-    age_group = request.json.get("age_group")
-    return jsonify({
-        "data": Format.get_formats(age_group),
-        "status": "success"
-    }), 200
+        types = Format.get_types(age_group, start, end)
 
-@api.route("/get-genres-books", methods=["POST"])
-def get_genres_books():
-    guid = request.json.get("guid")
-    return jsonify({
-        "data": Book.get_genres_books(guid),
-        "name": Category.query.filter_by(guid=guid).first().name,
-        "status": "success"
-    }), 200
+        return jsonify({
+            "data": types,
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/get-type-books")
+def get_type_books():
+    try:
+        guid = request.args.get("guid")
+        start = int(request.args.get("start"))
+        end = int(request.args.get("end"))
+
+        books = Book.get_type_books(guid, start, end)
+
+        return jsonify({
+            "data": books,
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/get-similar-books", methods=["POST"])
 def get_similar_books():
@@ -1208,38 +1475,94 @@ def get_similar_books():
         "status": "success"
     }), 200
 
-@api.route("/search", methods=["POST"])
-def search():
-    search = request.json.get("search")
-    all_books = Book.query.filter(Book.name.like(f"%{search}%")).all()
-    all_authors = Author.query.filter(Author.name.like(f"%{search}%")).all()
-    all_publishers = Publisher.query.filter(Publisher.name.like(f"%{search}%")).all()
-    return jsonify({
-        "books": all_books,
-        "authors": all_authors,
-        "publishers": all_publishers,
-        "status": "success"
-    }), 200
-
 @api.route("/submit-search-form", methods=["POST"])
 def submit_search_form():
-    name = request.json.get("name")
-    mobile_number = request.json.get("mobile_number")
-    book_name = request.json.get("book_name")
-    book_link = request.json.get("book_link")
+    try:
+        name = request.json.get("name")
+        mobile_number = request.json.get("mobile_number")
+        book_name = request.json.get("book_name")
+        book_link = request.json.get("book_link")
 
-    if not all((name, mobile_number, book_name, book_link)):
+        if not all((name, mobile_number, book_name, book_link)):
+            return jsonify({
+                "message": "All fields are mandatory!",
+                "status": "error"
+            }), 400
+
+        Search.create(name, mobile_number, book_name, book_link)
+
         return jsonify({
-            "message": "All fields are mandatory!",
+            "message": "Submitted",
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
             "status": "error"
         }), 400
 
-    Search.create(name, mobile_number, book_name, book_link)
+@api.route("/search")
+def search():
+    try:
+        query = request.args.get("query")
 
-    return jsonify({
-        "message": "Submitted",
-        "status": "success"
-    }), 201
+        all_books = Book.query.filter(Book.name.ilike(f"%{query}%")).all()
+
+        authors = Author.query.filter(Author.name.ilike(f"%{query}%")).all()
+        series = Series.query.filter(Series.name.ilike(f"%{query}%")).all()
+        publishers = Publisher.query.filter(Publisher.name.ilike(f"%{query}%")).all()
+
+        return jsonify({
+            "books": [book.to_json() for book in all_books],
+            "authors": {
+                "names": [author.name for author in authors],
+                "books": [[book.to_json() for book in author.books] for author in authors]
+            },
+            "series": {
+                "names": [serie.name for serie in series],
+                "books": [[book.to_json() for book in serie.books] for serie in series]
+            },
+            "publishers": {
+                "names": [publisher.name for publisher in publishers],
+                "books": [[book.to_json() for book in publisher.books] for publisher in publishers]
+            },
+            "status": "success"
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/get-book-details")
+def get_book_details():
+    try:
+        guid = request.args.get("guid")
+        if not guid:
+            return jsonify({
+                "message": "Book GUID is required!",
+                "status": "error"
+            }), 400
+        
+        book = Book.query.filter_by(guid=guid).first()
+        
+        if not book:
+            return jsonify({
+                "message": "No book with given GUID found!",
+                "status": "error"
+            }), 400
+
+        return jsonify({
+            "book": book.to_json(),
+            "details": book.details.to_json(),
+            "status": "success"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api.route("/launch", methods=["POST"])
 def launch():
@@ -1260,31 +1583,3 @@ def launch():
         "message": "Saved!",
         "status": "success"
     }), 201
-
-@api.route("/get-amazon-bestsellers-mock")
-def get_amazon_bestsellers_mock():
-    return jsonify({
-        "data": Book.get_amazon_bestsellers(None),
-        "status": "success"
-    }), 200
-
-@api.route("/get-most-borrowed-mock")
-def get_most_borrowed_mock():
-    return jsonify({
-        "data": Book.get_most_borrowed(None),
-        "status": "success"
-    }), 200
-
-@api.route("/get-authors-mock")
-def get_authors_mock():
-    return jsonify({
-        "data": Author.get_authors(None),
-        "status": "success"
-    }), 200
-
-@api.route("/get-series-mock")
-def get_series_mock():
-    return jsonify({
-        "data": Series.get_series(None),
-        "status": "success"
-    }), 200

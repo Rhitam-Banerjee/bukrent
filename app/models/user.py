@@ -266,6 +266,16 @@ class User(db.Model):
         else:
             return 0
 
+    def to_json(self):
+        return {
+            "guid": self.guid,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "next_delivery_date": self.next_delivery_date,
+            "is_subscribed": self.is_subscribed
+        }
+
     @staticmethod
     def create(first_name, last_name, mobile_number):
         user_dict = dict(
