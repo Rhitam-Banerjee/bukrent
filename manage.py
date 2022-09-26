@@ -10,6 +10,7 @@ from scripts.script_25_aug import *
 from scripts.script_26_aug import *
 from scripts.script_30_aug import *
 from scripts.script_8_sept import *
+from scripts.script_23_sept import *
 
 from app.models.annotations import Annotation
 from app.models.author import Author
@@ -65,6 +66,10 @@ def script_30_aug():
 @cli.command()
 def script_8_sept():
     sept_8()
+
+@cli.command()
+def script_23_sept():
+    sept_23()
 
 if __name__ == '__main__':
     cli()

@@ -34,6 +34,8 @@ class Detail(db.Model):
             return "9-11"
         elif self.age_group == 5:
             return "12+"
+        else:
+            return "Unknown"
 
     @staticmethod
     def get_age_bracket(group):
@@ -93,32 +95,19 @@ class Detail(db.Model):
             objs = Detail.query.filter_by(age_group=5).order_by(Detail.bestseller_rank.asc()).limit(10).all()
         return [obj.book_id for obj in objs]
 
-    # def to_json(self):
-    #     age_group = "Unknown"
-    #     if self.age_group1:
-    #         age_group = "0-2"
-    #     elif self.age_group2:
-    #         age_group = "3-5"
-    #     elif self.age_group3:
-    #         age_group = "6-8"
-    #     elif self.age_group4:
-    #         age_group = "9-11"
-    #     elif self.age_group5:
-    #         age_group = "12-14"
-    #     elif self.age_group6:
-    #         age_group = "15+"
-    #     return {
-    #         "age_group": age_group,
-    #         "for_age": self.for_age,
-    #         "pages": self.pages,
-    #         "language": self.language,
-    #         "dimensions": self.dimensions,
-    #         "publisher": self.publisher,
-    #         "publication_date": self.publication_date,
-    #         "bestseller_rank": self.bestseller_rank,
-    #         "publication_location": self.publication_location,
-    #         "edition_statement": self.edition_statement,
-    #         "edition": self.edition,
-    #         "imprint": self.imprint,
-    #         "illustration_notes": self.illustration_notes
-    #     }
+    def to_json(self):
+        return {
+            "age_group": self.display_age_group,
+            "for_age": self.for_age,
+            "pages": self.pages,
+            "language": self.language,
+            "dimensions": self.dimensions,
+            "publisher": self.publisher,
+            "publication_date": self.publication_date,
+            "bestseller_rank": self.bestseller_rank,
+            "publication_location": self.publication_location,
+            "edition_statement": self.edition_statement,
+            "edition": self.edition,
+            "imprint": self.imprint,
+            "illustration_notes": self.illustration_notes
+        }

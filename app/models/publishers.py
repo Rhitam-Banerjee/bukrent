@@ -37,22 +37,29 @@ class Publisher(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_publishers(age_group):
+    def get_publishers(age_group, start, end):
         if age_group:
             if age_group == 1:
-                publishers = Publisher.query.filter_by(age1=True).all()[:10]
+                publishers = Publisher.query.filter_by(age1=True).all()[start:end]
             elif age_group == 2:
-                publishers = Publisher.query.filter_by(age2=True).all()[:10]
+                publishers = Publisher.query.filter_by(age2=True).all()[start:end]
             elif age_group == 3:
-                publishers = Publisher.query.filter_by(age3=True).all()[:10]
+                publishers = Publisher.query.filter_by(age3=True).all()[start:end]
             elif age_group == 4:
-                publishers = Publisher.query.filter_by(age4=True).all()[:10]
+                publishers = Publisher.query.filter_by(age4=True).all()[start:end]
             elif age_group == 5:
-                publishers = Publisher.query.filter_by(age5=True).all()[:10]
+                publishers = Publisher.query.filter_by(age5=True).all()[start:end]
             elif age_group == 6:
-                publishers = Publisher.query.filter_by(age6=True).all()[:10]
+                publishers = Publisher.query.filter_by(age6=True).all()[start:end]
         else:
-            publishers = Publisher.query.filter_by(display=True).all()[:10]
+            publishers = Publisher.query.filter(or_(
+                Publisher.age1==True,
+                Publisher.age2==True,
+                Publisher.age3==True,
+                Publisher.age4==True,
+                Publisher.age5==True,
+                Publisher.age6==True
+            )).all()[start:end]
         
         final_publishers = []
         for publisher in publishers:
