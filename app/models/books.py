@@ -190,7 +190,7 @@ class Book(db.Model):
 
     @staticmethod
     def get_publisher_books(guid, start, end):
-        from app.models.publisher import Publisher
+        from app.models.publishers import Publisher
 
         books = Publisher.query.filter_by(guid=guid).first().books[start:end]
         final_books = []
