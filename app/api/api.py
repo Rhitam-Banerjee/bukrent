@@ -1467,6 +1467,23 @@ def get_type_books():
             "status": "error"
         }), 400
 
+@api.route("/get-genres", methods=["POST"])
+def get_genres():
+    age_group = request.json.get("age_group")
+    return jsonify({
+        "data": Category.get_genres(age_group),
+        "status": "success"
+    }), 200
+
+@api.route("/get-genres-books", methods=["POST"])
+def get_genres_books():
+    guid = request.json.get("guid")
+    return jsonify({
+        "data": Book.get_genres_books(guid),
+        "name": Category.query.filter_by(guid=guid).first().name,
+        "status": "success"
+    }), 200
+
 @api.route("/get-similar-books", methods=["POST"])
 def get_similar_books():
     age_group = request.json.get("age_group")

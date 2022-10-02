@@ -225,6 +225,18 @@ class Book(db.Model):
         return final_books
 
     @staticmethod
+    def get_genres_books(guid):
+        from app.models.category import Category
+
+        books = Category.query.filter_by(guid=guid).first().books[:10]
+        final_books = []
+
+        for book in books:
+            final_books.append(book.to_json())
+
+        return final_books
+
+    @staticmethod
     def get_similar_books(age_group):
         if age_group != "None":
             detail_objs = Detail.query.filter_by(age_group=age_group).order_by(Detail.bestseller_rank.asc()).limit(10).all()

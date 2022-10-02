@@ -37,3 +37,26 @@ class Category(db.Model):
         category_obj = Category(**category_dict)
         db.session.add(category_obj)
         db.session.commit()
+
+    @staticmethod
+    def get_genres(age_group):
+        if age_group:
+            if age_group == 1:
+                genres = Category.query.filter_by(age1=True).all()
+            elif age_group == 2:
+                genres = Category.query.filter_by(age2=True).all()
+            elif age_group == 3:
+                genres = Category.query.filter_by(age3=True).all()
+            elif age_group == 4:
+                genres = Category.query.filter_by(age4=True).all()
+            elif age_group == 5:
+                genres = Category.query.filter_by(age5=True).all()
+            elif age_group == 6:
+                genres = Category.query.filter_by(age6=True).all()
+        else:
+            genres = Category.query.filter_by(display=True).all()
+        
+        return [{
+            "name": genre.name,
+            "guid": genre.guid
+        } for genre in genres]
