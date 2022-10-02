@@ -159,16 +159,23 @@ class Child(db.Model):
         if not all((child_json.get("name"), child_json.get("dob"), child_json.get("age_group"))):
             raise ValueError("All fields for all the kids are necessary.")
 
-        child_dict = dict(
-            guid = str(uuid.uuid4()),
-            name = child_json.get("name"),
-            dob = child_json.get("dob"),
-            age_group = child_json.get("age_group"),
-            user_id = user_id
-        )
-        child_obj = Child(**child_dict)
-        db.session.add(child_obj)
-        db.session.commit()
+        kid_exists = False
+        all_kids = Child.query.filter_by(user_id=user_id).all()
+        for kid in all_kids:
+            if child_json.get("name") == kid.name:
+                kid_exists = True
+        
+        if not kid_exists:
+            child_dict = dict(
+                guid = str(uuid.uuid4()),
+                name = child_json.get("name"),
+                dob = child_json.get("dob"),
+                age_group = child_json.get("age_group"),
+                user_id = user_id
+            )
+            child_obj = Child(**child_dict)
+            db.session.add(child_obj)
+            db.session.commit()
 
     def delete(self):
         if self.preferences:
@@ -193,20 +200,24 @@ class Address(db.Model):
         if not all((address_json.get("house_number"), address_json.get("building"), address_json.get("area"), address_json.get("pin_code"))):
             raise ValueError("House Number, Building, Area and Pin Code are required!")
 
-        address_dict = dict(
-            guid = str(uuid.uuid4()),
-            house_number = address_json.get("house_number"),
-            building = address_json.get("building"),
-            area = address_json.get("area"),
-            pincode = address_json.get("pin_code"),
-            landmark = address_json.get("landmark") or "",
-            user_id = user_id
-        )
-        address_obj = Address(**address_dict)
-        db.session.add(address_obj)
-        db.session.commit()
+        existing_address = Address.query.filter_by(user_id=user_id).first()
+        if not existing_address:
+            address_dict = dict(
+                guid = str(uuid.uuid4()),
+                house_number = address_json.get("house_number"),
+                building = address_json.get("building"),
+                area = address_json.get("area"),
+                pincode = address_json.get("pin_code"),
+                landmark = address_json.get("landmark") or "",
+                user_id = user_id
+            )
+            address_obj = Address(**address_dict)
+            db.session.add(address_obj)
+            db.session.commit()
 
-        return address_obj
+            return address_obj
+        else:
+            return existing_address
 
     def delete(self):
         db.session.delete(self)
