@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, render_template, redirect, session, url_for
+from flask import Blueprint, jsonify, request, render_template, redirect, session, url_for, make_response
 
 from app.models.author import Author
 from app.models.category import Category
@@ -13,12 +13,30 @@ from app.models.publishers import Publisher
 from app.models.search import Search
 from app import db
 
+from functools import wraps
+
 import os
 from twilio.rest import Client
+import jwt
+import datetime
 
 import razorpay
 
 api = Blueprint('api', __name__, url_prefix="/api")
+
+def token_required(f):
+   @wraps(f)
+   def decorator(*args, **kwargs):
+       access_token = request.cookies.get('access_token')
+       if not access_token:
+           return jsonify({'message': 'No access token'}), 401
+       try:
+           data = jwt.decode(access_token, os.environ.get('SECRET_KEY'), algorithms=["HS256"])
+           user = User.query.filter_by(id=data['id']).first()
+       except:
+           return jsonify({'message': 'Invalid access token'})
+       return f(user, *args, **kwargs)
+   return decorator
 
 @api.route("/submit-mobile", methods=["POST"])
 def submit_mobile():
@@ -65,14 +83,12 @@ def submit_mobile():
 
 @api.route("/login", methods=["POST"])
 def login():
-    mobile_number = session.get("mobile_number")
-    if not mobile_number:
-        mobile_number = request.json.get("mobile_number")
+    mobile_number = request.json.get('mobile_number')
     password = request.json.get("password")
 
-    if not all((password)):
+    if not all((mobile_number, password)):
         return jsonify({
-            "message": "Password not entered!",
+            "message": "Provide your credentials",
             "status": "error"
         }), 400
 
@@ -81,6 +97,14 @@ def login():
     if user:
         if user.password == password:
             session["current_user"] = user.guid
+            access_token = jwt.encode({'id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, os.environ.get('SECRET_KEY'), "HS256")
+            response = make_response(jsonify({
+                "redirect": url_for("views.select_plan"),
+                "status": "success",
+                "user": user.to_json(),
+            }), 200)
+            response.set_cookie('access_token', access_token)
+            return response
             if not user.plan_id:
                 return jsonify({
                     "redirect": url_for("views.select_plan"),
@@ -169,11 +193,7 @@ def resend_otp():
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
 
-    mobile_number = session.get("mobile_number")
-    if not mobile_number:
-        mobile_number = request.json.get("mobile_number")
-
-    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
+    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{session.get('mobile_number')}", channel="sms")
 
     return jsonify({
         "message": "OTP Sent!",
@@ -195,10 +215,7 @@ def confirm_mobile():
     client = Client(account_sid, auth_token)
 
     try:
-        mobile_number = session.get('mobile_number')
-        if not mobile_number:
-            mobile_number = request.json.get('mobile_number')
-        verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{mobile_number}", code=verification_code)
+        verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{session.get('mobile_number')}", code=verification_code)
         if verification_check.status == "approved":
             session["verified"] = True
             return jsonify({
@@ -206,8 +223,7 @@ def confirm_mobile():
             }), 201
         else:
             raise ValueError('Verification Failed! Try again.')
-    except Exception as e:
-        print(e)
+    except:
         return jsonify({
         "message": "Verification Failed! Try Again.",
         "status": "error"
@@ -242,15 +258,13 @@ def add_details():
 
 @api.route("/choose-plan", methods=["POST"])
 def choose_plan():
-    # if not session.get('verified'):
-    #     return jsonify({
-    #         "message": "Session expired",
-    #         "status": "error"
-    #     }), 401
+    if not session.get('verified'):
+        return jsonify({
+            "message": "Session expired",
+            "status": "error"
+        }), 401
     plan = request.json.get("plan")
     mobile_number = session.get('mobile_number')
-    if not mobile_number:
-        mobile_number = request.json.get('mobile_number')
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user:
         user = User.create('', '', mobile_number, '')
@@ -266,10 +280,8 @@ def choose_plan():
 @api.route("/change-plan", methods=["POST"])
 def change_plan():
     mobile_number = session.get('mobile_number')
-    if not mobile_number:
-        mobile_number = request.json.get('mobile_number')
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user:
+    if not user or not session.get('verified'):
         return jsonify({
             "message": "Session expired",
             "status": "error"
@@ -299,10 +311,8 @@ def choose_card():
 @api.route("/generate-subscription-id", methods=["POST"])
 def generate_subscription_id():
     mobile_number = session.get('mobile_number')
-    if not mobile_number:
-        mobile_number = request.json.get('mobile_number')
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user :
+    if not user or not session.get('verified'):
         return jsonify({
             "message": "Session expired",
             "status": "error"
@@ -337,10 +347,8 @@ def generate_subscription_id():
 @api.route("/generate-order-id", methods=["POST"])
 def generate_order_id():
     mobile_number = session.get('mobile_number')
-    if not mobile_number:
-        mobile_number = request.json.get('mobile_number')
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user:
+    if not user or not session.get('verified'):
         return jsonify({
             "message": "Session expired",
             "status": "error"
@@ -442,10 +450,8 @@ def subscription_successful():
     payment_id = request.json.get("payment_id")
 
     mobile_number = session.get('mobile_number')
-    if not mobile_number:
-        mobile_number = request.json.get('mobile_number')
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user:
+    if not user or not session.get('verified'):
         return jsonify({
             "message": "Session expired",
             "status": "error"
@@ -463,10 +469,8 @@ def payment_successful():
     order_id = request.json.get("order_id")
 
     mobile_number = session.get('mobile_number')
-    if not mobile_number:
-        mobile_number = request.json.get('mobile_number')
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user:
+    if not user or not session.get('verified'):
         return jsonify({
             "message": "Session expired",
             "status": "error"
@@ -539,7 +543,8 @@ def add_children():
         }), 400
 
 @api.route("/submit-preferences", methods=["POST"])
-def submit_preferences():
+@token_required
+def submit_preferences(user):
     try:
         guid = request.json.get("guid")
         preference_data = request.json.get("preference_data")
@@ -548,7 +553,6 @@ def submit_preferences():
                 "message": "Bad request. No child identified",
                 "status": "success"
             }), 400
-        print(preference_data)
         child = Child.query.filter_by(guid=guid).first()
         if child.preferences:
             child.preferences.update(preference_data)
@@ -566,7 +570,8 @@ def submit_preferences():
                 child.id
             )
 
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
         for child_obj in user.child:
             if not child_obj.preferences:
                 return jsonify({
@@ -583,10 +588,11 @@ def submit_preferences():
         }), 400
 
 @api.route('/get-user')
-def get_user():
+@token_required
+def get_user(user):
     try:
-        user_guid = session['current_user']
-        user = User.query.filter_by(guid=user_guid).first()
+        if not user:
+            user = User.query.filter_by(guid=session['current_user']).first()
         if not user:
             return jsonify({
                 "message": "No user session",
@@ -633,9 +639,11 @@ def get_user_guid():
         }), 400
 
 @api.route("/get-wishlists")
-def get_wishlists():
+@token_required
+def get_wishlists(user):
     try:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
         if not user:
             guid = request.args.get("guid")
             user = User.query.filter_by(guid=guid).first()
@@ -657,9 +665,11 @@ def get_wishlists():
         }), 400
 
 @api.route("/get-suggestions")
-def get_suggestions():
+@token_required
+def get_suggestions(user):
     try:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
         if not user:
             guid = request.args.get("guid")
             user = User.query.filter_by(guid=guid).first()
@@ -668,7 +678,6 @@ def get_suggestions():
                     "message": "User Not Found",
                     "status": "error"
                 }), 400
-
         return jsonify({
             "status": "success",
             "suggestions": user.get_suggestions()
@@ -681,9 +690,11 @@ def get_suggestions():
         }), 400
 
 @api.route("/get-dumps")
-def get_dumps():
+@token_required
+def get_dumps(user):
     try:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
         if not user:
             guid = request.args.get("guid")
             user = User.query.filter_by(guid=guid).first()
@@ -705,9 +716,11 @@ def get_dumps():
         }), 400
 
 @api.route('/get-previous-books')
-def get_previous_books():
+@token_required
+def get_previous_books(user):
     try:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
         return jsonify({
             "status": "success",
             "books": user.get_previous_books()
@@ -719,9 +732,11 @@ def get_previous_books():
         }), 400
 
 @api.route('/get-current-books')
-def get_current_books():
+@token_required
+def get_current_books(user):
     try:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
         if not user:
             return jsonify({
                 "status": "error",
@@ -739,9 +754,11 @@ def get_current_books():
         }), 400
 
 @api.route("/get-buckets")
-def get_buckets():
+@token_required
+def get_buckets(user):
     try:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
         if not user:
             guid = request.args.get("guid")
             user = User.query.filter_by(guid=guid).first()
@@ -787,11 +804,12 @@ def get_previous_bucket():
         }), 400
 
 @api.route("/add-to-wishlist", methods=["POST"])
-def add_to_wishlist():
+@token_required
+def add_to_wishlist(user):
     try:
         guid = request.json.get("guid")
-        user = User.query.filter_by(guid=session.get("current_user")).first()
-
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
         if not user:
             user_guid = request.json.get("user_guid")
             user = User.query.filter_by(guid=user_guid).first()
@@ -813,10 +831,12 @@ def add_to_wishlist():
         }), 400
 
 @api.route("/suggestion-to-wishlist", methods=["POST"])
-def suggestion_to_wishlist():
+@token_required
+def suggestion_to_wishlist(user):
     try:
         guid = request.json.get("guid")
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             user_guid = request.json.get("user_guid")
@@ -845,10 +865,12 @@ def suggestion_to_wishlist():
         }), 400
 
 @api.route("/suggestion-to-dump", methods=["POST"])
-def suggestion_to_dump():
+@token_required
+def suggestion_to_dump(user):
     try:
         guid = request.json.get("guid")
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             user_guid = request.json.get("user_guid")
@@ -876,10 +898,12 @@ def suggestion_to_dump():
         }), 400
 
 @api.route("/dump-action-read", methods=["POST"])
-def dump_action_read():
+@token_required
+def dump_action_read(user):
     try:
         guid = request.json.get("guid")
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             user_guid = request.json.get("user_guid")
@@ -907,10 +931,12 @@ def dump_action_read():
         }), 400
 
 @api.route("/dump-action-dislike", methods=["POST"])
-def dump_action_dislike():
+@token_required
+def dump_action_dislike(user):
     try:
         guid = request.json.get("guid")
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             user_guid = request.json.get("user_guid")
@@ -936,10 +962,12 @@ def dump_action_dislike():
         }), 400
 
 @api.route("/wishlist-next", methods=["POST"])
-def wishlist_next():
+@token_required
+def wishlist_next(user):
     try:
         guid = request.json.get("guid")
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             user_guid = request.json.get("user_guid")
@@ -965,10 +993,12 @@ def wishlist_next():
         }), 400
 
 @api.route("/wishlist-prev", methods=["POST"])
-def wishlist_prev():
+@token_required
+def wishlist_prev(user):
     try:
         guid = request.json.get("guid")
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             user_guid = request.json.get("user_guid")
@@ -994,10 +1024,12 @@ def wishlist_prev():
         }), 400
 
 @api.route("/wishlist-remove", methods=["POST"])
-def wishlist_remove():
+@token_required
+def wishlist_remove(user):
     try:
         guid = request.json.get("guid")
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             user_guid = request.json.get("user_guid")
@@ -1025,9 +1057,11 @@ def wishlist_remove():
         }), 400
 
 @api.route("/create-bucket-list")
-def create_bucket_list():
+@token_required
+def create_bucket_list(user):
     try:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
         if not user:
             return jsonify({
                 "message": "Unauthorized",
@@ -1046,10 +1080,12 @@ def create_bucket_list():
         }), 400
 
 @api.route("/bucket-remove", methods=["POST"])
-def bucket_remove():
+@token_required
+def bucket_remove(user):
     try:
         guid = request.json.get("guid")
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             user_guid = request.json.get("user_guid")
@@ -1071,10 +1107,12 @@ def bucket_remove():
         }), 400
 
 @api.route("/change-delivery-date", methods=["POST"])
-def change_delivery_date():
+@token_required
+def change_delivery_date(user):
     try:
         delivery_date = request.json.get("delivery_date")
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             user_guid = request.json.get("user_guid")
@@ -1096,9 +1134,11 @@ def change_delivery_date():
         }), 400
 
 @api.route("/confirm-order")
-def confirm_order():
+@token_required
+def confirm_order(user):
     try:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             return jsonify({
@@ -1117,10 +1157,12 @@ def confirm_order():
         }), 400
 
 @api.route("/retain-book", methods=["POST"])
-def retain_book():
+@token_required
+def retain_book(user):
     try:
         guid = request.json.get("guid")
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             user_guid = request.json.get("user_guid")
@@ -1142,10 +1184,12 @@ def retain_book():
         }), 400
 
 @api.route("/retain-current-book", methods=["POST"])
-def retain_current_book():
+@token_required
+def retain_current_book(user):
     try:
         guid = request.json.get("guid")
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             user_guid = request.json.get("user_guid")
@@ -1167,12 +1211,15 @@ def retain_current_book():
         }), 400
 
 @api.route("/logout", methods=["POST"])
-def logout():
-    session["current_user"] = None
-    return jsonify({
+@token_required
+def logout(user):
+    response = make_response(jsonify({
         "message": "Success!",
         "status": "success"
-    }), 201
+    }), 201)
+    session["current_user"] = None
+    response.set_cookie('access_token', '')
+    return response
 
 # @api.route("/cart-checkout", methods=["POST"])
 # def cart_checkout():
