@@ -66,7 +66,7 @@ def submit_mobile():
 @api.route("/login", methods=["POST"])
 def login():
     mobile_number = session.get("mobile_number")
-    if not mobile_number: 
+    if not mobile_number:
         mobile_number = request.json.get("mobile_number")
     password = request.json.get("password")
 
@@ -170,7 +170,7 @@ def resend_otp():
     client = Client(account_sid, auth_token)
 
     mobile_number = session.get("mobile_number")
-    if not mobile_number: 
+    if not mobile_number:
         mobile_number = request.json.get("mobile_number")
 
     verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
@@ -196,7 +196,7 @@ def confirm_mobile():
 
     try:
         mobile_number = session.get('mobile_number')
-        if not mobile_number: 
+        if not mobile_number:
             mobile_number = request.json.get('mobile_number')
         verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{mobile_number}", code=verification_code)
         if verification_check.status == "approved":
@@ -249,6 +249,8 @@ def choose_plan():
         }), 401
     plan = request.json.get("plan")
     mobile_number = session.get('mobile_number')
+    if not mobile_number:
+        mobile_number = request.json.get('mobile_number')
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user:
         user = User.create('', '', mobile_number, '')
@@ -264,6 +266,8 @@ def choose_plan():
 @api.route("/change-plan", methods=["POST"])
 def change_plan():
     mobile_number = session.get('mobile_number')
+    if not mobile_number:
+        mobile_number = request.json.get('mobile_number')
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user or not session.get('verified'):
         return jsonify({
@@ -295,6 +299,8 @@ def choose_card():
 @api.route("/generate-subscription-id", methods=["POST"])
 def generate_subscription_id():
     mobile_number = session.get('mobile_number')
+    if not mobile_number:
+        mobile_number = request.json.get('mobile_number')
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user or not session.get('verified'):
         return jsonify({
@@ -331,6 +337,8 @@ def generate_subscription_id():
 @api.route("/generate-order-id", methods=["POST"])
 def generate_order_id():
     mobile_number = session.get('mobile_number')
+    if not mobile_number:
+        mobile_number = request.json.get('mobile_number')
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user or not session.get('verified'):
         return jsonify({
@@ -434,6 +442,8 @@ def subscription_successful():
     payment_id = request.json.get("payment_id")
 
     mobile_number = session.get('mobile_number')
+    if not mobile_number:
+        mobile_number = request.json.get('mobile_number')
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user or not session.get('verified'):
         return jsonify({
@@ -453,6 +463,8 @@ def payment_successful():
     order_id = request.json.get("order_id")
 
     mobile_number = session.get('mobile_number')
+    if not mobile_number:
+        mobile_number = request.json.get('mobile_number')
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user or not session.get('verified'):
         return jsonify({
