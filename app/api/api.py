@@ -11,6 +11,7 @@ from app.models.buckets import *
 from app.models.format import Format
 from app.models.publishers import Publisher
 from app.models.search import Search
+from app import db
 
 import os
 from twilio.rest import Client
@@ -40,20 +41,23 @@ def submit_mobile():
     if user and user.password:
         return jsonify({
             "redirect": url_for('views.login'),
-            "status": "success"
+            "status": "success",
+            "user": user.to_json(),
         }), 200
-    elif user:
+    elif user and user.payment_id:
+        return jsonify({
+            "redirect": url_for('views.confirm_mobile'),
+            "status": "success",
+            "message": "Already signed up. Our team will contact you through Whatsapp soon.",
+            "user": user.to_json(),
+        }), 200
+    else:
         account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
         auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
         client = Client(account_sid, auth_token)
 
         verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
 
-        return jsonify({
-            "redirect": url_for('views.confirm_mobile'),
-            "status": "success"
-        }), 200
-    else:
         return jsonify({
             "redirect": url_for('views.signup'),
             "status": "success"
@@ -78,26 +82,31 @@ def login():
             if not user.plan_id:
                 return jsonify({
                     "redirect": url_for("views.select_plan"),
-                    "status": "success"
+                    "status": "success",
+                    "user": user.to_json(),
                 }), 200
             if user.plan_id and not user.is_subscribed:
                 return jsonify({
                     "redirect": url_for('views.selected_plan'),
-                    "status": "success"
+                    "status": "success",
+                    "user": user.to_json(),
                 }), 200
             if len(user.address) == 0:
                 return jsonify({
                     "redirect": url_for('views.add_address'),
-                    "status": "success"
+                    "status": "success",
+                    "user": user.to_json(),
                 }), 200
             if len(user.child) == 0:
                 return jsonify({
                     "redirect": url_for('views.add_children'),
-                    "status": "success"
+                    "status": "success",
+                    "user": user.to_json(),
                 }), 200
             return jsonify({
                 "redirect": url_for('views.preferences'),
-                "status": "success"
+                "status": "success",
+                "user": user.to_json(),
             }), 200
         else:
             return jsonify({
@@ -114,15 +123,30 @@ def login():
 def signup():
     first_name = request.json.get("first_name")
     last_name = request.json.get("last_name")
+    password = request.json.get("password")
+    confirm_password = request.json.get("confirm_password")
 
-    if not all((first_name)):
+    if not all((first_name, password, confirm_password)):
         return jsonify({
-            "message": "First Name is mandatory!",
+            "message": "Fill all the details!",
+            "status": "error"
+        }), 400
+
+    if len(password) < 6:
+        return jsonify({
+            "message": "Password should be atleast 6 characters long",
+            "status": "error"
+        }), 400
+
+    if password != confirm_password:
+        return jsonify({
+            "message": "Password and Confirm Password don't match",
             "status": "error"
         }), 400
 
     session["first_name"] = first_name
     session["last_name"] = last_name
+    session["password"] = password
 
     mobile_number = session.get("mobile_number")
 
@@ -164,28 +188,19 @@ def confirm_mobile():
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
 
-    verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{session.get('mobile_number')}", code=verification_code)
-
-    if verification_check.status == "approved":
-        user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
-        if not user:
-            User.create(session.get("first_name"), session.get("last_name"), session.get("mobile_number"))
-            user = User.query.filter_by(mobile_number=session.get("mobile_number")).first()
-
-            session["first_name"] = None
-            session["last_name"] = None
-            session["mobile_number"] = None
-
-        session["current_user"] = user.guid
-
+    try:
+        verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{session.get('mobile_number')}", code=verification_code)
+        if verification_check.status == "approved":
+            session["verified"] = True
+            return jsonify({
+                "status": "success",
+            }), 201
+        else:
+            raise ValueError('Verification Failed! Try again.')
+    except:
         return jsonify({
-            "redirect": url_for('views.add_details'),
-            "status": "success"
-        }), 201
-    else:
-        return jsonify({
-            "message": "Verification Failed! Try Again.",
-            "status": "error"
+        "message": "Verification Failed! Try Again.",
+        "status": "error"
         }), 400
 
 @api.route("/add-details", methods=["POST"])
@@ -199,7 +214,7 @@ def add_details():
             "message": "Password should be atleast 6 characters long",
             "status": "error"
         }), 400
-    
+
     if password != confirm_password:
         return jsonify({
             "message": "Password and Confirm Password don't match",
@@ -217,10 +232,18 @@ def add_details():
 
 @api.route("/choose-plan", methods=["POST"])
 def choose_plan():
+    if not session.get('verified'):
+        return jsonify({
+            "message": "Session expired",
+            "status": "error"
+        }), 401
     plan = request.json.get("plan")
-
-    user = User.query.filter_by(guid=session.get("current_user")).first()
-
+    mobile_number = session.get('mobile_number')
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+    if not user:
+        user = User.create('', '', mobile_number, '')
+        db.session.add(user)
+        db.session.commit()
     user.update_plan(plan)
 
     return jsonify({
@@ -230,7 +253,13 @@ def choose_plan():
 
 @api.route("/change-plan", methods=["POST"])
 def change_plan():
-    user = User.query.filter_by(guid=session.get("current_user")).first()
+    mobile_number = session.get('mobile_number')
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+    if not user or not session.get('verified'):
+        return jsonify({
+            "message": "Session expired",
+            "status": "error"
+        }), 401
 
     user.remove_plan()
 
@@ -255,7 +284,14 @@ def choose_card():
 
 @api.route("/generate-subscription-id", methods=["POST"])
 def generate_subscription_id():
-    user = User.query.filter_by(guid=session.get("current_user")).first()
+    mobile_number = session.get('mobile_number')
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+    if not user or not session.get('verified'):
+        return jsonify({
+            "message": "Session expired",
+            "status": "error"
+        }), 401
+
     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
     if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
@@ -267,16 +303,7 @@ def generate_subscription_id():
 
     subscription = client.subscription.create({
         'plan_id': user.plan_id,
-        'total_count': 36,
-        'addons': [
-            {
-                "item": {
-                    "name": "Security deposit",
-                    "amount": 50000,
-                    "currency": "INR"
-                }
-            }
-        ]
+        'total_count': 36
     })
 
     subscription_id = subscription.get("id")
@@ -293,21 +320,39 @@ def generate_subscription_id():
 
 @api.route("/generate-order-id", methods=["POST"])
 def generate_order_id():
-    user = User.query.filter_by(guid=session.get("current_user")).first()
+    mobile_number = session.get('mobile_number')
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+    if not user or not session.get('verified'):
+        return jsonify({
+            "message": "Session expired",
+            "status": "error"
+        }), 401
+
+    card = request.json.get('card')
+    print(card)
+    if card not in [3, 12]:
+        return jsonify({
+            "message": "Invalid card",
+            "status": "error"
+        }), 400
+
     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
     if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
-        amount = 137900
+        amount = 399 * card
         plan_desc = "Get 1 Book Per Week"
     elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"):
-        amount = 184700
+        amount = 549 * card
         plan_desc = "Get 2 Books Per Week"
     elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
-        amount = 250700
+        amount = 749 * card
         plan_desc = "Get 4 Books Per Week"
 
+    if card == 12:
+        amount = int(amount - 0.2 * amount)
+
     order = client.order.create({
-        "amount": amount,
+        "amount": amount * 100,
         "currency": "INR"
     })
 
@@ -337,7 +382,7 @@ def verify_subscription():
         #     'razorpay_payment_id': payment_id,
         #     'razorpay_signature': signature
         # })
-        
+
         return jsonify({
             "message": "Payment Successful!",
             "status": "success"
@@ -378,8 +423,14 @@ def subscription_successful():
     subscription_id = request.json.get("subscription_id")
     payment_id = request.json.get("payment_id")
 
-    user = User.query.filter_by(guid=session.get("current_user")).first()
-    
+    mobile_number = session.get('mobile_number')
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+    if not user or not session.get('verified'):
+        return jsonify({
+            "message": "Session expired",
+            "status": "error"
+        }), 401
+
     user.update_subscription_details(subscription_id, payment_id)
 
     return jsonify({
@@ -391,8 +442,14 @@ def payment_successful():
     payment_id = request.json.get("payment_id")
     order_id = request.json.get("order_id")
 
-    user = User.query.filter_by(guid=session.get("current_user")).first()
-    
+    mobile_number = session.get('mobile_number')
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+    if not user or not session.get('verified'):
+        return jsonify({
+            "message": "Session expired",
+            "status": "error"
+        }), 401
+
     user.update_payment_details(order_id, payment_id)
 
     return jsonify({
@@ -469,7 +526,7 @@ def submit_preferences():
                 "message": "Bad request. No child identified",
                 "status": "success"
             }), 400
-        
+        print(preference_data)
         child = Child.query.filter_by(guid=guid).first()
         if child.preferences:
             child.preferences.update(preference_data)
@@ -479,6 +536,7 @@ def submit_preferences():
                 preference_data.get("last_book_read2"),
                 preference_data.get("last_book_read3"),
                 preference_data.get("books_read_per_week"),
+                preference_data.get('reading_level'),
                 preference_data.get("categories"),
                 preference_data.get("formats"),
                 preference_data.get("authors"),
@@ -496,6 +554,27 @@ def submit_preferences():
             "redirect": url_for('views.library')
         }), 201
     except Exception as e:
+        print(e)
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route('/get-user')
+def get_user():
+    try:
+        user_guid = session['current_user']
+        user = User.query.filter_by(guid=user_guid).first()
+        if not user:
+            return jsonify({
+                "message": "No user session",
+                "status": "error"
+            }), 400
+        return jsonify({
+            "user": user.to_json(),
+            "status": "success"
+        }), 200
+    except Exception as e:
         return jsonify({
             "message": str(e),
             "status": "error"
@@ -505,13 +584,13 @@ def submit_preferences():
 def get_user_guid():
     try:
         mobile_number = request.args.get("mobile")
-        
+
         if not mobile_number:
             return jsonify({
                 "message": "Mobile number is required!",
                 "status": "error"
             }), 400
-        
+
         user = User.query.filter_by(mobile_number=mobile_number).first()
 
         if not user:
@@ -603,6 +682,40 @@ def get_dumps():
             "status": "error"
         }), 400
 
+@api.route('/get-previous-books')
+def get_previous_books():
+    try:
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        return jsonify({
+            "status": "success",
+            "books": user.get_previous_books()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route('/get-current-books')
+def get_current_books():
+    try:
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+        if not user:
+            return jsonify({
+                "status": "error",
+                "message": "User not found"
+            }), 200
+        return jsonify({
+            "status": "success",
+            "books": user.get_current_books()
+        }), 200
+    except Exception as e:
+        print(e)
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
 @api.route("/get-buckets")
 def get_buckets():
     try:
@@ -642,7 +755,7 @@ def get_previous_bucket():
 
         return jsonify({
             "status": "success",
-            "wishlists": user.get_previous_books()
+            "wishlists": user.get_previous_bucket()
         }), 200
 
     except Exception as e:
@@ -892,18 +1005,10 @@ def wishlist_remove():
 @api.route("/create-bucket-list")
 def create_bucket_list():
     try:
-        mobile_number = request.args.get("mobile")
-        if not mobile_number:
-            return jsonify({
-                "message": "Mobile number is required!",
-                "status": "error"
-            }), 400
-        
-        user = User.query.filter_by(mobile_number=mobile_number).first()
-
+        user = User.query.filter_by(guid=session.get("current_user")).first()
         if not user:
             return jsonify({
-                "message": "No user with the given mobile number found.",
+                "message": "Unauthorized",
                 "status": "error"
             }), 400
 
@@ -971,21 +1076,14 @@ def change_delivery_date():
 @api.route("/confirm-order")
 def confirm_order():
     try:
-        mobile_number = request.args.get("mobile")
-        if not mobile_number:
-            return jsonify({
-                "message": "Mobile number is required!",
-                "status": "error"
-            }), 400
-        
-        user = User.query.filter_by(mobile_number=mobile_number).first()
+        user = User.query.filter_by(guid=session.get("current_user")).first()
 
         if not user:
             return jsonify({
-                "message": "No user with the given mobile number found.",
+                "message": "No user found.",
                 "status": "error"
             }), 400
-            
+
         user.confirm_order()
         return jsonify({
             "status": "success"
@@ -1012,6 +1110,31 @@ def retain_book():
                 }), 400
 
         user.retain_book(guid)
+        return jsonify({
+            "status": "success"
+        }), 201
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api.route("/retain-current-book", methods=["POST"])
+def retain_current_book():
+    try:
+        guid = request.json.get("guid")
+        user = User.query.filter_by(guid=session.get("current_user")).first()
+
+        if not user:
+            user_guid = request.json.get("user_guid")
+            user = User.query.filter_by(guid=user_guid).first()
+            if not user:
+                return jsonify({
+                    "message": "User Not Found",
+                    "status": "error"
+                }), 400
+
+        user.retain_current_book(guid)
         return jsonify({
             "status": "success"
         }), 201
@@ -1250,7 +1373,7 @@ def logout():
 #             delivery_address = billing_address
 #         else:
 #             delivery_address = Address.create(request.json.get("delivery_address"), user.id)
-        
+
 #         is_gift = request.json.get("is_gift")
 #         gift_message = request.json.get("gift_message")
 #         books = request.json.get("books")
@@ -1467,9 +1590,9 @@ def get_type_books():
             "status": "error"
         }), 400
 
-@api.route("/get-genres", methods=["POST"])
+@api.route("/get-genres")
 def get_genres():
-    age_group = request.json.get("age_group")
+    age_group = request.args.get("age")
     return jsonify({
         "data": Category.get_genres(age_group),
         "status": "success"
@@ -1561,9 +1684,9 @@ def get_book_details():
                 "message": "Book GUID is required!",
                 "status": "error"
             }), 400
-        
+
         book = Book.query.filter_by(guid=guid).first()
-        
+
         if not book:
             return jsonify({
                 "message": "No book with given GUID found!",
@@ -1593,7 +1716,7 @@ def launch():
             "message": "All fields are mandatory!",
             "status": "error"
         }), 400
-    
+
     Launch.create(parent_name, mobile_number, child_name, age_group)
 
     return jsonify({

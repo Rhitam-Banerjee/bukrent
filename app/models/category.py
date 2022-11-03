@@ -40,6 +40,8 @@ class Category(db.Model):
 
     @staticmethod
     def get_genres(age_group):
+        genres = []
+        age_group = int(age_group)
         if age_group:
             if age_group == 1:
                 genres = Category.query.filter_by(age1=True).all()
@@ -55,7 +57,7 @@ class Category(db.Model):
                 genres = Category.query.filter_by(age6=True).all()
         else:
             genres = Category.query.filter_by(display=True).all()
-        
+
         return [{
             "name": genre.name,
             "guid": genre.guid
