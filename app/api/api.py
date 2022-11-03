@@ -193,7 +193,13 @@ def resend_otp():
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
 
-    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{session.get('mobile_number')}", channel="sms")
+    mobile_number = request.json.get('mobile_number')
+    if not mobile_number:
+        mobile_number = session.get('mobile_number')
+        if not mobile_number:
+            return jsonify({"message": "No mobile number", "status": "error"}), 400
+
+    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
 
     return jsonify({
         "message": "OTP Sent!",
@@ -214,8 +220,14 @@ def confirm_mobile():
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
 
+    mobile_number = request.json.get('mobile_number')
+    if not mobile_number:
+        mobile_number = session.get('mobile_number')
+        if not mobile_number:
+            return jsonify({"message": "No mobile number", "status": "error"}), 400
+
     try:
-        verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{session.get('mobile_number')}", code=verification_code)
+        verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{mobile_number}", code=verification_code)
         if verification_check.status == "approved":
             session["verified"] = True
             return jsonify({
@@ -264,7 +276,11 @@ def choose_plan():
             "status": "error"
         }), 401
     plan = request.json.get("plan")
-    mobile_number = session.get('mobile_number')
+    mobile_number = request.json.get('mobile_number')
+    if not mobile_number:
+        mobile_number = session.get('mobile_number')
+        if not mobile_number:
+            return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user:
         user = User.create('', '', mobile_number, '')
@@ -279,7 +295,11 @@ def choose_plan():
 
 @api.route("/change-plan", methods=["POST"])
 def change_plan():
-    mobile_number = session.get('mobile_number')
+    mobile_number = request.json.get('mobile_number')
+    if not mobile_number:
+        mobile_number = session.get('mobile_number')
+        if not mobile_number:
+            return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user or not session.get('verified'):
         return jsonify({
@@ -310,7 +330,11 @@ def choose_card():
 
 @api.route("/generate-subscription-id", methods=["POST"])
 def generate_subscription_id():
-    mobile_number = session.get('mobile_number')
+    mobile_number = request.json.get('mobile_number')
+    if not mobile_number:
+        mobile_number = session.get('mobile_number')
+        if not mobile_number:
+            return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user or not session.get('verified'):
         return jsonify({
@@ -346,7 +370,11 @@ def generate_subscription_id():
 
 @api.route("/generate-order-id", methods=["POST"])
 def generate_order_id():
-    mobile_number = session.get('mobile_number')
+    mobile_number = request.json.get('mobile_number')
+    if not mobile_number:
+        mobile_number = session.get('mobile_number')
+        if not mobile_number:
+            return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user or not session.get('verified'):
         return jsonify({
@@ -449,7 +477,11 @@ def subscription_successful():
     subscription_id = request.json.get("subscription_id")
     payment_id = request.json.get("payment_id")
 
-    mobile_number = session.get('mobile_number')
+    mobile_number = request.json.get('mobile_number')
+    if not mobile_number:
+        mobile_number = session.get('mobile_number')
+        if not mobile_number:
+            return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user or not session.get('verified'):
         return jsonify({
@@ -468,7 +500,11 @@ def payment_successful():
     payment_id = request.json.get("payment_id")
     order_id = request.json.get("order_id")
 
-    mobile_number = session.get('mobile_number')
+    mobile_number = request.json.get('mobile_number')
+    if not mobile_number:
+        mobile_number = session.get('mobile_number')
+        if not mobile_number:
+            return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
     if not user or not session.get('verified'):
         return jsonify({
