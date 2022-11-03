@@ -15,7 +15,7 @@ def create_app(script_info=None):
     db.init_app(app)
     migrate.init_app(app, db)
 
-    CORS(app, supports_credentials=True)
+    CORS(app, supports_credentials=True, resources=r'/api/*', origins=['http://localhost:3000', 'https://bukrent-browse-library.vercel.app'])
 
     from app.api.api import api
     app.register_blueprint(api)

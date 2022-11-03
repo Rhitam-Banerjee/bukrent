@@ -66,6 +66,8 @@ def submit_mobile():
 @api.route("/login", methods=["POST"])
 def login():
     mobile_number = session.get("mobile_number")
+    if not mobile_number: 
+        mobile_number = request.json.get("mobile_number")
     password = request.json.get("password")
 
     if not all((password)):
@@ -167,7 +169,11 @@ def resend_otp():
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
 
-    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{session.get('mobile_number')}", channel="sms")
+    mobile_number = session.get("mobile_number")
+    if not mobile_number: 
+        mobile_number = request.json.get("mobile_number")
+
+    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
 
     return jsonify({
         "message": "OTP Sent!",
@@ -189,7 +195,10 @@ def confirm_mobile():
     client = Client(account_sid, auth_token)
 
     try:
-        verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{session.get('mobile_number')}", code=verification_code)
+        mobile_number = session.get('mobile_number')
+        if not mobile_number: 
+            mobile_number = request.json.get('mobile_number')
+        verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{mobile_number}", code=verification_code)
         if verification_check.status == "approved":
             session["verified"] = True
             return jsonify({
@@ -197,7 +206,8 @@ def confirm_mobile():
             }), 201
         else:
             raise ValueError('Verification Failed! Try again.')
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({
         "message": "Verification Failed! Try Again.",
         "status": "error"
