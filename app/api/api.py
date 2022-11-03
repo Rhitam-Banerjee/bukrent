@@ -270,11 +270,6 @@ def add_details():
 
 @api.route("/choose-plan", methods=["POST"])
 def choose_plan():
-    if not session.get('verified'):
-        return jsonify({
-            "message": "Session expired",
-            "status": "error"
-        }), 401
     plan = request.json.get("plan")
     mobile_number = request.json.get('mobile_number')
     if not mobile_number:
@@ -301,7 +296,7 @@ def change_plan():
         if not mobile_number:
             return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user or not session.get('verified'):
+    if not user:
         return jsonify({
             "message": "Session expired",
             "status": "error"
@@ -336,7 +331,7 @@ def generate_subscription_id():
         if not mobile_number:
             return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user or not session.get('verified'):
+    if not user:
         return jsonify({
             "message": "Session expired",
             "status": "error"
@@ -376,7 +371,7 @@ def generate_order_id():
         if not mobile_number:
             return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user or not session.get('verified'):
+    if not user:
         return jsonify({
             "message": "Session expired",
             "status": "error"
@@ -483,7 +478,7 @@ def subscription_successful():
         if not mobile_number:
             return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user or not session.get('verified'):
+    if not user:
         return jsonify({
             "message": "Session expired",
             "status": "error"
@@ -506,7 +501,7 @@ def payment_successful():
         if not mobile_number:
             return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user or not session.get('verified'):
+    if not user:
         return jsonify({
             "message": "Session expired",
             "status": "error"
