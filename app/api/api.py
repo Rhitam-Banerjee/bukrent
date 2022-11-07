@@ -31,6 +31,7 @@ def token_required(f):
        if not access_token:
            return jsonify({'message': 'No access token'}), 401
        try:
+           print(os.environ.get('SECRET_KEY'))
            data = jwt.decode(access_token, os.environ.get('SECRET_KEY'), algorithms=["HS256"])
            user = User.query.filter_by(id=data['id']).first()
        except:
@@ -97,13 +98,14 @@ def login():
     if user:
         if user.password == password:
             session["current_user"] = user.guid
+            print(os.environ.get('SECRET_KEY'))
             access_token = jwt.encode({'id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, os.environ.get('SECRET_KEY'), "HS256")
             response = make_response(jsonify({
                 "redirect": url_for("views.select_plan"),
                 "status": "success",
                 "user": user.to_json(),
             }), 200)
-            response.set_cookie('access_token', access_token)
+            response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='None')
             return response
             if not user.plan_id:
                 return jsonify({
@@ -1249,7 +1251,7 @@ def logout(user):
         "status": "success"
     }), 201)
     session["current_user"] = None
-    response.set_cookie('access_token', '')
+    response.set_cookie('access_token', '', secure=True, httponly=True, samesite='None')
     return response
 
 # @api.route("/cart-checkout", methods=["POST"])

@@ -128,7 +128,7 @@ def login():
                     "status": "success",
                     "user": user.to_json(),
                 }), 200)
-            response.set_cookie('access_token', access_token)
+            response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='None')
             return response
         else:
             return jsonify({
@@ -1060,7 +1060,7 @@ def logout(user):
         "message": "Success!",
         "status": "success"
     }), 201)
-    response.set_cookie('access_token', '')
+    response.set_cookie('access_token', '', secure=True, httponly=True, samesite='None')
     return response
 
 @api_v2.route("/get-most-borrowed")
