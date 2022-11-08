@@ -233,7 +233,7 @@ class Address(db.Model):
 
     @staticmethod
     def create(address_json, user_id):
-        if not all((address_json.get("house_number"), address_json.get("building"), address_json.get("area"), address_json.get("pin_code"))):
+        if not all((address_json.get("area"), address_json.get("pin_code"))):
             raise ValueError("House Number, Building, Area and Pin Code are required!")
 
         existing_address = Address.query.filter_by(user_id=user_id).first()
@@ -625,6 +625,7 @@ class User(db.Model):
 
     def create_bucket_list(self):
         try:
+            print(self.books_per_week)
             total_books = self.books_per_week
 
             wishlists = Wishlist.query.filter_by(user_id=self.id).order_by(Wishlist.priority_order.asc()).all()

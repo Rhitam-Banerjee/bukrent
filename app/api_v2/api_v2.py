@@ -61,13 +61,14 @@ def submit_mobile():
             "status": "success",
             "user": user.to_json(),
         }), 200
-    elif user:
-        account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-        auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-        client = Client(account_sid, auth_token)
 
-        verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+    client = Client(account_sid, auth_token)
 
+    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
+
+    if user:
         return jsonify({
             "redirect": url_for('views.confirm_mobile'),
             "status": "success",
@@ -89,8 +90,6 @@ def login():
             "message": "Password not entered!",
             "status": "error"
         }), 400
-
-    print(mobile_number, password)
 
     user = User.query.filter_by(mobile_number=mobile_number).first()
 
@@ -128,7 +127,7 @@ def login():
                     "status": "success",
                     "user": user.to_json(),
                 }), 200)
-            response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='None')
+            response.set_cookie('access_token', access_token)
             return response
         else:
             return jsonify({
@@ -143,40 +142,76 @@ def login():
 
 @api_v2.route("/signup", methods=["POST"])
 def signup():
-    first_name = request.json.get("first_name")
-    last_name = request.json.get("last_name")
-    password = request.json.get("password")
-    confirm_password = request.json.get("confirm_password")
     mobile_number = request.json.get('mobile_number')
+    name = request.json.get('name')
+    children = request.json.get("children")
+    address = request.json.get('address')
+    pin_code = request.json.get('pin_code')
+    contact_number = request.json.get('contact_number')
 
-    if not all((first_name, password, confirm_password, mobile_number)):
+    if not all((name, address, pin_code, contact_number, mobile_number, children)):
         return jsonify({
             "message": "Fill all the details!",
             "status": "error"
         }), 400
-
-    if len(password) < 6:
+    if not len(children):
         return jsonify({
-            "message": "Password should be atleast 6 characters long",
+            "message": "Add atleast 1 child",
             "status": "error"
         }), 400
+    for child in children:
+        if not all((child.get("name"), child.get("dob"), child.get("age_group"))):
+            return jsonify({
+                "message": "All fields for all the kids are necessary.",
+                "status": "error"
+            }), 400
 
-    if password != confirm_password:
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+    if not user:
         return jsonify({
-            "message": "Password and Confirm Password don't match",
+            "message": "Invalid mobile number",
             "status": "error"
         }), 400
+    elif not user.payment_id:
+        return jsonify({
+            "message": "Payment not done",
+            "status": "error"
+        }), 401
 
-    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-    client = Client(account_sid, auth_token)
+    try:
+        user.first_name = name.split()[0]
+        if len(name.split()) > 1:
+            user.last_name = ''.join(name.split()[1:])
+        user.password = '12345'
+        user.contact_number = contact_number
 
-    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
+        Address.create({"area": address, "pin_code": pin_code}, user.id)
 
-    return jsonify({
-        "redirect": url_for('views.confirm_mobile'),
-        "status": "success"
-    }), 201
+        for child in children:
+            user.add_child(child)
+        age_groups = []
+        for child in children:
+            age_groups.append(child.get("age_group"))
+        age_groups = list(set(age_groups))
+        user.add_age_groups(age_groups)
+
+        db.session.commit()
+
+        access_token = jwt.encode({'id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, os.environ.get('SECRET_KEY'), "HS256")
+
+        response = make_response(jsonify({
+            "redirect": url_for('views.confirm_mobile'),
+            "status": "success"
+        }), 201)
+        response.set_cookie('access_token', access_token)
+
+        return response
+    except Exception as e:
+        print(e)
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
 
 @api_v2.route("/resend-otp", methods=["POST"])
 def resend_otp():
@@ -185,10 +220,14 @@ def resend_otp():
     client = Client(account_sid, auth_token)
 
     mobile_number = request.json.get('mobile_number')
-    if not mobile_number:
-        return jsonify({"message": "No mobile number" }), 400
 
-    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
+    try:
+        verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
+    except:
+        return jsonify({
+            "message": "Invalid mobile number",
+            "status": "error"
+        }), 400
 
     return jsonify({
         "message": "OTP Sent!",
@@ -199,11 +238,8 @@ def resend_otp():
 def confirm_mobile():
     mobile_number = request.json.get('mobile_number')
     verification_code = request.json.get("otp")
-    last_name = request.json.get('last_name')
-    first_name = request.json.get('first_name')
-    password = request.json.get('password')
 
-    if not all((mobile_number, first_name, password)):
+    if not all((mobile_number)):
         return jsonify({
             "message": "Incomplete credentials",
             "status": "error"
@@ -224,7 +260,7 @@ def confirm_mobile():
     if verification_check.status == "approved":
         user = User.query.filter_by(mobile_number=mobile_number).first()
         if not user:
-            User.create(first_name, last_name, mobile_number, password)
+            User.create('', '', mobile_number, '')
             user = User.query.filter_by(mobile_number=mobile_number).first()
 
         return jsonify({
@@ -237,37 +273,6 @@ def confirm_mobile():
             "message": "Verification Failed! Try Again.",
             "status": "error"
         }), 400
-
-@api_v2.route("/add-details", methods=["POST"])
-def add_details():
-    email = request.json.get("email")
-    password = request.json.get("password")
-    confirm_password = request.json.get("confirm_password")
-    mobile_number = request.json.get('mobile_number')
-
-    if not mobile_number:
-        return jsonify({"message": "No mobile number" }), 400
-
-    if len(password) < 6:
-        return jsonify({
-            "message": "Password should be atleast 6 characters long",
-            "status": "error"
-        }), 400
-
-    if password != confirm_password:
-        return jsonify({
-            "message": "Password and Confirm Password don't match",
-            "status": "error"
-        }), 400
-
-    user = User.query.filter_by(mobile_number=mobile_number).first()
-
-    user.update_details(email, password)
-
-    return jsonify({
-        "redirect": url_for('views.select_plan'),
-        "status": "success"
-    }), 201
 
 @api_v2.route("/choose-plan", methods=["POST"])
 def choose_plan():
@@ -301,20 +306,6 @@ def change_plan():
         "redirect": url_for('views.select_plan'),
         "status": "success"
     }), 201
-
-@api_v2.route("/choose-card", methods=["POST"])
-def choose_card():
-    card = request.json.get("card")
-    if card == 1:
-        return jsonify({
-            "redirect": url_for('views.confirm_subscription'),
-            "status": "success"
-        }), 200
-    else:
-        return jsonify({
-            "redirect": url_for('views.confirm_payment'),
-            "status": "success"
-        }), 200
 
 @api_v2.route("/generate-subscription-id", methods=["POST"])
 def generate_subscription_id():
@@ -366,17 +357,17 @@ def generate_order_id():
     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
     if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
-        amount = 399 * card
+        amount = 349 * card
         plan_desc = "Get 1 Book Per Week"
     elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"):
-        amount = 549 * card
+        amount = 479 * card
         plan_desc = "Get 2 Books Per Week"
     elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
-        amount = 749 * card
+        amount = 599 * card
         plan_desc = "Get 4 Books Per Week"
 
     if card == 12:
-        amount = int(amount - 0.2 * amount)
+        amount = int(amount - 0.1 * amount)
 
     order = client.order.create({
         "amount": amount * 100,
@@ -477,67 +468,23 @@ def payment_successful():
         "status": "success"
     }), 201
 
-@api_v2.route("/add-address", methods=["POST"])
-def add_address():
-    mobile_number = request.json.get('mobile_number')
-    if not mobile_number:
-        return jsonify({"message": "No mobile number" }), 400
+@api_v2.route("/change-password", methods=["POST"])
+@token_required
+def change_password(user):
     try:
-        address_json = dict(
-            house_number = request.json.get("house_number"),
-            building = request.json.get("building"),
-            area = request.json.get("area"),
-            landmark = request.json.get("landmark"),
-            pin_code = request.json.get("pin_code")
-        )
-
-        user = User.query.filter_by(mobile_number=mobile_number).first()
-
-        Address.create(address_json, user.id)
-
+        password = request.json.get("password")
+        if not password or len(password) < 5:
+            return jsonify({
+                "message": "Password should be atleast of 5 characters",
+                "status": "success"
+            }), 400
+        user.password = password
+        db.session.commit();
         return jsonify({
-            "redirect": url_for('views.add_children'),
             "status": "success"
-        }), 201
+        }), 200
     except Exception as e:
-        return jsonify({
-            "message": str(e),
-            "status": "success"
-        }), 400
-
-@api_v2.route("/add-children", methods=["POST"])
-def add_children():
-    mobile_number = request.json.get('mobile_number')
-    if not mobile_number:
-        return jsonify({"message": "No mobile number" }), 400
-    try:
-        children = request.json.get("children")
-
-        for child in children:
-            if not all((child.get("name"), child.get("dob"), child.get("age_group"))):
-                return jsonify({
-                    "message": "All fields for all the kids are necessary.",
-                    "status": "error"
-                }), 400
-
-        user = User.query.filter_by(mobile_number=mobile_number).first()
-
-        for child in children:
-            user.add_child(child)
-
-        age_groups = []
-        for child in children:
-            age_groups.append(child.get("age_group"))
-
-        age_groups = list(set(age_groups))
-
-        user.add_age_groups(age_groups)
-
-        return jsonify({
-            "status": "success",
-            "guid": user.child[0].guid
-        }), 201
-    except Exception as e:
+        print(e)
         return jsonify({
             "message": str(e),
             "status": "error"
@@ -1060,7 +1007,7 @@ def logout(user):
         "message": "Success!",
         "status": "success"
     }), 201)
-    response.set_cookie('access_token', '', secure=True, httponly=True, samesite='None')
+    response.set_cookie('access_token', '')
     return response
 
 @api_v2.route("/get-most-borrowed")
