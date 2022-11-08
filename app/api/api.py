@@ -97,7 +97,7 @@ def login():
                 "status": "success",
                 "user": user.to_json(),
             }), 200)
-            response.set_cookie('access_token', access_token)
+            response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='None')
             return response
             if not user.plan_id:
                 return jsonify({
@@ -1236,7 +1236,7 @@ def logout(user):
         "status": "success"
     }), 201)
     session["current_user"] = None
-    response.set_cookie('access_token', '')
+    response.set_cookie('access_token', '', secure=True, httponly=True, samesite='None')
     return response
 
 # @api.route("/cart-checkout", methods=["POST"])
