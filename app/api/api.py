@@ -31,7 +31,6 @@ def token_required(f):
        if not access_token:
            return jsonify({'message': 'No access token'}), 401
        try:
-           print(os.environ.get('SECRET_KEY'))
            data = jwt.decode(access_token, os.environ.get('SECRET_KEY'), algorithms=["HS256"])
            user = User.query.filter_by(id=data['id']).first()
        except:
@@ -71,12 +70,6 @@ def submit_mobile():
             "user": user.to_json(),
         }), 200
     else:
-        account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-        auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-        client = Client(account_sid, auth_token)
-
-        verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
-
         return jsonify({
             "redirect": url_for('views.signup'),
             "status": "success"
@@ -98,14 +91,13 @@ def login():
     if user:
         if user.password == password:
             session["current_user"] = user.guid
-            print(os.environ.get('SECRET_KEY'))
             access_token = jwt.encode({'id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, os.environ.get('SECRET_KEY'), "HS256")
             response = make_response(jsonify({
                 "redirect": url_for("views.select_plan"),
                 "status": "success",
                 "user": user.to_json(),
             }), 200)
-            response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='None')
+            response.set_cookie('access_token', access_token)
             return response
             if not user.plan_id:
                 return jsonify({
@@ -369,18 +361,11 @@ def generate_subscription_id():
 def generate_order_id():
     mobile_number = request.json.get('mobile_number')
     if not mobile_number:
-        mobile_number = session.get('mobile_number')
-        if not mobile_number:
-            return jsonify({"message": "No mobile number", "status": "error"}), 400
+        return jsonify({"message": "No mobile number" }), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user:
-        return jsonify({
-            "message": "Session expired",
-            "status": "error"
-        }), 401
+    client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
     card = request.json.get('card')
-    print(card)
     if card not in [3, 12]:
         return jsonify({
             "message": "Invalid card",
@@ -390,17 +375,17 @@ def generate_order_id():
     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
     if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
-        amount = 399 * card
+        amount = 349 * card
         plan_desc = "Get 1 Book Per Week"
     elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"):
-        amount = 549 * card
+        amount = 479 * card
         plan_desc = "Get 2 Books Per Week"
     elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
-        amount = 749 * card
+        amount = 599 * card
         plan_desc = "Get 4 Books Per Week"
 
     if card == 12:
-        amount = int(amount - 0.2 * amount)
+        amount = int(amount - 0.1 * amount)
 
     order = client.order.create({
         "amount": amount * 100,
@@ -1251,7 +1236,7 @@ def logout(user):
         "status": "success"
     }), 201)
     session["current_user"] = None
-    response.set_cookie('access_token', '', secure=True, httponly=True, samesite='None')
+    response.set_cookie('access_token', '')
     return response
 
 # @api.route("/cart-checkout", methods=["POST"])
