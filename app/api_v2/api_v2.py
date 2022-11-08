@@ -22,7 +22,7 @@ import datetime
 
 import razorpay
 
-api = Blueprint('api', __name__, url_prefix="/api")
+api_v2 = Blueprint('api_v2', __name__, url_prefix="/api_v2")
 
 def token_required(f):
    @wraps(f)
@@ -31,7 +31,6 @@ def token_required(f):
        if not access_token:
            return jsonify({'message': 'No access token'}), 401
        try:
-           print(os.environ.get('SECRET_KEY'))
            data = jwt.decode(access_token, os.environ.get('SECRET_KEY'), algorithms=["HS256"])
            user = User.query.filter_by(id=data['id']).first()
        except:
@@ -39,7 +38,7 @@ def token_required(f):
        return f(user, *args, **kwargs)
    return decorator
 
-@api.route("/submit-mobile", methods=["POST"])
+@api_v2.route("/submit-mobile", methods=["POST"])
 def submit_mobile():
     mobile_number = request.json.get("mobile_number")
     if not mobile_number:
@@ -54,7 +53,6 @@ def submit_mobile():
             "status": "error"
         }), 400
 
-    session["mobile_number"] = mobile_number
     user = User.query.filter_by(mobile_number=mobile_number).first()
 
     if user and user.password:
@@ -63,14 +61,7 @@ def submit_mobile():
             "status": "success",
             "user": user.to_json(),
         }), 200
-    elif user and user.payment_id:
-        return jsonify({
-            "redirect": url_for('views.confirm_mobile'),
-            "status": "success",
-            "message": "Already signed up. Our team will contact you through Whatsapp soon.",
-            "user": user.to_json(),
-        }), 200
-    else:
+    elif user:
         account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
         auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
         client = Client(account_sid, auth_token)
@@ -78,64 +69,67 @@ def submit_mobile():
         verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
 
         return jsonify({
+            "redirect": url_for('views.confirm_mobile'),
+            "status": "success",
+            "user": user.to_json(),
+        }), 200
+    else:
+        return jsonify({
             "redirect": url_for('views.signup'),
             "status": "success"
         }), 200
 
-@api.route("/login", methods=["POST"])
+@api_v2.route("/login", methods=["POST"])
 def login():
     mobile_number = request.json.get('mobile_number')
     password = request.json.get("password")
 
     if not all((mobile_number, password)):
         return jsonify({
-            "message": "Provide your credentials",
+            "message": "Password not entered!",
             "status": "error"
         }), 400
+
+    print(mobile_number, password)
 
     user = User.query.filter_by(mobile_number=mobile_number).first()
 
     if user:
         if user.password == password:
-            session["current_user"] = user.guid
-            print(os.environ.get('SECRET_KEY'))
             access_token = jwt.encode({'id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, os.environ.get('SECRET_KEY'), "HS256")
-            response = make_response(jsonify({
-                "redirect": url_for("views.select_plan"),
-                "status": "success",
-                "user": user.to_json(),
-            }), 200)
-            response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='None')
-            return response
+            response = None
             if not user.plan_id:
-                return jsonify({
+                response = make_response(jsonify({
                     "redirect": url_for("views.select_plan"),
                     "status": "success",
                     "user": user.to_json(),
-                }), 200
+                }), 200)
             if user.plan_id and not user.is_subscribed:
-                return jsonify({
+                response = make_response(jsonify({
                     "redirect": url_for('views.selected_plan'),
                     "status": "success",
                     "user": user.to_json(),
-                }), 200
+                }), 200)
             if len(user.address) == 0:
-                return jsonify({
+                response = make_response(jsonify({
                     "redirect": url_for('views.add_address'),
                     "status": "success",
                     "user": user.to_json(),
-                }), 200
+                }), 200)
             if len(user.child) == 0:
-                return jsonify({
+                response = make_response(jsonify({
                     "redirect": url_for('views.add_children'),
                     "status": "success",
                     "user": user.to_json(),
-                }), 200
-            return jsonify({
-                "redirect": url_for('views.preferences'),
-                "status": "success",
-                "user": user.to_json(),
-            }), 200
+                }), 200)
+            else:
+                response = make_response(jsonify({
+                    "redirect": url_for('views.preferences'),
+                    "status": "success",
+                    "user": user.to_json(),
+                }), 200)
+            response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='None')
+            return response
         else:
             return jsonify({
                 "message": "Incorrect Password!",
@@ -147,14 +141,15 @@ def login():
             "status": "error"
         }), 400
 
-@api.route("/signup", methods=["POST"])
+@api_v2.route("/signup", methods=["POST"])
 def signup():
     first_name = request.json.get("first_name")
     last_name = request.json.get("last_name")
     password = request.json.get("password")
     confirm_password = request.json.get("confirm_password")
+    mobile_number = request.json.get('mobile_number')
 
-    if not all((first_name, password, confirm_password)):
+    if not all((first_name, password, confirm_password, mobile_number)):
         return jsonify({
             "message": "Fill all the details!",
             "status": "error"
@@ -172,12 +167,6 @@ def signup():
             "status": "error"
         }), 400
 
-    session["first_name"] = first_name
-    session["last_name"] = last_name
-    session["password"] = password
-
-    mobile_number = session.get("mobile_number")
-
     account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
@@ -189,7 +178,7 @@ def signup():
         "status": "success"
     }), 201
 
-@api.route("/resend-otp", methods=["POST"])
+@api_v2.route("/resend-otp", methods=["POST"])
 def resend_otp():
     account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
@@ -197,9 +186,7 @@ def resend_otp():
 
     mobile_number = request.json.get('mobile_number')
     if not mobile_number:
-        mobile_number = session.get('mobile_number')
-        if not mobile_number:
-            return jsonify({"message": "No mobile number", "status": "error"}), 400
+        return jsonify({"message": "No mobile number" }), 400
 
     verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
 
@@ -208,11 +195,21 @@ def resend_otp():
         "status": "success"
     }), 201
 
-@api.route("/confirm-mobile", methods=["POST"])
+@api_v2.route("/confirm-mobile", methods=["POST"])
 def confirm_mobile():
+    mobile_number = request.json.get('mobile_number')
     verification_code = request.json.get("otp")
+    last_name = request.json.get('last_name')
+    first_name = request.json.get('first_name')
+    password = request.json.get('password')
 
-    if not verification_code:
+    if not all((mobile_number, first_name, password)):
+        return jsonify({
+            "message": "Incomplete credentials",
+            "status": "error"
+        }), 400
+
+    if not all((verification_code)):
         return jsonify({
             "message": "Please enter the OTP",
             "status": "error"
@@ -222,32 +219,34 @@ def confirm_mobile():
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
     client = Client(account_sid, auth_token)
 
-    mobile_number = request.json.get('mobile_number')
-    if not mobile_number:
-        mobile_number = session.get('mobile_number')
-        if not mobile_number:
-            return jsonify({"message": "No mobile number", "status": "error"}), 400
+    verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{mobile_number}", code=verification_code)
 
-    try:
-        verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{mobile_number}", code=verification_code)
-        if verification_check.status == "approved":
-            session["verified"] = True
-            return jsonify({
-                "status": "success",
-            }), 201
-        else:
-            raise ValueError('Verification Failed! Try again.')
-    except:
+    if verification_check.status == "approved":
+        user = User.query.filter_by(mobile_number=mobile_number).first()
+        if not user:
+            User.create(first_name, last_name, mobile_number, password)
+            user = User.query.filter_by(mobile_number=mobile_number).first()
+
         return jsonify({
-        "message": "Verification Failed! Try Again.",
-        "status": "error"
+            "redirect": url_for('views.add_details'),
+            "status": "success",
+            "user": user.to_json(),
+        }), 201
+    else:
+        return jsonify({
+            "message": "Verification Failed! Try Again.",
+            "status": "error"
         }), 400
 
-@api.route("/add-details", methods=["POST"])
+@api_v2.route("/add-details", methods=["POST"])
 def add_details():
     email = request.json.get("email")
     password = request.json.get("password")
     confirm_password = request.json.get("confirm_password")
+    mobile_number = request.json.get('mobile_number')
+
+    if not mobile_number:
+        return jsonify({"message": "No mobile number" }), 400
 
     if len(password) < 6:
         return jsonify({
@@ -261,7 +260,7 @@ def add_details():
             "status": "error"
         }), 400
 
-    user = User.query.filter_by(guid=session.get("current_user")).first()
+    user = User.query.filter_by(mobile_number=mobile_number).first()
 
     user.update_details(email, password)
 
@@ -270,19 +269,16 @@ def add_details():
         "status": "success"
     }), 201
 
-@api.route("/choose-plan", methods=["POST"])
+@api_v2.route("/choose-plan", methods=["POST"])
 def choose_plan():
-    plan = request.json.get("plan")
     mobile_number = request.json.get('mobile_number')
+    plan = request.json.get("plan")
+
     if not mobile_number:
-        mobile_number = session.get('mobile_number')
-        if not mobile_number:
-            return jsonify({"message": "No mobile number", "status": "error"}), 400
+        return jsonify({"message": "No mobile number" }), 400
+
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user:
-        user = User.create('', '', mobile_number, '')
-        db.session.add(user)
-        db.session.commit()
+
     user.update_plan(plan)
 
     return jsonify({
@@ -290,19 +286,14 @@ def choose_plan():
         "status": "success"
     }), 201
 
-@api.route("/change-plan", methods=["POST"])
+@api_v2.route("/change-plan", methods=["POST"])
 def change_plan():
     mobile_number = request.json.get('mobile_number')
+
     if not mobile_number:
-        mobile_number = session.get('mobile_number')
-        if not mobile_number:
-            return jsonify({"message": "No mobile number", "status": "error"}), 400
+        return jsonify({"message": "No mobile number" }), 400
+
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user:
-        return jsonify({
-            "message": "Session expired",
-            "status": "error"
-        }), 401
 
     user.remove_plan()
 
@@ -311,7 +302,7 @@ def change_plan():
         "status": "success"
     }), 201
 
-@api.route("/choose-card", methods=["POST"])
+@api_v2.route("/choose-card", methods=["POST"])
 def choose_card():
     card = request.json.get("card")
     if card == 1:
@@ -325,20 +316,12 @@ def choose_card():
             "status": "success"
         }), 200
 
-@api.route("/generate-subscription-id", methods=["POST"])
+@api_v2.route("/generate-subscription-id", methods=["POST"])
 def generate_subscription_id():
     mobile_number = request.json.get('mobile_number')
     if not mobile_number:
-        mobile_number = session.get('mobile_number')
-        if not mobile_number:
-            return jsonify({"message": "No mobile number", "status": "error"}), 400
+        return jsonify({"message": "No mobile number" }), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user:
-        return jsonify({
-            "message": "Session expired",
-            "status": "error"
-        }), 401
-
     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
     if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
@@ -365,22 +348,15 @@ def generate_subscription_id():
         "plan_desc": plan_desc
     }), 201
 
-@api.route("/generate-order-id", methods=["POST"])
+@api_v2.route("/generate-order-id", methods=["POST"])
 def generate_order_id():
     mobile_number = request.json.get('mobile_number')
     if not mobile_number:
-        mobile_number = session.get('mobile_number')
-        if not mobile_number:
-            return jsonify({"message": "No mobile number", "status": "error"}), 400
+        return jsonify({"message": "No mobile number" }), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user:
-        return jsonify({
-            "message": "Session expired",
-            "status": "error"
-        }), 401
+    client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
     card = request.json.get('card')
-    print(card)
     if card not in [3, 12]:
         return jsonify({
             "message": "Invalid card",
@@ -419,7 +395,7 @@ def generate_order_id():
         "plan_desc": plan_desc
     }), 201
 
-@api.route("/verify-subscription", methods=["POST"])
+@api_v2.route("/verify-subscription", methods=["POST"])
 def verify_subscription():
     try:
         payment_id = request.json.get("payment_id")
@@ -444,7 +420,7 @@ def verify_subscription():
             "status": "error"
         }), 400
 
-@api.route("/verify-order", methods=["POST"])
+@api_v2.route("/verify-order", methods=["POST"])
 def verify_order():
     try:
         payment_id = request.json.get("payment_id")
@@ -469,22 +445,15 @@ def verify_order():
             "status": "error"
         }), 400
 
-@api.route("/subscription-successful", methods=["POST"])
+@api_v2.route("/subscription-successful", methods=["POST"])
 def subscription_successful():
+    mobile_number = request.json.get('mobile_number')
+    if not mobile_number:
+        return jsonify({"message": "No mobile number" }), 400
     subscription_id = request.json.get("subscription_id")
     payment_id = request.json.get("payment_id")
 
-    mobile_number = request.json.get('mobile_number')
-    if not mobile_number:
-        mobile_number = session.get('mobile_number')
-        if not mobile_number:
-            return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user:
-        return jsonify({
-            "message": "Session expired",
-            "status": "error"
-        }), 401
 
     user.update_subscription_details(subscription_id, payment_id)
 
@@ -492,22 +461,15 @@ def subscription_successful():
         "status": "success"
     }), 201
 
-@api.route("/payment-successful", methods=["POST"])
+@api_v2.route("/payment-successful", methods=["POST"])
 def payment_successful():
+    mobile_number = request.json.get('mobile_number')
+    if not mobile_number:
+        return jsonify({"message": "No mobile number" }), 400
     payment_id = request.json.get("payment_id")
     order_id = request.json.get("order_id")
 
-    mobile_number = request.json.get('mobile_number')
-    if not mobile_number:
-        mobile_number = session.get('mobile_number')
-        if not mobile_number:
-            return jsonify({"message": "No mobile number", "status": "error"}), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
-    if not user:
-        return jsonify({
-            "message": "Session expired",
-            "status": "error"
-        }), 401
 
     user.update_payment_details(order_id, payment_id)
 
@@ -515,8 +477,11 @@ def payment_successful():
         "status": "success"
     }), 201
 
-@api.route("/add-address", methods=["POST"])
+@api_v2.route("/add-address", methods=["POST"])
 def add_address():
+    mobile_number = request.json.get('mobile_number')
+    if not mobile_number:
+        return jsonify({"message": "No mobile number" }), 400
     try:
         address_json = dict(
             house_number = request.json.get("house_number"),
@@ -526,7 +491,7 @@ def add_address():
             pin_code = request.json.get("pin_code")
         )
 
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user = User.query.filter_by(mobile_number=mobile_number).first()
 
         Address.create(address_json, user.id)
 
@@ -540,8 +505,11 @@ def add_address():
             "status": "success"
         }), 400
 
-@api.route("/add-children", methods=["POST"])
+@api_v2.route("/add-children", methods=["POST"])
 def add_children():
+    mobile_number = request.json.get('mobile_number')
+    if not mobile_number:
+        return jsonify({"message": "No mobile number" }), 400
     try:
         children = request.json.get("children")
 
@@ -552,7 +520,7 @@ def add_children():
                     "status": "error"
                 }), 400
 
-        user = User.query.filter_by(guid=session.get("current_user")).first()
+        user = User.query.filter_by(mobile_number=mobile_number).first()
 
         for child in children:
             user.add_child(child)
@@ -575,7 +543,7 @@ def add_children():
             "status": "error"
         }), 400
 
-@api.route("/submit-preferences", methods=["POST"])
+@api_v2.route("/submit-preferences", methods=["POST"])
 @token_required
 def submit_preferences(user):
     try:
@@ -602,9 +570,6 @@ def submit_preferences(user):
                 preference_data.get("series"),
                 child.id
             )
-
-        if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
         for child_obj in user.child:
             if not child_obj.preferences:
                 return jsonify({
@@ -620,12 +585,10 @@ def submit_preferences(user):
             "status": "error"
         }), 400
 
-@api.route('/get-user')
+@api_v2.route('/get-user')
 @token_required
 def get_user(user):
     try:
-        if not user:
-            user = User.query.filter_by(guid=session['current_user']).first()
         if not user:
             return jsonify({
                 "message": "No user session",
@@ -641,50 +604,15 @@ def get_user(user):
             "status": "error"
         }), 400
 
-@api.route("/get-user-data")
-def get_user_guid():
-    try:
-        mobile_number = request.args.get("mobile")
-
-        if not mobile_number:
-            return jsonify({
-                "message": "Mobile number is required!",
-                "status": "error"
-            }), 400
-
-        user = User.query.filter_by(mobile_number=mobile_number).first()
-
-        if not user:
-            return jsonify({
-                "message": "No user with the given mobile number found.",
-                "status": "error"
-            }), 400
-
-        return jsonify({
-            "data": user.to_json(),
-            "status": "success"
-        }), 200
-
-    except Exception as e:
-        return jsonify({
-            "message": str(e),
-            "status": "error"
-        }), 400
-
-@api.route("/get-wishlists")
+@api_v2.route("/get-wishlists")
 @token_required
 def get_wishlists(user):
     try:
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-        if not user:
-            guid = request.args.get("guid")
-            user = User.query.filter_by(guid=guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         return jsonify({
             "status": "success",
@@ -697,20 +625,16 @@ def get_wishlists(user):
             "status": "error"
         }), 400
 
-@api.route("/get-suggestions")
+@api_v2.route("/get-suggestions")
 @token_required
 def get_suggestions(user):
     try:
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-        if not user:
-            guid = request.args.get("guid")
-            user = User.query.filter_by(guid=guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
+
         return jsonify({
             "status": "success",
             "suggestions": user.get_suggestions()
@@ -722,20 +646,15 @@ def get_suggestions(user):
             "status": "error"
         }), 400
 
-@api.route("/get-dumps")
+@api_v2.route("/get-dumps")
 @token_required
 def get_dumps(user):
     try:
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-        if not user:
-            guid = request.args.get("guid")
-            user = User.query.filter_by(guid=guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         return jsonify({
             "status": "success",
@@ -748,12 +667,10 @@ def get_dumps(user):
             "status": "error"
         }), 400
 
-@api.route('/get-previous-books')
+@api_v2.route('/get-previous-books')
 @token_required
 def get_previous_books(user):
     try:
-        if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
         return jsonify({
             "status": "success",
             "books": user.get_previous_books()
@@ -764,12 +681,10 @@ def get_previous_books(user):
             "status": "error"
         }), 400
 
-@api.route('/get-current-books')
+@api_v2.route('/get-current-books')
 @token_required
 def get_current_books(user):
     try:
-        if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
         if not user:
             return jsonify({
                 "status": "error",
@@ -786,20 +701,15 @@ def get_current_books(user):
             "status": "error"
         }), 400
 
-@api.route("/get-buckets")
+@api_v2.route("/get-buckets")
 @token_required
 def get_buckets(user):
     try:
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-        if not user:
-            guid = request.args.get("guid")
-            user = User.query.filter_by(guid=guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         return jsonify({
             "status": "success",
@@ -812,45 +722,16 @@ def get_buckets(user):
             "status": "error"
         }), 400
 
-@api.route("/get-previous-bucket")
-def get_previous_bucket():
-    try:
-        user = User.query.filter_by(guid=session.get("current_user")).first()
-        if not user:
-            guid = request.args.get("guid")
-            user = User.query.filter_by(guid=guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
-
-        return jsonify({
-            "status": "success",
-            "wishlists": user.get_previous_bucket()
-        }), 200
-
-    except Exception as e:
-        return jsonify({
-            "message": str(e),
-            "status": "error"
-        }), 400
-
-@api.route("/add-to-wishlist", methods=["POST"])
+@api_v2.route("/add-to-wishlist", methods=["POST"])
 @token_required
 def add_to_wishlist(user):
+    guid = request.json.get("guid")
     try:
-        guid = request.json.get("guid")
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-        if not user:
-            user_guid = request.json.get("user_guid")
-            user = User.query.filter_by(guid=user_guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         user.add_to_wishlist(guid)
 
@@ -863,22 +744,16 @@ def add_to_wishlist(user):
             "status": "error"
         }), 400
 
-@api.route("/suggestion-to-wishlist", methods=["POST"])
+@api_v2.route("/suggestion-to-wishlist", methods=["POST"])
 @token_required
 def suggestion_to_wishlist(user):
+    guid = request.json.get("guid")
     try:
-        guid = request.json.get("guid")
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-
-        if not user:
-            user_guid = request.json.get("user_guid")
-            user = User.query.filter_by(guid=user_guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         user.suggestion_to_wishlist(guid)
 
@@ -897,22 +772,16 @@ def suggestion_to_wishlist(user):
             "status": "error"
         }), 400
 
-@api.route("/suggestion-to-dump", methods=["POST"])
+@api_v2.route("/suggestion-to-dump", methods=["POST"])
 @token_required
 def suggestion_to_dump(user):
+    guid = request.json.get("guid")
     try:
-        guid = request.json.get("guid")
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-
-        if not user:
-            user_guid = request.json.get("user_guid")
-            user = User.query.filter_by(guid=user_guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         user.suggestion_to_dump(guid)
 
@@ -930,22 +799,16 @@ def suggestion_to_dump(user):
             "status": "error"
         }), 400
 
-@api.route("/dump-action-read", methods=["POST"])
+@api_v2.route("/dump-action-read", methods=["POST"])
 @token_required
 def dump_action_read(user):
+    guid = request.json.get("guid")
     try:
-        guid = request.json.get("guid")
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-
-        if not user:
-            user_guid = request.json.get("user_guid")
-            user = User.query.filter_by(guid=user_guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         user.dump_action_read(guid)
 
@@ -963,22 +826,16 @@ def dump_action_read(user):
             "status": "error"
         }), 400
 
-@api.route("/dump-action-dislike", methods=["POST"])
+@api_v2.route("/dump-action-dislike", methods=["POST"])
 @token_required
 def dump_action_dislike(user):
+    guid = request.json.get("guid")
     try:
-        guid = request.json.get("guid")
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-
-        if not user:
-            user_guid = request.json.get("user_guid")
-            user = User.query.filter_by(guid=user_guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         user.dump_action_dislike(guid)
 
@@ -994,22 +851,16 @@ def dump_action_dislike(user):
             "status": "error"
         }), 400
 
-@api.route("/wishlist-next", methods=["POST"])
+@api_v2.route("/wishlist-next", methods=["POST"])
 @token_required
 def wishlist_next(user):
+    guid = request.json.get("guid")
     try:
-        guid = request.json.get("guid")
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-
-        if not user:
-            user_guid = request.json.get("user_guid")
-            user = User.query.filter_by(guid=user_guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         user.wishlist_next(guid)
 
@@ -1025,22 +876,16 @@ def wishlist_next(user):
             "status": "error"
         }), 400
 
-@api.route("/wishlist-prev", methods=["POST"])
+@api_v2.route("/wishlist-prev", methods=["POST"])
 @token_required
 def wishlist_prev(user):
+    guid = request.json.get("guid")
     try:
-        guid = request.json.get("guid")
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-
-        if not user:
-            user_guid = request.json.get("user_guid")
-            user = User.query.filter_by(guid=user_guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         user.wishlist_prev(guid)
 
@@ -1056,22 +901,16 @@ def wishlist_prev(user):
             "status": "error"
         }), 400
 
-@api.route("/wishlist-remove", methods=["POST"])
+@api_v2.route("/wishlist-remove", methods=["POST"])
 @token_required
 def wishlist_remove(user):
+    guid = request.json.get("guid")
     try:
-        guid = request.json.get("guid")
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-
-        if not user:
-            user_guid = request.json.get("user_guid")
-            user = User.query.filter_by(guid=user_guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         user.wishlist_remove(guid)
 
@@ -1089,12 +928,10 @@ def wishlist_remove(user):
             "status": "error"
         }), 400
 
-@api.route("/create-bucket-list")
+@api_v2.route("/create-bucket-list")
 @token_required
 def create_bucket_list(user):
     try:
-        if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
         if not user:
             return jsonify({
                 "message": "Unauthorized",
@@ -1112,22 +949,16 @@ def create_bucket_list(user):
             "status": "error"
         }), 400
 
-@api.route("/bucket-remove", methods=["POST"])
+@api_v2.route("/bucket-remove", methods=["POST"])
 @token_required
 def bucket_remove(user):
     try:
         guid = request.json.get("guid")
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-
-        if not user:
-            user_guid = request.json.get("user_guid")
-            user = User.query.filter_by(guid=user_guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         user.bucket_remove(guid)
         return jsonify({
@@ -1139,22 +970,16 @@ def bucket_remove(user):
             "status": "error"
         }), 400
 
-@api.route("/change-delivery-date", methods=["POST"])
+@api_v2.route("/change-delivery-date", methods=["POST"])
 @token_required
 def change_delivery_date(user):
     try:
         delivery_date = request.json.get("delivery_date")
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-
-        if not user:
-            user_guid = request.json.get("user_guid")
-            user = User.query.filter_by(guid=user_guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         user.change_delivery_date(delivery_date)
         return jsonify({
@@ -1166,13 +991,10 @@ def change_delivery_date(user):
             "status": "error"
         }), 400
 
-@api.route("/confirm-order")
+@api_v2.route("/confirm-order")
 @token_required
 def confirm_order(user):
     try:
-        if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-
         if not user:
             return jsonify({
                 "message": "No user found.",
@@ -1189,22 +1011,16 @@ def confirm_order(user):
             "status": "error"
         }), 400
 
-@api.route("/retain-book", methods=["POST"])
+@api_v2.route("/retain-book", methods=["POST"])
 @token_required
 def retain_book(user):
+    guid = request.json.get("guid")
     try:
-        guid = request.json.get("guid")
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-
-        if not user:
-            user_guid = request.json.get("user_guid")
-            user = User.query.filter_by(guid=user_guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         user.retain_book(guid)
         return jsonify({
@@ -1216,22 +1032,16 @@ def retain_book(user):
             "status": "error"
         }), 400
 
-@api.route("/retain-current-book", methods=["POST"])
+@api_v2.route("/retain-current-book", methods=["POST"])
 @token_required
 def retain_current_book(user):
     try:
         guid = request.json.get("guid")
         if not user:
-            user = User.query.filter_by(guid=session.get("current_user")).first()
-
-        if not user:
-            user_guid = request.json.get("user_guid")
-            user = User.query.filter_by(guid=user_guid).first()
-            if not user:
-                return jsonify({
-                    "message": "User Not Found",
-                    "status": "error"
-                }), 400
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
 
         user.retain_current_book(guid)
         return jsonify({
@@ -1243,266 +1053,17 @@ def retain_current_book(user):
             "status": "error"
         }), 400
 
-@api.route("/logout", methods=["POST"])
+@api_v2.route("/logout", methods=["POST"])
 @token_required
 def logout(user):
     response = make_response(jsonify({
         "message": "Success!",
         "status": "success"
     }), 201)
-    session["current_user"] = None
     response.set_cookie('access_token', '', secure=True, httponly=True, samesite='None')
     return response
 
-# @api.route("/cart-checkout", methods=["POST"])
-# def cart_checkout():
-#     session["cart_checkout"] = True
-
-#     current_user = session.get("current_user")
-#     user = User.query.filter_by(guid=current_user).first()
-
-#     if current_user:
-#         if user.is_subscribed:
-#             return jsonify({
-#                 "redirect": url_for('views.add_address'),
-#                 "status": "success"
-#             }), 201
-#         else:
-#             if session.get("plan"):
-#                 return jsonify({
-#                     "redirect": url_for('views.confirm_plan'),
-#                     "status": "success"
-#                 }), 201
-#             else:
-#                 return jsonify({
-#                     "redirect": url_for('views.become_a_subscriber'),
-#                     "status": "success"
-#                 }), 201
-#     else:
-#         return jsonify({
-#             "redirect": url_for('views.signup'),
-#             "status": "success"
-#         }), 201
-
-# @api.route("/add-to-cart", methods=["POST"])
-# def add_to_cart():
-#     try:
-#         book_guid = request.json.get("guid")
-#         book = Book.query.filter_by(guid=book_guid).first()
-#         current_user_guid = session.get("current_user")
-#         if current_user_guid:
-#             current_user = User.query.filter_by(guid=session.get("current_user")).first()
-#             cart = Cart.query.filter_by(user_id=current_user.id).first()
-#             cart.add_book(book)
-#         else:
-#             if session.get("cart"):
-#                 cart = session.get("cart")
-#                 cart.append(book.guid)
-#                 session["cart"] = cart
-#             else:
-#                 session["cart"] = [book.guid]
-
-#         return jsonify({
-#             "message": "Added",
-#             "status": "success"
-#         }), 201
-#     except Exception as e:
-#         return jsonify({
-#             "message": str(e),
-#             "status": "error"
-#         }), 400
-
-# @api.route("/add-to-wishlist", methods=["POST"])
-# def add_to_wishlist():
-#     try:
-#         book_guid = request.json.get("guid")
-#         book = Book.query.filter_by(guid=book_guid).first()
-#         current_user_guid = session.get("current_user")
-#         if current_user_guid:
-#             current_user = User.query.filter_by(guid=session.get("current_user")).first()
-#             wishlist = Wishlist.query.filter_by(user_id=current_user.id).first()
-#             wishlist.add_book(book)
-#         else:
-#             if session.get("wishlist"):
-#                 wishlist = session.get("wishlist")
-#                 wishlist.append(book.guid)
-#                 session["wishlist"] = wishlist
-#             else:
-#                 session["wishlist"] = [book.guid]
-
-#         return jsonify({
-#             "message": "Added",
-#             "status": "success"
-#         }), 201
-#     except Exception as e:
-#         return jsonify({
-#             "message": str(e),
-#             "status": "error"
-#         }), 400
-
-# @api.route("/move-to-wishlist", methods=["POST"])
-# def move_to_wishlist():
-#     try:
-#         book_guid = request.json.get('guid')
-#         book = Book.query.filter_by(guid=book_guid).first()
-#         current_user_guid = session.get("current_user")
-#         if current_user_guid:
-#             current_user = User.query.filter_by(guid=current_user_guid).first()
-#             current_user.move_book_to_wishlist(book)
-#         else:
-#             cart = session.get("cart")
-#             cart.remove(book_guid)
-#             session["cart"] = cart
-#             if session.get("wishlist"):
-#                 wishlist = session.get("wishlist")
-#                 wishlist.append(book_guid)
-#                 session["wishlist"] = wishlist
-#             else:
-#                 session["wishlist"] = [book_guid]
-#         return jsonify({
-#             "message": "Moved",
-#             "status": "success"
-#         }), 201
-#     except Exception as e:
-#         return jsonify({
-#             "message": str(e),
-#             "status": "error"
-#         }), 400
-
-# @api.route("/move-to-cart", methods=["POST"])
-# def move_to_cart():
-#     try:
-#         book_guid = request.json.get('guid')
-#         book = Book.query.filter_by(guid=book_guid).first()
-#         current_user_guid = session.get("current_user")
-#         if current_user_guid:
-#             current_user = User.query.filter_by(guid=current_user_guid).first()
-#             current_user.move_book_to_cart(book)
-#         else:
-#             wishlist = session.get("wishlist")
-#             wishlist.remove(book_guid)
-#             session["wishlist"] = wishlist
-#             if session.get("cart"):
-#                 cart = session.get("cart")
-#                 cart.append(book_guid)
-#                 session["cart"] = cart
-#             else:
-#                 session["cart"] = [book_guid]
-#         return jsonify({
-#             "message": "Moved",
-#             "status": "success"
-#         }), 201
-#     except Exception as e:
-#         return jsonify({
-#             "message": str(e),
-#             "status": "error"
-#         }), 400
-
-# @api.route("/delete-from-cart", methods=["POST"])
-# def delete_from_cart():
-#     try:
-#         book_guid = request.json.get('guid')
-#         book = Book.query.filter_by(guid=book_guid).first()
-#         current_user_guid = session.get("current_user")
-#         if current_user_guid:
-#             current_user = User.query.filter_by(guid=current_user_guid).first()
-#             current_user.remove_book_from_cart(book)
-#         else:
-#             cart = session.get("cart")
-#             cart.remove(book_guid)
-#             session["cart"] = cart
-#         return jsonify({
-#             "message": "Moved",
-#             "status": "success"
-#         }), 201
-#     except Exception as e:
-#         return jsonify({
-#             "message": str(e),
-#             "status": "error"
-#         }), 400
-
-# @api.route("/delete-from-wishlist", methods=["POST"])
-# def delete_from_wishlist():
-#     try:
-#         book_guid = request.json.get('guid')
-#         book = Book.query.filter_by(guid=book_guid).first()
-#         current_user_guid = session.get("current_user")
-#         if current_user_guid:
-#             current_user = User.query.filter_by(guid=current_user_guid).first()
-#             current_user.remove_book_from_wishlist(book)
-#         else:
-#             wishlist = session.get("wishlist")
-#             wishlist.remove(book_guid)
-#             session["wishlist"] = wishlist
-#         return jsonify({
-#             "message": "Moved",
-#             "status": "success"
-#         }), 201
-#     except Exception as e:
-#         return jsonify({
-#             "message": str(e),
-#             "status": "error"
-#         }), 400
-
-# @api.route("/check-books", methods=["POST"])
-# def check_books():
-#     current_user = session.get("current_user")
-#     user = User.query.filter_by(guid=current_user).first()
-#     if len(user.cart.books) < user.books_per_week:
-#         return jsonify({
-#             "message": f"You should have at least {user.books_per_week} books in your cart to place an order.",
-#             "status": "error"
-#         }), 400
-#     else:
-#         return jsonify({
-#             "status": "success"
-#         }), 200
-
-# @api.route("/place-order", methods=["POST"])
-# def place_order():
-#     try:
-#         current_user = session.get("current_user")
-#         user = User.query.filter_by(guid=current_user).first()
-
-#         if user.books_per_week != len(request.json.get("books")):
-#             return jsonify({
-#                 "message": f"Select {user.books_per_week} books to place an order.",
-#                 "status": "error"
-#             }), 400
-
-#         billing_address = Address.create(request.json.get("billing_address"), user.id)
-#         if request.json.get("same_as_billing"):
-#             delivery_address = billing_address
-#         else:
-#             delivery_address = Address.create(request.json.get("delivery_address"), user.id)
-
-#         is_gift = request.json.get("is_gift")
-#         gift_message = request.json.get("gift_message")
-#         books = request.json.get("books")
-
-#         Order.create(user.id, billing_address.id, delivery_address.id, is_gift, gift_message, books)
-#         for book in books:
-#             user.remove_book_from_cart(Book.query.filter_by(guid=book).first())
-
-#         return jsonify({
-#             "message": "Order Placed",
-#             "status": "success"
-#         }), 201
-#     except Exception as e:
-#         return jsonify({
-#             "message": str(e),
-#             "status": "error"
-#         }), 400
-
-# @api.route("/get-amazon-bestsellers", methods=["POST"])
-# def get_amazon_bestsellers():
-#     age_group = request.json.get("age_group")
-#     return jsonify({
-#         "data": Book.get_amazon_bestsellers(age_group),
-#         "status": "success"
-#     }), 200
-
-@api.route("/get-most-borrowed")
+@api_v2.route("/get-most-borrowed")
 def get_most_borrowed():
     try:
         age_group = int(request.args.get("age"))
@@ -1521,7 +1082,7 @@ def get_most_borrowed():
             "status": "error"
         }), 400
 
-@api.route("/get-bestsellers")
+@api_v2.route("/get-bestsellers")
 def get_bestsellers():
     try:
         age_group = int(request.args.get("age"))
@@ -1540,7 +1101,7 @@ def get_bestsellers():
             "status": "error"
         }), 400
 
-@api.route("/get-authors")
+@api_v2.route("/get-authors")
 def get_authors():
     try:
         age_group = int(request.args.get("age"))
@@ -1559,7 +1120,7 @@ def get_authors():
             "status": "error"
         }), 400
 
-@api.route("/get-author-books")
+@api_v2.route("/get-author-books")
 def get_author_books():
     try:
         guid = request.args.get("guid")
@@ -1578,7 +1139,7 @@ def get_author_books():
             "status": "error"
         }), 400
 
-@api.route("/get-series")
+@api_v2.route("/get-series")
 def get_series():
     try:
         age_group = int(request.args.get("age"))
@@ -1597,7 +1158,7 @@ def get_series():
             "status": "error"
         }), 400
 
-@api.route("/get-series-books")
+@api_v2.route("/get-series-books")
 def get_series_books():
     try:
         guid = request.args.get("guid")
@@ -1616,7 +1177,7 @@ def get_series_books():
             "status": "error"
         }), 400
 
-@api.route("/get-publishers")
+@api_v2.route("/get-publishers")
 def get_publishers():
     try:
         age_group = int(request.args.get("age"))
@@ -1635,7 +1196,7 @@ def get_publishers():
             "status": "error"
         }), 400
 
-@api.route("/get-publisher-books")
+@api_v2.route("/get-publisher-books")
 def get_publisher_books():
     try:
         guid = request.args.get("guid")
@@ -1654,7 +1215,7 @@ def get_publisher_books():
             "status": "error"
         }), 400
 
-@api.route("/get-types")
+@api_v2.route("/get-types")
 def get_types():
     try:
         age_group = int(request.args.get("age"))
@@ -1673,7 +1234,7 @@ def get_types():
             "status": "error"
         }), 400
 
-@api.route("/get-type-books")
+@api_v2.route("/get-type-books")
 def get_type_books():
     try:
         guid = request.args.get("guid")
@@ -1692,7 +1253,7 @@ def get_type_books():
             "status": "error"
         }), 400
 
-@api.route("/get-genres")
+@api_v2.route("/get-genres")
 def get_genres():
     age_group = request.args.get("age")
     return jsonify({
@@ -1700,7 +1261,7 @@ def get_genres():
         "status": "success"
     }), 200
 
-@api.route("/get-genres-books", methods=["POST"])
+@api_v2.route("/get-genres-books", methods=["POST"])
 def get_genres_books():
     guid = request.json.get("guid")
     return jsonify({
@@ -1709,7 +1270,7 @@ def get_genres_books():
         "status": "success"
     }), 200
 
-@api.route("/get-similar-books", methods=["POST"])
+@api_v2.route("/get-similar-books", methods=["POST"])
 def get_similar_books():
     age_group = request.json.get("age_group")
     return jsonify({
@@ -1717,7 +1278,7 @@ def get_similar_books():
         "status": "success"
     }), 200
 
-@api.route("/submit-search-form", methods=["POST"])
+@api_v2.route("/submit-search-form", methods=["POST"])
 def submit_search_form():
     try:
         name = request.json.get("name")
@@ -1743,7 +1304,7 @@ def submit_search_form():
             "status": "error"
         }), 400
 
-@api.route("/search")
+@api_v2.route("/search")
 def search():
     try:
         query = request.args.get("query")
@@ -1777,7 +1338,7 @@ def search():
             "status": "error"
         }), 400
 
-@api.route("/get-book-details")
+@api_v2.route("/get-book-details")
 def get_book_details():
     try:
         guid = request.args.get("guid")
@@ -1805,23 +1366,3 @@ def get_book_details():
             "message": str(e),
             "status": "error"
         }), 400
-
-@api.route("/launch", methods=["POST"])
-def launch():
-    parent_name = request.json.get("parent_name")
-    mobile_number = request.json.get("mobile_number")
-    child_name = request.json.get("child_name")
-    age_group = request.json.get("age_group")
-
-    if not all((parent_name, child_name, mobile_number, age_group)):
-        return jsonify({
-            "message": "All fields are mandatory!",
-            "status": "error"
-        }), 400
-
-    Launch.create(parent_name, mobile_number, child_name, age_group)
-
-    return jsonify({
-        "message": "Saved!",
-        "status": "success"
-    }), 201
