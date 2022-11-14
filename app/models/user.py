@@ -446,10 +446,13 @@ class User(db.Model):
     def update_plan(self, plan):
         if plan == 1:
             self.plan_id = os.environ.get("RZP_PLAN_1_ID")
+            self.books_per_week = 1
         elif plan == 2:
             self.plan_id = os.environ.get("RZP_PLAN_2_ID")
+            self.books_per_week = 2
         elif plan == 3:
             self.plan_id = os.environ.get("RZP_PLAN_3_ID")
+            self.books_per_week = 4
         db.session.add(self)
         db.session.commit()
 
