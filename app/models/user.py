@@ -277,6 +277,8 @@ class User(db.Model):
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
     mobile_number = db.Column(db.String, unique=True)
+    contact_number = db.Column(db.String, unique=True)
+    source = db.Column(db.String)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
     email = db.Column(db.String)
@@ -296,6 +298,9 @@ class User(db.Model):
 
     newsletter = db.Column(db.Boolean, default=False)
 
+    payment_status = db.Column(db.String)
+    plan_date = db.Column(db.Date, server_default=func.now())
+    plan_duration = db.Column(db.Integer)
     is_subscribed = db.Column(db.Boolean, default=False)
     security_deposit = db.Column(db.Boolean, default=False)
     payment_id = db.Column(db.String)
@@ -325,7 +330,11 @@ class User(db.Model):
             return 0
 
     def to_json(self):
+        address = ""
+        if len(self.address):
+            address = self.address[0].to_json()
         return {
+            "id": self.id,
             "guid": self.guid,
             "first_name": self.first_name,
             "last_name": self.last_name,
@@ -333,12 +342,17 @@ class User(db.Model):
             "next_delivery_date": self.next_delivery_date,
             "is_subscribed": self.is_subscribed,
             "plan_id": self.plan_id,
+            "plan_date": self.plan_date,
+            "plan_duration": self.plan_duration,
+            "payment_status": self.payment_status,
             "subscription_id": self.subscription_id,
             "order_id": self.order_id,
             "payment_id": self.payment_id,
-            "addresses": [address.to_json() for address in self.address],
+            "address": address,
             "children": [child.to_json() for child in self.child],
             "books_per_week": self.books_per_week,
+            "mobile_number": self.mobile_number,
+            "contact_number": self.contact_number
         }
 
     @staticmethod
@@ -353,7 +367,6 @@ class User(db.Model):
         user_obj = User(**user_dict)
         db.session.add(user_obj)
         db.session.commit()
-
 
         return user_obj
 
@@ -755,6 +768,8 @@ class User(db.Model):
         self.payment_id = payment_id
         self.security_deposit = True
         self.is_subscribed = True
+        self.payment_status = 'Paid'
+        self.plan_date = date.today()
         db.session.add(self)
         db.session.commit()
 
@@ -763,6 +778,8 @@ class User(db.Model):
         self.payment_id = payment_id
         self.security_deposit = True
         self.is_subscribed = True
+        self.payment_status = 'Paid'
+        self.plan_date = date.today()
         db.session.add(self)
         db.session.commit()
 

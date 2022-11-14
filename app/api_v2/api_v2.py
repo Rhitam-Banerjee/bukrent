@@ -127,7 +127,7 @@ def login():
                     "status": "success",
                     "user": user.to_json(),
                 }), 200)
-            response.set_cookie('access_token', access_token)
+            response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='None')
             return response
         else:
             return jsonify({
@@ -203,7 +203,7 @@ def signup():
             "redirect": url_for('views.confirm_mobile'),
             "status": "success"
         }), 201)
-        response.set_cookie('access_token', access_token)
+        response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='None')
 
         return response
     except Exception as e:
@@ -291,6 +291,27 @@ def choose_plan():
         "status": "success"
     }), 201
 
+@api_v2.route("/choose-plan-duration", methods=["POST"])
+def choose_plan_duration():
+    mobile_number = request.json.get('mobile_number')
+    plan_duration = request.json.get("plan_duration")
+
+    if not mobile_number:
+        return jsonify({"message": "No mobile number" }), 400
+    if int(plan_duration) not in [1, 3, 12]:
+        return jsonify({"message": "Invalid plan duration" }), 400
+
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+
+    user.plan_duration = plan_duration
+
+    db.session.commit()
+
+    return jsonify({
+        "redirect": url_for('views.selected_plan'),
+        "status": "success"
+    }), 201
+
 @api_v2.route("/change-plan", methods=["POST"])
 def change_plan():
     mobile_number = request.json.get('mobile_number')
@@ -322,6 +343,7 @@ def generate_subscription_id():
     elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
         plan_desc = "Get 4 Books Per Week"
 
+    print(user.plan_id)
     subscription = client.subscription.create({
         'plan_id': user.plan_id,
         'total_count': 36
@@ -1007,7 +1029,7 @@ def logout(user):
         "message": "Success!",
         "status": "success"
     }), 201)
-    response.set_cookie('access_token', '')
+    response.set_cookie('access_token', '', secure=True, httponly=True, samesite='None')
     return response
 
 @api_v2.route("/get-most-borrowed")
