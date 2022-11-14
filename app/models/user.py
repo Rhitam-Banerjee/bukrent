@@ -298,6 +298,7 @@ class User(db.Model):
 
     newsletter = db.Column(db.Boolean, default=False)
 
+    books_per_week = db.Column(db.Integer)
     payment_status = db.Column(db.String)
     plan_date = db.Column(db.Date, server_default=func.now())
     plan_duration = db.Column(db.Integer)
@@ -317,17 +318,6 @@ class User(db.Model):
     order = db.relationship(Order, lazy=True)
     child = db.relationship(Child, lazy=True)
     #Orders
-
-    @hybrid_property
-    def books_per_week(self):
-        if self.plan_id == os.environ.get("RZP_PLAN_1_ID"):
-            return 1
-        elif self.plan_id == os.environ.get("RZP_PLAN_2_ID"):
-            return 2
-        elif self.plan_id == os.environ.get("RZP_PLAN_3_ID"):
-            return 4
-        else:
-            return 0
 
     def to_json(self):
         address = ""
