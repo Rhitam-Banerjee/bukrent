@@ -62,7 +62,7 @@ def logout(admin):
 def get_users(admin):
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
-    all_users = User.query.limit(end - start).offset(start).all()
+    all_users = User.query.order_by(User.id).limit(end - start).offset(start).all()
     users = []
     for user in all_users:
         users.append(user.to_json())
