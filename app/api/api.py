@@ -282,6 +282,27 @@ def choose_plan():
         "status": "success"
     }), 201
 
+@api.route("/choose-plan-duration", methods=["POST"])
+def choose_plan_duration():
+    mobile_number = request.json.get('mobile_number')
+    plan_duration = request.json.get("plan_duration")
+
+    if not mobile_number:
+        return jsonify({"message": "No mobile number" }), 400
+    if int(plan_duration) not in [1, 3, 12]:
+        return jsonify({"message": "Invalid plan duration" }), 400
+
+    user = User.query.filter_by(mobile_number=mobile_number).first()
+
+    user.plan_duration = plan_duration
+
+    db.session.commit()
+
+    return jsonify({
+        "redirect": url_for('views.selected_plan'),
+        "status": "success"
+    }), 201
+
 @api.route("/change-plan", methods=["POST"])
 def change_plan():
     mobile_number = request.json.get('mobile_number')
@@ -366,9 +387,14 @@ def generate_order_id():
     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
     card = request.json.get('card')
-    if card not in [3, 12]:
+    if card not in [3, 6, 12]:
         return jsonify({
             "message": "Invalid card",
+            "status": "error"
+        }), 400
+    if card == 6 and user.plan_id != os.environ.get("RZP_PLAN_2_ID"):
+        return jsonify({
+            "message": "6 months subscription not available for selected plan",
             "status": "error"
         }), 400
 
