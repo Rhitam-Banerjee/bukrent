@@ -43,7 +43,7 @@ def validate_user(f):
                 raise ValueError("Invalid contact number")
             if pin_code and len(pin_code) != 6:
                 raise ValueError("Invalid PIN code")
-            if plan_id and plan_id not in [os.environ.get('RZP_PLAN_1_ID'), os.environ.get('RZP_PLAN_2_ID'), os.environ.get('RZP_PLAN_3_ID')]:
+            if plan_id and int(plan_id) not in [1, 2, 4]:
                 raise ValueError("Invalid plan ID")
             if plan_duration and int(plan_duration) not in [1, 3, 12]:
                 raise ValueError("Invalid plan duration")

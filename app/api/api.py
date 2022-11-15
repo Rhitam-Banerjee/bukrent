@@ -62,7 +62,7 @@ def submit_mobile():
             "status": "success",
             "user": user.to_json(),
         }), 200
-    elif user and user.payment_id:
+    elif user and user.payment_status == 'Paid':
         return jsonify({
             "redirect": url_for('views.confirm_mobile'),
             "status": "success",
@@ -387,31 +387,28 @@ def generate_order_id():
     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
     card = request.json.get('card')
-    if card not in [3, 6, 12]:
+    if card not in [1, 3, 12]:
         return jsonify({
             "message": "Invalid card",
-            "status": "error"
-        }), 400
-    if card == 6 and user.plan_id != os.environ.get("RZP_PLAN_2_ID"):
-        return jsonify({
-            "message": "6 months subscription not available for selected plan",
             "status": "error"
         }), 400
 
     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
     if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
-        amount = 349 * card
+        amount = 399 * card
         plan_desc = "Get 1 Book Per Week"
     elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"):
-        amount = 479 * card
+        amount = 549 * card
         plan_desc = "Get 2 Books Per Week"
     elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
-        amount = 599 * card
+        amount = 749 * card
         plan_desc = "Get 4 Books Per Week"
 
-    if card == 12:
+    if card == 3:
         amount = int(amount - 0.1 * amount)
+    if card == 12:
+        amount = int(amount - 0.25 * amount)
 
     order = client.order.create({
         "amount": amount * 100,

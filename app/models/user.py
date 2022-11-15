@@ -342,7 +342,8 @@ class User(db.Model):
             "children": [child.to_json() for child in self.child],
             "books_per_week": self.books_per_week,
             "mobile_number": self.mobile_number,
-            "contact_number": self.contact_number
+            "contact_number": self.contact_number,
+            "source": self.source,
         }
 
     @staticmethod

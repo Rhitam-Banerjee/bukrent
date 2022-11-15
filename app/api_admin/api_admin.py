@@ -85,6 +85,7 @@ def update_user(admin):
     plan_duration = request.json.get('plan_duration')
     plan_id = request.json.get('plan_id')
     payment_status = request.json.get('payment_status')
+    source = request.json.get('source')
 
     if not id:
         return jsonify({
@@ -103,18 +104,39 @@ def update_user(admin):
         user.first_name = name.split()[0]
         if len(name.split()) > 1:
             user.last_name = ' '.join(name.split()[1:])
+
     if mobile_number:
         user.mobile_number = mobile_number
+
     if contact_number:
         user.contact_number = contact_number
+
     if plan_date:
         user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
+    else:
+        user.plan_date = None
+
     if plan_duration:
         user.plan_duration = plan_duration
+
+    if source:
+        user.source = source
+
     if plan_id:
-        user.plan_id = plan_id
+        plan_id = int(plan_id)
+    if plan_id == 1:
+        user.plan_id = os.environ.get('RZP_PLAN_1_ID')
+        user.books_per_week = 1
+    elif plan_id == 2:
+        user.plan_id = os.environ.get('RZP_PLAN_2_ID')
+        user.books_per_week = 2
+    elif plan_id == 4:
+        user.plan_id = os.environ.get('RZP_PLAN_3_ID')
+        user.books_per_week = 4
+
     if payment_status:
         user.payment_status = payment_status
+
     if address and pin_code:
         for user_address in user.address:
             user_address.delete()
