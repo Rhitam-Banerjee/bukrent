@@ -66,7 +66,11 @@ def get_users():
     query = request.args.get('query')
     all_users = []
     if query:
-        all_users = User.query.filter(or_(User.first_name.ilike(f'{query}%'), User.last_name.ilike(f'{query}%'))).order_by(User.id).limit(end - start).offset(start).all()
+        all_users = User.query.filter(or_(
+                    User.first_name.ilike(f'{query}%'),
+                    User.last_name.ilike(f'{query}%'),
+                    User.mobile_number.ilike(f'{query}%')
+                )).order_by(User.id).limit(end - start).offset(start).all()
     else:
         all_users = User.query.order_by(User.id).limit(end - start).offset(start).all()
     users = []
