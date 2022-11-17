@@ -1,5 +1,7 @@
 from flask import Blueprint, jsonify, make_response, request
 
+from sqlalchemy import or_
+
 from app.models.admin import Admin
 from app.models.user import Address, User
 from app.models.books import Book
@@ -58,11 +60,15 @@ def logout(admin):
     return response
 
 @api_admin.route('/get-users')
-@token_required
-def get_users(admin):
+def get_users():
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
-    all_users = User.query.order_by(User.id).limit(end - start).offset(start).all()
+    query = request.args.get('query')
+    all_users = []
+    if query:
+        all_users = User.query.filter(or_(User.first_name.like(f'%{query}%'), User.last_name.like(f'%{query}%'))).order_by(User.id).limit(end - start).offset(start).all()
+    else:
+        all_users = User.query.order_by(User.id).limit(end - start).offset(start).all()
     users = []
     for user in all_users:
         users.append(user.to_json())
