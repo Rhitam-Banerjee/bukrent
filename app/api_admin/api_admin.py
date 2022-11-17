@@ -34,12 +34,12 @@ def login():
             "status": "error",
             "message": "Incorrect password"
         }), 400
-    access_token = jwt.encode({'id' : admin.id, 'exp' : datetime.utcnow() + timedelta(minutes=45)}, os.environ.get('SECRET_KEY'), "HS256")
+    access_token_admin = jwt.encode({'id' : admin.id, 'exp' : datetime.utcnow() + timedelta(minutes=45)}, os.environ.get('SECRET_KEY'), "HS256")
     response = make_response(jsonify({
         "status": "success",
         "admin": admin.to_json(),
     }), 200)
-    response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='None')
+    response.set_cookie('access_token_admin', access_token_admin, secure=True, httponly=True, samesite='None')
     return response
 
 @api_admin.route('/refresh')
@@ -56,23 +56,30 @@ def logout(admin):
     response = make_response(jsonify({
         "status": "success",
     }))
-    response.set_cookie('access_token', '', secure=True, httponly=True, samesite='None')
+    response.set_cookie('access_token_admin', '', secure=True, httponly=True, samesite='None')
     return response
 
 @api_admin.route('/get-users')
 def get_users():
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
-    query = request.args.get('query')
+    search = request.args.get('query')
+    sort = request.args.get('sort')
+
     all_users = []
-    if query:
-        all_users = User.query.filter(or_(
-                    User.first_name.ilike(f'{query}%'),
-                    User.last_name.ilike(f'{query}%'),
-                    User.mobile_number.ilike(f'{query}%')
-                )).order_by(User.id).limit(end - start).offset(start).all()
+    query = User.query
+
+    if search:
+        query = query.filter(or_(
+                User.first_name.ilike(f'{search}%'),
+                User.last_name.ilike(f'{search}%'),
+                User.mobile_number.ilike(f'{search}%')
+            ))
+    if sort and int(sort) == 1:
+        query = query.order_by(User.id)
     else:
-        all_users = User.query.order_by(User.id).limit(end - start).offset(start).all()
+        query = query.order_by(User.id.desc())
+    all_users = query.limit(end - start).offset(start).all()
     users = []
     for user in all_users:
         users.append(user.to_json())

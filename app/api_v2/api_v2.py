@@ -55,7 +55,7 @@ def submit_mobile():
 
     user = User.query.filter_by(mobile_number=mobile_number).first()
 
-    if user and user.password:
+    if user and user.password and user.payment_status == 'Paid':
         return jsonify({
             "redirect": url_for('views.login'),
             "status": "success",
@@ -95,7 +95,7 @@ def login():
 
     if user:
         if user.password == password:
-            access_token = jwt.encode({'id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, os.environ.get('SECRET_KEY'), "HS256")
+            access_token = jwt.encode({'id' : user.id}, os.environ.get('SECRET_KEY'), "HS256")
             response = None
             if not user.plan_id:
                 response = make_response(jsonify({
@@ -172,7 +172,12 @@ def signup():
             "message": "Invalid mobile number",
             "status": "error"
         }), 400
-    elif not user.payment_id:
+    elif user.password:
+        return jsonify({
+            "message": "Already signed up",
+            "status": "error"
+        })
+    elif not user.payment_id or user.payment_status != 'Paid':
         return jsonify({
             "message": "Payment not done",
             "status": "error"
@@ -195,9 +200,19 @@ def signup():
         age_groups = list(set(age_groups))
         user.add_age_groups(age_groups)
 
+        account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+        auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+        client = Client(account_sid, auth_token)
+
+        # message = client.messages.create(
+        #     body=f'Your Bukrent registration was successful! Your login credentials are:- \nMobile Number - {mobile_number} and Password - 12345 (if you did not update it)',
+        #     # from_='+919004587452',
+        #     to=f'+91{mobile_number}'
+        # )
+
         db.session.commit()
 
-        access_token = jwt.encode({'id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, os.environ.get('SECRET_KEY'), "HS256")
+        access_token = jwt.encode({'id' : user.id}, os.environ.get('SECRET_KEY'), "HS256")
 
         response = make_response(jsonify({
             "redirect": url_for('views.confirm_mobile'),

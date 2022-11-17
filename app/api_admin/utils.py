@@ -12,11 +12,11 @@ from datetime import datetime
 def token_required(f):
    @wraps(f)
    def decorator(*args, **kwargs):
-       access_token = request.cookies.get('access_token')
-       if not access_token:
+       access_token_admin = request.cookies.get('access_token_admin')
+       if not access_token_admin:
            return jsonify({'message': 'No access token'}), 401
        try:
-           data = jwt.decode(access_token, os.environ.get('SECRET_KEY'), algorithms=["HS256"])
+           data = jwt.decode(access_token_admin, os.environ.get('SECRET_KEY'), algorithms=["HS256"])
            admin = Admin.query.filter_by(id=data['id']).first()
        except:
            return jsonify({'message': 'Invalid access token'})

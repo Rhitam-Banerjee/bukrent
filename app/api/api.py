@@ -56,7 +56,7 @@ def submit_mobile():
     session["mobile_number"] = mobile_number
     user = User.query.filter_by(mobile_number=mobile_number).first()
 
-    if user and user.password:
+    if user and user.password and user.payment_status == 'Paid':
         return jsonify({
             "redirect": url_for('views.login'),
             "status": "success",
