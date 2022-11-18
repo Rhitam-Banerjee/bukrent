@@ -60,7 +60,8 @@ def logout(admin):
     return response
 
 @api_admin.route('/get-users')
-def get_users():
+@token_required
+def get_users(admin):
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
     search = request.args.get('query')
@@ -82,7 +83,8 @@ def get_users():
     all_users = query.limit(end - start).offset(start).all()
     users = []
     for user in all_users:
-        users.append(user.to_json())
+        user = User.query.get(user.id)
+        users.append({"password": user.password, **user.to_json()})
     return jsonify({
         "status": "success",
         "users": users

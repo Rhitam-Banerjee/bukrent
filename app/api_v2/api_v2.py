@@ -55,7 +55,7 @@ def submit_mobile():
 
     user = User.query.filter_by(mobile_number=mobile_number).first()
 
-    if user and user.password and user.payment_status == 'Paid':
+    if user and user.password and user.payment_status == 'Paid' and user.first_name and len(user.address) and len(user.child):
         return jsonify({
             "redirect": url_for('views.login'),
             "status": "success",
@@ -522,6 +522,55 @@ def change_password(user):
         return jsonify({
             "status": "success"
         }), 200
+    except Exception as e:
+        print(e)
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api_v2.route("/forgot-password", methods=["POST"])
+def forgot_password():
+    try:
+        mobile_number = request.json.get('mobile_number')
+        password = request.json.get("password")
+        confirm_password = request.json.get('confirm_password')
+        otp = request.json.get('otp')
+        user = User.query.filter_by(mobile_number=mobile_number).first()
+        if not user:
+            return jsonify({
+                "message": "Invalid mobile number",
+                "status": "success"
+            }), 400
+        if not password or len(password) < 5:
+            return jsonify({
+                "message": "Password should be atleast of 5 characters",
+                "status": "success"
+            }), 400
+        if password != confirm_password:
+            return jsonify({
+                "message": "Passwords do not match",
+                "status": "success"
+            }), 400
+
+        account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+        auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+        client = Client(account_sid, auth_token)
+
+        verification_check = client.verify.services(os.environ.get("OTP_SERVICE_ID")).verification_checks.create(to=f"+91{user.mobile_number}", code=otp)
+
+        if verification_check.status == "approved":
+            user.password = password
+            db.session.commit()
+            return jsonify({
+                "status": "success",
+                "message": "Password updated"
+            }), 200
+        else:
+            return jsonify({
+                "message": "Verification Failed! Try Again.",
+                "status": "error"
+            }), 400
     except Exception as e:
         print(e)
         return jsonify({
