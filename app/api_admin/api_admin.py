@@ -173,6 +173,7 @@ def update_user(admin):
 def add_user(admin):
     name = request.json.get('name')
     mobile_number = request.json.get('mobile_number')
+    password = request.json.get('password')
     contact_number = request.json.get('contact_number')
     address = request.json.get('address')
     pin_code = request.json.get('pin_code')
@@ -184,7 +185,7 @@ def add_user(admin):
     payment_status = request.json.get('payment_status')
     current_books = request.json.get('current_books')
     next_books = request.json.get('next_books')
-    if not all((name, mobile_number, address, pin_code, plan_id, plan_date, plan_duration, payment_status)):
+    if not all((name, mobile_number, password)):
         return jsonify({
             "status": "error",
             "message": "Fill all the fields"
@@ -200,15 +201,28 @@ def add_user(admin):
     last_name = ''
     if len(name.split()) > 1:
         last_name = ' '.join(name.split()[1:])
-    user = User.create(first_name, last_name, mobile_number, '')
+    user = User.create(first_name, last_name, mobile_number, password)
     user.contact_number = contact_number
-    user.plan_id = plan_id
     user.payment_id = payment_id
-    user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
     user.plan_duration = plan_duration
     user.source = source
     user.payment_status = payment_status
-    address = Address.create({"area": address, "pin_code": pin_code}, user.id)
+    if user.plan_date:
+        user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
+    if plan_id:
+        plan_id = int(plan_id)
+    if plan_id == 1:
+        user.plan_id = os.environ.get('RZP_PLAN_1_ID')
+        user.books_per_week = 1
+    elif plan_id == 2:
+        user.plan_id = os.environ.get('RZP_PLAN_2_ID')
+        user.books_per_week = 2
+    elif plan_id == 4:
+        user.plan_id = os.environ.get('RZP_PLAN_3_ID')
+        user.books_per_week = 4
+
+    if address and pin_code:
+        address = Address.create({"area": address, "pin_code": pin_code}, user.id)
 
     bucket_size = 1
     if plan_id == os.environ.get('RZP_PLAN_2_ID'):

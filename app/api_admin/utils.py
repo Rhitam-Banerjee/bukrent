@@ -36,9 +36,12 @@ def validate_user(f):
         next_books = request.json.get('next_books')
         payment_status = request.json.get('payment_status')
         payment_id = request.json.get('payment_id')
+        password = request.json.get('password')
         try:
             if mobile_number and (not mobile_number.isnumeric() or len(mobile_number) != 10):
                 raise ValueError("Invalid mobile number")
+            if password and len(password.strip()) < 5:
+                raise ValueError("Password should be of atleast 5 characters")
             if contact_number and (not contact_number.isnumeric() or len(contact_number) != 10):
                 raise ValueError("Invalid contact number")
             if pin_code and len(pin_code) != 6:

@@ -206,11 +206,11 @@ def signup():
 
         # message = client.messages.create(
         #     body=f'Your Bukrent registration was successful! Your login credentials are:- \nMobile Number - {mobile_number} and Password - 12345 (if you did not update it)',
-        #     # from_='+919004587452',
+        #     from_='+918750445533',
         #     to=f'+91{mobile_number}'
         # )
 
-        db.session.commit()
+        # db.session.commit()
 
         access_token = jwt.encode({'id' : user.id}, os.environ.get('SECRET_KEY'), "HS256")
 
