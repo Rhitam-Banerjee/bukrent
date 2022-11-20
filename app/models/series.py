@@ -64,7 +64,7 @@ class Series(db.Model):
                 Series.age5==True,
                 Series.age6==True
             )).all()[start:end]
-        
+
         final_series = []
         for serie in series:
             final_series.append({
@@ -73,3 +73,9 @@ class Series(db.Model):
             })
 
         return final_series
+
+    def to_json(self):
+        return {
+            "name": self.name,
+            "guid": self.guid
+        }

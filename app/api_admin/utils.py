@@ -37,6 +37,7 @@ def validate_user(f):
         payment_status = request.json.get('payment_status')
         payment_id = request.json.get('payment_id')
         password = request.json.get('password')
+        children = request.json.get('children')
         try:
             if mobile_number and (not mobile_number.isnumeric() or len(mobile_number) != 10):
                 raise ValueError("Invalid mobile number")
@@ -44,6 +45,13 @@ def validate_user(f):
                 raise ValueError("Password should be of atleast 5 characters")
             if contact_number and (not contact_number.isnumeric() or len(contact_number) != 10):
                 raise ValueError("Invalid contact number")
+            if children and len(children):
+                for child in children:
+                    if not all((child.get("name"), child.get("dob"), child.get("age_group"))):
+                        return jsonify({
+                            "message": "All fields for all the kids are necessary.",
+                            "status": "error"
+                        }), 400
             if pin_code and len(pin_code) != 6:
                 raise ValueError("Invalid PIN code")
             if plan_id and int(plan_id) not in [1, 2, 4]:

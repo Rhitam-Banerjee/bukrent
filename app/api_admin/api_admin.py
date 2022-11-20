@@ -7,6 +7,10 @@ from app.models.user import Address, User
 from app.models.books import Book
 from app.models.buckets import DeliveryBucket
 from app.models.order import Order
+from app.models.author import Author
+from app.models.publishers import Publisher
+from app.models.series import Series
+from app.models.format import Format
 from app import db
 
 from functools import wraps
@@ -187,6 +191,7 @@ def add_user(admin):
     payment_status = request.json.get('payment_status')
     current_books = request.json.get('current_books')
     next_books = request.json.get('next_books')
+    children = request.json.get('children')
     if not all((name, mobile_number, password)):
         return jsonify({
             "status": "error",
@@ -226,6 +231,15 @@ def add_user(admin):
     if address and pin_code:
         address = Address.create({"area": address, "pin_code": pin_code}, user.id)
 
+    if children and type(children) == type([]) and len(children):
+        for child in children:
+            user.add_child(child)
+        age_groups = []
+        for child in children:
+            age_groups.append(child.get("age_group"))
+        age_groups = list(set(age_groups))
+        user.add_age_groups(age_groups)
+
     bucket_size = 1
     if plan_id == os.environ.get('RZP_PLAN_2_ID'):
         bucket_size = 2
@@ -253,4 +267,44 @@ def add_user(admin):
         "status": "success",
         "message": "User updated",
         "user": user.to_json()
+    })
+
+@api_admin.route('/get-books')
+def get_books():
+    start = int(request.args.get('start'))
+    end = int(request.args.get('end'))
+    author = request.args.get('authors')
+    publisher = request.args.get('publishers')
+    series = request.args.get('series')
+    type = request.args.get('types')
+
+    books = []
+    if author:
+        books = Author.query.filter_by(guid=author).first().books[start:end]
+    elif publisher:
+        books = Publisher.query.filter_by(guid=publisher).first().books[start:end]
+    elif series:
+        books = Series.query.filter_by(guid=series).first().books[start:end]
+    elif type:
+        books = Format.query.filter_by(guid=type).first().books[start:end]
+    else:
+        books = Book.query.limit(end - start).offset(start).all()
+
+    return jsonify({
+        "status": "success",
+        "books": [book.to_json() for book in books]
+    })
+
+@api_admin.route('/get-filters')
+def get_filters():
+    authors = Author.query.limit(10).all()
+    publishers = Publisher.query.limit(10).all()
+    series = Series.query.limit(10).all()
+    types = Format.query.limit(10).all()
+    return jsonify({
+        "status": "success",
+        "authors": [author.to_json() for author in authors],
+        "publishers": [publisher.to_json() for publisher in publishers],
+        "series": [serie.to_json() for serie in series],
+        "types": [type.to_json() for type in types],
     })

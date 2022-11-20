@@ -62,7 +62,7 @@ class Format(db.Model):
                 Format.age5==True,
                 Format.age6==True
             )).all()[start:end]
-        
+
         final_types = []
         for format_obj in types:
             final_types.append({
@@ -71,3 +71,9 @@ class Format(db.Model):
             })
 
         return final_types
+
+    def to_json(self):
+        return {
+            "name": self.name,
+            "guid": self.guid
+        }

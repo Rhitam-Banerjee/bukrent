@@ -210,7 +210,7 @@ def signup():
         #     to=f'+91{mobile_number}'
         # )
 
-        # db.session.commit()
+        db.session.commit()
 
         access_token = jwt.encode({'id' : user.id}, os.environ.get('SECRET_KEY'), "HS256")
 

@@ -60,7 +60,7 @@ class Publisher(db.Model):
                 Publisher.age5==True,
                 Publisher.age6==True
             )).all()[start:end]
-        
+
         final_publishers = []
         for publisher in publishers:
             final_publishers.append({
@@ -69,3 +69,9 @@ class Publisher(db.Model):
             })
 
         return final_publishers
+
+    def to_json(self):
+        return {
+            "name": self.name,
+            "guid": self.guid
+        }

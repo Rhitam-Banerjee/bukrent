@@ -66,7 +66,7 @@ class Author(db.Model):
                 Author.age5==True,
                 Author.age6==True
             )).all()[start:end]
-        
+
         final_authors = []
         for author in authors:
             final_authors.append({
@@ -75,3 +75,9 @@ class Author(db.Model):
             })
 
         return final_authors
+
+    def to_json(self):
+        return {
+            "name": self.name,
+            "guid": self.guid
+        }
