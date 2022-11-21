@@ -3,6 +3,8 @@ import uuid
 
 from app.models.books import BookPublisher
 
+from sqlalchemy import or_
+
 class Publisher(db.Model):
     __tablename__ = "publishers"
     id = db.Column(db.Integer, primary_key=True)

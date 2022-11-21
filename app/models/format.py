@@ -4,6 +4,8 @@ import uuid
 from app.models.books import BookFormat
 from app.models.user import FormatPreferences
 
+from sqlalchemy import or_
+
 class Format(db.Model):
     __tablename__ = "formats"
     id = db.Column(db.Integer, primary_key=True)

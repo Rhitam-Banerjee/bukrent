@@ -64,16 +64,22 @@ def logout(admin):
     return response
 
 @api_admin.route('/get-users')
-@token_required
-def get_users(admin):
+# @token_required
+def get_users():
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
     search = request.args.get('query')
     sort = request.args.get('sort')
+    payment_status = request.args.get('payment_status')
 
     all_users = []
     query = User.query
 
+    if payment_status:
+        if payment_status == 'Unpaid':
+            query = query.filter(or_(User.payment_status == 'Unpaid', User.payment_status == None, User.payment_status == ''))
+        else:
+            query = query.filter_by(payment_status=payment_status)
     if search:
         query = query.filter(or_(
                 User.first_name.ilike(f'{search}%'),
@@ -269,6 +275,26 @@ def add_user(admin):
         "user": user.to_json()
     })
 
+@api_admin.route('/delete-user', methods=['POST'])
+@token_required
+def delete_user(admin):
+    id = request.json.get('id')
+
+    user = User.query.get(id)
+    if not user:
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID"
+        }), 400
+
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": "User deleted"
+    })
+
 @api_admin.route('/get-books')
 def get_books():
     start = int(request.args.get('start'))
@@ -297,14 +323,21 @@ def get_books():
 
 @api_admin.route('/get-filters')
 def get_filters():
-    authors = Author.query.limit(10).all()
-    publishers = Publisher.query.limit(10).all()
-    series = Series.query.limit(10).all()
-    types = Format.query.limit(10).all()
+    age_group = int(request.args.get('age_group'))
+    filter_limit = int(request.args.get('filter_limit'))
+
+    if not age_group:
+        age_group = 0
+
+    authors = Author.get_authors(age_group, 0, filter_limit)
+    publishers = Publisher.get_publishers(age_group, 0, filter_limit)
+    series = Series.get_series(age_group, 0, filter_limit)
+    types = Format.get_types(age_group, 0, filter_limit)
+
     return jsonify({
         "status": "success",
-        "authors": [author.to_json() for author in authors],
-        "publishers": [publisher.to_json() for publisher in publishers],
-        "series": [serie.to_json() for serie in series],
-        "types": [type.to_json() for type in types],
+        "authors": authors,
+        "publishers": publishers,
+        "series": series,
+        "types": types,
     })
