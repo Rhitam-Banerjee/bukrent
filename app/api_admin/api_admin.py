@@ -64,13 +64,16 @@ def logout(admin):
     return response
 
 @api_admin.route('/get-users')
-# @token_required
-def get_users():
+@token_required
+def get_users(admin):
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
     search = request.args.get('query')
     sort = request.args.get('sort')
     payment_status = request.args.get('payment_status')
+    plan = request.args.get('plan')
+    plan_duration = request.args.get('duration')
+    plan_month = request.args.get('plan_month')
 
     all_users = []
     query = User.query
@@ -80,6 +83,14 @@ def get_users():
             query = query.filter(or_(User.payment_status == 'Unpaid', User.payment_status == None, User.payment_status == ''))
         else:
             query = query.filter_by(payment_status=payment_status)
+    if plan:
+        query = query.filter_by(books_per_week=plan)
+    # if plan_month:
+    #     plan_month = datetime.strptime(plan_month, '%Y-%m')
+    #     query = query.filter(User.plan_date <= plan_month, User.plan_date )
+    if plan_duration:
+        print(plan_duration, type(plan_duration))
+        query = query.filter_by(plan_duration=plan_duration)
     if search:
         query = query.filter(or_(
                 User.first_name.ilike(f'{search}%'),
@@ -90,7 +101,7 @@ def get_users():
         query = query.order_by(User.id)
     else:
         query = query.order_by(User.id.desc())
-    all_users = query.limit(end - start).offset(start).all()
+    all_users = query.filter_by(is_deleted=False).limit(end - start).offset(start).all()
     users = []
     for user in all_users:
         user = User.query.get(user.id)
@@ -98,6 +109,15 @@ def get_users():
     return jsonify({
         "status": "success",
         "users": users
+    })
+
+@api_admin.route('/get-archived-users')
+@token_required
+def get_archived_users(admin):
+    users = User.query.filter_by(is_deleted=True).all()
+    return jsonify({
+        "status": "success",
+        "users": [user.to_json() for user in users]
     })
 
 @api_admin.route('/update-user', methods=['POST'])
@@ -115,6 +135,7 @@ def update_user(admin):
     plan_id = request.json.get('plan_id')
     payment_status = request.json.get('payment_status')
     source = request.json.get('source')
+    password = request.json.get('password')
 
     if not id:
         return jsonify({
@@ -144,6 +165,9 @@ def update_user(admin):
         user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
     else:
         user.plan_date = None
+
+    if password:
+        user.password = password
 
     if plan_duration:
         user.plan_duration = plan_duration
@@ -176,7 +200,7 @@ def update_user(admin):
     return jsonify({
         "status": "success",
         "message": "User updated",
-        "user": user.to_json()
+        "user": {"password": user.password, **user.to_json()}
     })
 
 @api_admin.route('/add-user', methods=['POST'])
@@ -203,8 +227,12 @@ def add_user(admin):
             "status": "error",
             "message": "Fill all the fields"
         }), 400
-
-    if User.query.filter_by(mobile_number=mobile_number).count():
+    if not children or not len(children):
+        return jsonify({
+            "status": "error",
+            "message": "Add atleast 1 child"
+        }), 400
+    if User.query.filter_by(mobile_number=mobile_number, is_deleted=False).count():
         return jsonify({
             "status": "error",
             "message": "Mobile number already exists"
@@ -220,7 +248,7 @@ def add_user(admin):
     user.plan_duration = plan_duration
     user.source = source
     user.payment_status = payment_status
-    if user.plan_date:
+    if plan_date:
         user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
     if plan_id:
         plan_id = int(plan_id)
@@ -272,12 +300,33 @@ def add_user(admin):
     return jsonify({
         "status": "success",
         "message": "User updated",
-        "user": user.to_json()
+        "user": {"password": user.password, **user.to_json()}
     })
 
 @api_admin.route('/delete-user', methods=['POST'])
 @token_required
 def delete_user(admin):
+    id = request.json.get('id')
+
+    user = User.query.get(id)
+    if not user or user.is_deleted:
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID"
+        }), 400
+
+    user.is_deleted = True
+
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": "User deleted"
+    })
+
+@api_admin.route('/restore-user', methods=['POST'])
+@token_required
+def restore_user(admin):
     id = request.json.get('id')
 
     user = User.query.get(id)
@@ -287,12 +336,13 @@ def delete_user(admin):
             "message": "Invalid user ID"
         }), 400
 
-    db.session.delete(user)
+    user.is_deleted = False
+
     db.session.commit()
 
     return jsonify({
         "status": "success",
-        "message": "User deleted"
+        "message": "User restored"
     })
 
 @api_admin.route('/get-books')

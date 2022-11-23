@@ -19,7 +19,7 @@ def token_required(f):
            data = jwt.decode(access_token_admin, os.environ.get('SECRET_KEY'), algorithms=["HS256"])
            admin = Admin.query.filter_by(id=data['id']).first()
        except:
-           return jsonify({'message': 'Invalid access token'})
+           return jsonify({'message': 'Invalid access token'}), 401
        return f(admin, *args, **kwargs)
    return decorator
 

@@ -484,6 +484,7 @@ def subscription_successful():
     payment_id = request.json.get("payment_id")
 
     user = User.query.filter_by(mobile_number=mobile_number).first()
+    user.password = '12345'
 
     user.update_subscription_details(subscription_id, payment_id)
 
@@ -500,6 +501,7 @@ def payment_successful():
     order_id = request.json.get("order_id")
 
     user = User.query.filter_by(mobile_number=mobile_number).first()
+    user.password = '12345'
 
     user.update_payment_details(order_id, payment_id)
 

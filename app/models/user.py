@@ -309,6 +309,8 @@ class User(db.Model):
     subscription_id = db.Column(db.String)
     order_id = db.Column(db.String)
 
+    is_deleted = db.Column(db.Boolean, default=False)
+
     delivery_buckets = db.relationship(DeliveryBucket, lazy=True)
     book_dump = db.relationship(Dump, lazy=True)
     wishlist = db.relationship(Wishlist, lazy=True)
@@ -317,6 +319,7 @@ class User(db.Model):
     address = db.relationship(Address, lazy=True)
     order = db.relationship(Order, lazy=True)
     child = db.relationship(Child, lazy=True)
+
     #Orders
 
     def to_json(self):
