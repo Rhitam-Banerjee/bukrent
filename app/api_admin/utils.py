@@ -9,6 +9,9 @@ import os
 import jwt
 from datetime import datetime
 
+import boto3
+from botocore.exceptions import NoCredentialsError
+
 def token_required(f):
    @wraps(f)
    def decorator(*args, **kwargs):
@@ -79,3 +82,19 @@ def validate_user(f):
             }), 400
         return f(*args, **kwargs)
     return decorator
+
+
+def upload_to_aws(file, s3_file, filename):
+    AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY')
+    AWS_SECRET_KEY = os.environ.get('AWS_SECRET_KEY')
+
+    bucket = 'bukrent-production'
+    s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
+
+    try:
+        print(s3.upload_fileobj(file, bucket, filename))
+        return True
+    except FileNotFoundError:
+        return False
+    except NoCredentialsError:
+        return False

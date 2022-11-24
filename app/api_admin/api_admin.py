@@ -4,18 +4,23 @@ from sqlalchemy import or_
 
 from app.models.admin import Admin
 from app.models.user import Address, User
-from app.models.books import Book
+from app.models.books import Book, BookAuthor, BookCategory
 from app.models.buckets import DeliveryBucket
 from app.models.order import Order
 from app.models.author import Author
 from app.models.publishers import Publisher
 from app.models.series import Series
 from app.models.format import Format
+from app.models.category import Category
 from app import db
+
+import uuid
+
+import json
 
 from functools import wraps
 
-from app.api_admin.utils import validate_user, token_required
+from app.api_admin.utils import validate_user, token_required, upload_to_aws
 
 import os
 import jwt
@@ -89,7 +94,6 @@ def get_users(admin):
     #     plan_month = datetime.strptime(plan_month, '%Y-%m')
     #     query = query.filter(User.plan_date <= plan_month, User.plan_date )
     if plan_duration:
-        print(plan_duration, type(plan_duration))
         query = query.filter_by(plan_duration=plan_duration)
     if search:
         query = query.filter(or_(
@@ -346,13 +350,15 @@ def restore_user(admin):
     })
 
 @api_admin.route('/get-books')
-def get_books():
+@token_required
+def get_books(admin):
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
     author = request.args.get('authors')
     publisher = request.args.get('publishers')
     series = request.args.get('series')
     type = request.args.get('types')
+    search = request.args.get('query')
 
     books = []
     if author:
@@ -364,15 +370,140 @@ def get_books():
     elif type:
         books = Format.query.filter_by(guid=type).first().books[start:end]
     else:
-        books = Book.query.limit(end - start).offset(start).all()
+        books = Book.query.filter(or_(
+            Book.name.ilike(f'{search}%'),
+            Book.description.ilike(f'%{search}%'),
+            Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
+
+    final_books = []
+    for book in books:
+        tags = []
+        book_json = book.to_json()
+        for tag in book_json['categories']:
+            tag_obj = Category.query.filter_by(name=tag).first()
+            tags.append({"guid": tag_obj.guid, "name": tag_obj.name})
+        book_json['tags'] = tags
+        final_books.append(book_json)
 
     return jsonify({
         "status": "success",
-        "books": [book.to_json() for book in books]
+        "books": final_books
+    })
+
+@api_admin.route('/add-book', methods=['POST'])
+@token_required
+def add_book(admin):
+    isbn = request.form.get('isbn')
+    title = request.form.get('title')
+    authors = request.form.get('authors')
+    copies = request.form.get('copies')
+    rentals = request.form.get('rentals')
+    tags = request.form.get('tags')
+    image = request.files.get('image')
+    type = request.form.get('type')
+
+    if not all((isbn, title)):
+        return jsonify({
+            "status": "error",
+            "message": "ISBN and title is necessary"
+        }), 400
+
+    if type == 'add':
+        if Book.query.filter_by(isbn=isbn).count():
+            return jsonify({
+                "status": "error",
+                "message": "Existing ISBN"
+            }), 400
+        book = Book()
+        book.guid = str(uuid.uuid4())
+        book.review_count = 0
+        book.book_format = ''
+        book.language = ''
+        book.description = ''
+    else:
+        if not Book.query.filter_by(isbn=isbn).count():
+            return jsonify({
+                "status": "error",
+                "message": "Invalid ISBN"
+            }), 400
+        book = Book.query.filter_by(isbn=isbn).first()
+        book_json = book.to_json()
+        for author in book_json['authors']:
+            author_obj = Author.query.filter_by(name=author).first()
+            book_author = BookAuthor.query.filter_by(book_id=book.id, author_id=author_obj.id).first()
+            db.session.delete(book_author)
+        for tag in book_json['categories']:
+            tag = Category.query.filter_by(name=tag).first()
+            book_category = BookCategory.query.filter_by(book_id=book.id, category_id=tag.id).first()
+            db.session.delete(book_category)
+
+    if image:
+        extension = image.filename.split(".")[-1]
+        upload_to_aws(image, 'book_images', f'book_images/{isbn}.{extension}')
+        s3_url = os.environ.get('AWS_S3_URL')
+        book.image = f'{s3_url}/book_images/{isbn}.{extension}'
+        print(book.image)
+    elif type == 'add':
+        book.image = ''
+
+    book.isbn = isbn
+    book.name = title
+    book.stock_available = copies
+    book.rentals = rentals
+
+    db.session.add(book)
+
+    if authors:
+        authors = json.loads(authors)
+        for author in authors:
+            if author:
+                author_obj = Author.query.filter(Author.name.ilike(author)).first()
+                if not author_obj:
+                    author_obj = Author()
+                    author_obj.name = author
+                    author_obj.guid = str(uuid.uuid4())
+                    author_obj.author_type = 'author'
+                    author_obj.total_books = 0
+                    db.session.add(author_obj)
+                    db.session.commit()
+                    author_obj = Author.query.filter_by(name=author).first()
+                author_obj.total_books += 1
+                book_author = BookAuthor()
+                book_author.book_id = book.id
+                book_author.author_id = author_obj.id
+                db.session.add(book_author)
+
+    if tags:
+        tags = json.loads(tags)
+        for tag in tags:
+            tag_obj = Category.query.filter_by(guid=tag).first()
+            if not tag_obj:
+                return jsonify({
+                    "status": "error",
+                    "message": "Invalid tag"
+                }), 400
+            book_category = BookCategory()
+            book_category.book_id = book.id
+            book_category.category_id = tag_obj.id
+            db.session.add(book_category)
+
+    db.session.commit()
+
+    final_book = book.to_json()
+    tags = []
+    for tag in final_book['categories']:
+        tag_obj = Category.query.filter_by(name=tag).first()
+        tags.append({"guid": tag_obj.guid, "name": tag_obj.name})
+    final_book['tags'] = tags
+
+    return jsonify({
+        "status": "success",
+        "book": final_book
     })
 
 @api_admin.route('/get-filters')
-def get_filters():
+@token_required
+def get_filters(admin):
     age_group = int(request.args.get('age_group'))
     filter_limit = int(request.args.get('filter_limit'))
 
@@ -383,6 +514,7 @@ def get_filters():
     publishers = Publisher.get_publishers(age_group, 0, filter_limit)
     series = Series.get_series(age_group, 0, filter_limit)
     types = Format.get_types(age_group, 0, filter_limit)
+    tags = Category.get_genres(0)
 
     return jsonify({
         "status": "success",
@@ -390,4 +522,5 @@ def get_filters():
         "publishers": publishers,
         "series": series,
         "types": types,
+        "tags": tags
     })

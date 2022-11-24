@@ -43,6 +43,7 @@ class Book(db.Model):
     price = db.Column(db.String)
     description = db.Column(db.String, nullable=False)
     stock_available = db.Column(db.Integer)
+    rentals = db.Column(db.Integer)
 
     amazon_bestseller = db.Column(db.Boolean, default=False)
     bestseller_age1 = db.Column(db.Boolean, default=False)
@@ -68,7 +69,7 @@ class Book(db.Model):
     suggestion_age6 = db.Column(db.Boolean, default=False)
 
     tag1 = db.Column(db.String, default=False)
-    
+
     details = db.relationship(Detail, lazy=True, uselist=False)
     annotation = db.relationship(Annotation, lazy=True, uselist=False)
     reviews = db.relationship(Review, lazy=True)
@@ -145,7 +146,7 @@ class Book(db.Model):
                 books = Book.query.filter_by(borrowed_age6=True).order_by(Book.id.desc()).all()[start:end]
         else:
             books = Book.query.filter_by(most_borrowed=True).order_by(Book.id.desc()).all()[start:end]
-        
+
         final_books = []
         for book in books:
             final_books.append(book.to_json())
@@ -169,7 +170,7 @@ class Book(db.Model):
                 books = Book.query.filter_by(bestseller_age6=True).all()[start:end]
         else:
             books = Book.query.filter_by(amazon_bestseller=True).all()[start:end]
-        
+
         final_books = []
         for book in books:
             final_books.append(book.to_json())
@@ -260,5 +261,7 @@ class Book(db.Model):
             "description": self.description,
             "categories": [category.name for category in self.categories],
             "authors": [author.name for author in self.authors],
-            "publishers": [publisher.name for publisher in self.publishers]
+            "publishers": [publisher.name for publisher in self.publishers],
+            "stock_available": self.stock_available,
+            "rentals": self.rentals,
         }
