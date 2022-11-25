@@ -350,8 +350,8 @@ def restore_user(admin):
     })
 
 @api_admin.route('/get-books')
-@token_required
-def get_books(admin):
+#@token_required
+def get_books():
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
     author = request.args.get('authors')
@@ -384,6 +384,8 @@ def get_books(admin):
             tags.append({"guid": tag_obj.guid, "name": tag_obj.name})
         book_json['tags'] = tags
         final_books.append(book_json)
+    
+    print(len(final_books))
 
     return jsonify({
         "status": "success",

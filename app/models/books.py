@@ -68,6 +68,13 @@ class Book(db.Model):
     suggestion_age5 = db.Column(db.Boolean, default=False)
     suggestion_age6 = db.Column(db.Boolean, default=False)
 
+    age_group_1 = db.Column(db.Boolean, default=False)
+    age_group_2 = db.Column(db.Boolean, default=False)
+    age_group_3 = db.Column(db.Boolean, default=False)
+    age_group_4 = db.Column(db.Boolean, default=False)
+    age_group_5 = db.Column(db.Boolean, default=False)
+    age_group_6 = db.Column(db.Boolean, default=False)
+
     tag1 = db.Column(db.String, default=False)
 
     details = db.relationship(Detail, lazy=True, uselist=False)
