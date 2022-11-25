@@ -514,7 +514,7 @@ def get_filters(admin):
     publishers = Publisher.get_publishers(age_group, 0, filter_limit)
     series = Series.get_series(age_group, 0, filter_limit)
     types = Format.get_types(age_group, 0, filter_limit)
-    tags = Category.get_genres(0)
+    tags = Category.query.all()
 
     return jsonify({
         "status": "success",
@@ -522,5 +522,5 @@ def get_filters(admin):
         "publishers": publishers,
         "series": series,
         "types": types,
-        "tags": tags
+        "tags": [tag.to_json() for tag in tags]
     })

@@ -62,3 +62,6 @@ class Category(db.Model):
             "name": genre.name,
             "guid": genre.guid
         } for genre in genres]
+
+    def to_json(self): 
+        return {"name": self.name, "guid": self.guid}
