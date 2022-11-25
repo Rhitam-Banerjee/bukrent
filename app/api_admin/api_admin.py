@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify, make_response, request
 from sqlalchemy import or_
 
 from app.models.admin import Admin
-from app.models.user import Address, User
+from app.models.user import Address, User, Child
 from app.models.books import Book, BookAuthor, BookCategory
 from app.models.buckets import DeliveryBucket
 from app.models.order import Order
@@ -140,6 +140,7 @@ def update_user(admin):
     payment_status = request.json.get('payment_status')
     source = request.json.get('source')
     password = request.json.get('password')
+    children = request.json.get('children')
 
     if not id:
         return jsonify({
@@ -178,6 +179,17 @@ def update_user(admin):
 
     if source:
         user.source = source
+
+    if children and type(children) == type([]):
+        for child in children:
+            child_obj = Child.query.filter_by(name=child['name']).first()
+            if not child_obj:
+                user.add_child(child)
+        age_groups = []
+        for child in children:
+            age_groups.append(child.get("age_group"))
+        age_groups = list(set(age_groups))
+        user.add_age_groups(age_groups)
 
     if plan_id:
         plan_id = int(plan_id)
@@ -350,7 +362,7 @@ def restore_user(admin):
     })
 
 @api_admin.route('/get-books')
-#@token_required
+# @token_required
 def get_books():
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
@@ -359,9 +371,44 @@ def get_books():
     series = request.args.get('series')
     type = request.args.get('types')
     search = request.args.get('query')
+    age_group = int(request.args.get('age_group'))
+
+    if not search:
+        search = ''
 
     books = []
-    if author:
+    if age_group:
+        if age_group == 1:
+            books = Book.query.filter_by(age_group_1=True).filter(or_(
+                Book.name.ilike(f'{search}%'),
+                Book.description.ilike(f'%{search}%'),
+                Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
+        elif age_group == 2:
+            books = Book.query.filter_by(age_group_2=True).filter(or_(
+                Book.name.ilike(f'{search}%'),
+                Book.description.ilike(f'%{search}%'),
+                Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
+        elif age_group == 3:
+            books = Book.query.filter_by(age_group_3=True).filter(or_(
+                Book.name.ilike(f'{search}%'),
+                Book.description.ilike(f'%{search}%'),
+                Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
+        elif age_group == 4:
+            books = Book.query.filter_by(age_group_4=True).filter(or_(
+                Book.name.ilike(f'{search}%'),
+                Book.description.ilike(f'%{search}%'),
+                Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
+        elif age_group == 5:
+            books = Book.query.filter_by(age_group_5=True).filter(or_(
+                Book.name.ilike(f'{search}%'),
+                Book.description.ilike(f'%{search}%'),
+                Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
+        elif age_group == 6:
+            books = Book.query.filter_by(age_group_6=True).filter(or_(
+                Book.name.ilike(f'{search}%'),
+                Book.description.ilike(f'%{search}%'),
+                Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
+    elif author:
         books = Author.query.filter_by(guid=author).first().books[start:end]
     elif publisher:
         books = Publisher.query.filter_by(guid=publisher).first().books[start:end]
@@ -384,8 +431,6 @@ def get_books():
             tags.append({"guid": tag_obj.guid, "name": tag_obj.name})
         book_json['tags'] = tags
         final_books.append(book_json)
-    
-    print(len(final_books))
 
     return jsonify({
         "status": "success",
@@ -444,7 +489,6 @@ def add_book(admin):
         upload_to_aws(image, 'book_images', f'book_images/{isbn}.{extension}')
         s3_url = os.environ.get('AWS_S3_URL')
         book.image = f'{s3_url}/book_images/{isbn}.{extension}'
-        print(book.image)
     elif type == 'add':
         book.image = ''
 
