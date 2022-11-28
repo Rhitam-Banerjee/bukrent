@@ -5,7 +5,7 @@ from sqlalchemy import or_
 from app.models.admin import Admin
 from app.models.user import Address, User, Child
 from app.models.books import Book, BookAuthor, BookCategory
-from app.models.buckets import DeliveryBucket
+from app.models.buckets import DeliveryBucket, Suggestion
 from app.models.order import Order
 from app.models.author import Author
 from app.models.publishers import Publisher
@@ -78,7 +78,6 @@ def get_users(admin):
     payment_status = request.args.get('payment_status')
     plan = request.args.get('plan')
     plan_duration = request.args.get('duration')
-    plan_month = request.args.get('plan_month')
 
     all_users = []
     query = User.query
@@ -90,9 +89,6 @@ def get_users(admin):
             query = query.filter_by(payment_status=payment_status)
     if plan:
         query = query.filter_by(books_per_week=plan)
-    # if plan_month:
-    #     plan_month = datetime.strptime(plan_month, '%Y-%m')
-    #     query = query.filter(User.plan_date <= plan_month, User.plan_date )
     if plan_duration:
         query = query.filter_by(plan_duration=plan_duration)
     if search:
@@ -109,7 +105,13 @@ def get_users(admin):
     users = []
     for user in all_users:
         user = User.query.get(user.id)
-        users.append({"password": user.password, **user.to_json()})
+        users.append({
+            "password": user.password,
+            "wishlist": user.get_wishlist(),
+            "suggestions": user.get_suggestions(),
+            "previous": user.get_previous_books(),
+            **user.to_json()
+        })
     return jsonify({
         "status": "success",
         "users": users
@@ -362,8 +364,8 @@ def restore_user(admin):
     })
 
 @api_admin.route('/get-books')
-# @token_required
-def get_books():
+@token_required
+def get_books(admin):
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
     author = request.args.get('authors')
@@ -569,4 +571,54 @@ def get_filters(admin):
         "series": series,
         "types": types,
         "tags": [tag.to_json() for tag in tags]
+    })
+
+@api_admin.route('/add-books-user', methods=['POST'])
+@token_required
+def add_books_user(admin): 
+    user_id = request.json.get('user_id')
+    isbn_list = request.json.get('isbn_list')
+    books_type = request.json.get('type')
+
+    if not all((user_id, isbn_list)) or type(isbn_list) != type([]): 
+        return jsonify({
+            "status": "error",
+            "message": "Provide user ID and a list of ISBNs"
+        }), 400
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID"
+        }), 400
+    
+    books_found, books_not_found = [], []
+    children = Child.query.filter_by(user_id=user_id).all()
+    for isbn in isbn_list: 
+        book = Book.query.filter_by(isbn=isbn).first()
+        if not book: 
+            books_not_found.append(isbn)
+        else: 
+            books_found.append(isbn)
+            if books_type == 'suggestions': 
+                for child in children: 
+                    Suggestion.create(user.id, book.id, child.age_group)
+            elif books_type == 'wishlist': 
+                user.add_to_wishlist(book.guid)
+            elif books_type == 'previous': 
+                Order.create(user.id, book.id, 0, datetime.now() - timedelta(days = 90))
+
+    user = {
+        "password": user.password,
+        "wishlist": user.get_wishlist(),
+        "suggestions": user.get_suggestions(),
+        "previous": user.get_previous_books(),
+        **user.to_json()
+    }
+
+    return jsonify({
+        "status": "success",
+        "books_found": books_found,
+        "books_not_found": books_not_found,
+        "user": user
     })
