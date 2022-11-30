@@ -510,8 +510,14 @@ def add_book(admin):
 
     book.isbn = isbn
     book.name = title
-    book.stock_available = copies
-    book.rentals = rentals
+    if copies: 
+        book.stock_available = copies
+    else: 
+        book.stock_available = 1
+    if rentals: 
+        book.rentals = rentals
+    else: 
+        book.rentals = 0
 
     db.session.add(book)
 
