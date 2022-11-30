@@ -42,8 +42,8 @@ class Book(db.Model):
     language = db.Column(db.String, nullable=False)
     price = db.Column(db.String)
     description = db.Column(db.String, nullable=False)
-    stock_available = db.Column(db.Integer)
-    rentals = db.Column(db.Integer)
+    stock_available = db.Column(db.Integer, default=1)
+    rentals = db.Column(db.Integer, default=0)
 
     amazon_bestseller = db.Column(db.Boolean, default=False)
     bestseller_age1 = db.Column(db.Boolean, default=False)
