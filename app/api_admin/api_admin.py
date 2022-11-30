@@ -375,66 +375,53 @@ def restore_user(admin):
         "message": "User restored"
     })
 
-@api_admin.route('/get-books')
+@api_admin.route('/get-books', methods=['POST'])
 @token_required
 def get_books(admin):
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
-    author = request.args.get('authors')
-    publisher = request.args.get('publishers')
-    series = request.args.get('series')
-    type = request.args.get('types')
     search = request.args.get('query')
     age_group = int(request.args.get('age_group'))
+    authors = request.json.get('authors')
+    publishers = request.json.get('publishers')
+    series = request.json.get('series')
+    types = request.json.get('types')
+    
+    age_authors = Author.get_authors(age_group, 0, 10000)
+    age_publishers = Publisher.get_publishers(age_group, 0, 10000)
+    age_series = Series.get_series(age_group, 0, 10000)
+    age_types = Format.get_types(age_group, 0, 10000)
 
-    if not search:
-        search = ''
+    books = {}
 
-    books = []
-    if age_group:
-        if age_group == 1:
-            books = Book.query.filter_by(age_group_1=True).filter(or_(
-                Book.name.ilike(f'{search}%'),
-                Book.description.ilike(f'%{search}%'),
-                Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
-        elif age_group == 2:
-            books = Book.query.filter_by(age_group_2=True).filter(or_(
-                Book.name.ilike(f'{search}%'),
-                Book.description.ilike(f'%{search}%'),
-                Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
-        elif age_group == 3:
-            books = Book.query.filter_by(age_group_3=True).filter(or_(
-                Book.name.ilike(f'{search}%'),
-                Book.description.ilike(f'%{search}%'),
-                Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
-        elif age_group == 4:
-            books = Book.query.filter_by(age_group_4=True).filter(or_(
-                Book.name.ilike(f'{search}%'),
-                Book.description.ilike(f'%{search}%'),
-                Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
-        elif age_group == 5:
-            books = Book.query.filter_by(age_group_5=True).filter(or_(
-                Book.name.ilike(f'{search}%'),
-                Book.description.ilike(f'%{search}%'),
-                Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
-        elif age_group == 6:
-            books = Book.query.filter_by(age_group_6=True).filter(or_(
-                Book.name.ilike(f'{search}%'),
-                Book.description.ilike(f'%{search}%'),
-                Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
-    elif author:
-        books = Author.query.filter_by(guid=author).first().books[start:end]
-    elif publisher:
-        books = Publisher.query.filter_by(guid=publisher).first().books[start:end]
-    elif series:
-        books = Series.query.filter_by(guid=series).first().books[start:end]
-    elif type:
-        books = Format.query.filter_by(guid=type).first().books[start:end]
-    else:
+    if search is not None: 
         books = Book.query.filter(or_(
             Book.name.ilike(f'{search}%'),
             Book.description.ilike(f'%{search}%'),
             Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
+    else: 
+        for author in authors: 
+            author_obj = Author.query.filter_by(guid=author).first()
+            if author_obj.to_json() in age_authors: 
+                for book in author_obj.books: 
+                    books[book.isbn] = book
+        for publisher in publishers: 
+            publisher_obj = Publisher.query.filter_by(guid=publisher).first()
+            if publisher_obj.to_json() in age_publishers: 
+                for book in publisher_obj.books: 
+                    books[book.isbn] = book
+        for serie in series: 
+            serie_obj = Series.query.filter_by(guid=serie).first()
+            if serie_obj.to_json() in age_series: 
+                for book in serie_obj.books: 
+                    books[book.isbn] = book
+        for format in types: 
+            format_obj = Format.query.filter_by(guid=format).first()
+            if format_obj.to_json() in age_types: 
+                for book in format_obj.books: 
+                    books[book.isbn] = book
+
+        books = list(books.values())[start:end]
 
     final_books = []
     for book in books:
@@ -563,6 +550,20 @@ def add_book(admin):
         "book": final_book
     })
 
+@api_admin.route('/delete-book', methods=['POST'])
+@token_required
+def delete_book(admin): 
+    guid = request.json.get('guid')
+    book = Book.query.filter_by(guid=guid).first()
+    if not book: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid book ID"
+        }), 400
+    db.session.delete(book)
+    db.session.commit()
+    return jsonify({"status": "success"})
+
 @api_admin.route('/get-filters')
 @token_required
 def get_filters(admin):
@@ -622,17 +623,84 @@ def add_books_user(admin):
             elif books_type == 'previous': 
                 Order.create(user.id, book.id, 0, datetime.now() - timedelta(days = 90))
 
-    user = {
-        "password": user.password,
-        "wishlist": user.get_wishlist(),
-        "suggestions": user.get_suggestions(),
-        "previous": user.get_previous_books(),
-        **user.to_json()
-    }
-
     return jsonify({
         "status": "success",
         "books_found": books_found,
         "books_not_found": books_not_found,
-        "user": user
+        "user": {
+            "password": user.password,
+            "wishlist": user.get_wishlist(),
+            "suggestions": user.get_suggestions(),
+            "previous": user.get_previous_books(),
+            **user.to_json()
+        }
+    })
+
+@api_admin.route('/add-to-wishlist', methods=['POST'])
+@token_required
+def add_to_wishlist(admin): 
+    book_guid = request.json.get('book_guid')
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID"
+        }), 400
+    user.add_to_wishlist(book_guid)
+    return jsonify({
+        "status": "success",
+        "user": {
+            "password": user.password,
+            "wishlist": user.get_wishlist(),
+            "suggestions": user.get_suggestions(),
+            "previous": user.get_previous_books(),
+            **user.to_json()
+        }
+    })
+
+@api_admin.route('/remove-from-wishlist', methods=['POST'])
+@token_required
+def remove_from_wishlist(admin): 
+    book_guid = request.json.get('book_guid')
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID"
+        }), 400
+    user.wishlist_remove(book_guid)
+    return jsonify({
+        "status": "success",
+        "user": {
+            "password": user.password,
+            "wishlist": user.get_wishlist(),
+            "suggestions": user.get_suggestions(),
+            "previous": user.get_previous_books(),
+            **user.to_json()
+        }
+    })
+
+@api_admin.route('/remove-from-suggestions', methods=['POST'])
+@token_required
+def remove_from_suggestions(admin): 
+    book_guid = request.json.get('book_guid')
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID"
+        }), 400
+    user.suggestion_to_dump(book_guid)
+    return jsonify({
+        "status": "success",
+        "user": {
+            "password": user.password,
+            "wishlist": user.get_wishlist(),
+            "suggestions": user.get_suggestions(),
+            "previous": user.get_previous_books(),
+            **user.to_json()
+        }
     })

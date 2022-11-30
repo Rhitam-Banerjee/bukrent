@@ -834,9 +834,13 @@ class User(db.Model):
     def get_previous_books(self):
         orders = Order.query.filter_by(user_id=self.id).all()
         read_books = self.get_read_books()
-        books = [order.book.to_json() for order in orders]
+        books = []
+        for order in orders: 
+            if order.book: 
+                books.append(order.book.to_json())
         for book in read_books:
-            books.append(book)
+            if book: 
+                books.append(book)
         return books
 
     def get_current_books(self):
@@ -845,7 +849,8 @@ class User(db.Model):
         last_delivery_date = self.last_delivery_date.strftime('%Y-%m-%d')
         for order in orders:
             if last_delivery_date == order.placed_on.strftime('%Y-%m-%d'):
-                books.append(order.book.to_json())
+                if order.book: 
+                    books.append(order.book.to_json())
         return books
 
     def get_wishlist(self):
