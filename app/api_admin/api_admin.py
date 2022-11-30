@@ -218,7 +218,13 @@ def update_user(admin):
     return jsonify({
         "status": "success",
         "message": "User updated",
-        "user": {"password": user.password, **user.to_json()}
+        "user": {
+            "password": user.password,
+            "wishlist": user.get_wishlist(),
+            "suggestions": user.get_suggestions(),
+            "previous": user.get_previous_books(),
+            **user.to_json()
+        }
     })
 
 @api_admin.route('/add-user', methods=['POST'])
@@ -318,7 +324,13 @@ def add_user(admin):
     return jsonify({
         "status": "success",
         "message": "User updated",
-        "user": {"password": user.password, **user.to_json()}
+        "user": {
+            "password": user.password,
+            "wishlist": user.get_wishlist(),
+            "suggestions": user.get_suggestions(),
+            "previous": user.get_previous_books(),
+            **user.to_json()
+        }
     })
 
 @api_admin.route('/delete-user', methods=['POST'])
@@ -469,6 +481,8 @@ def add_book(admin):
         book.book_format = ''
         book.language = ''
         book.description = ''
+        book.rentals = 0
+        book.stock_available = 0
     else:
         if not Book.query.filter_by(isbn=isbn).count():
             return jsonify({
