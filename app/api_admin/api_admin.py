@@ -387,19 +387,34 @@ def get_books(admin):
     series = request.json.get('series')
     types = request.json.get('types')
     
-    age_authors = Author.get_authors(age_group, 0, 10000)
-    age_publishers = Publisher.get_publishers(age_group, 0, 10000)
-    age_series = Series.get_series(age_group, 0, 10000)
-    age_types = Format.get_types(age_group, 0, 10000)
-
     books = {}
 
-    if search is not None: 
-        books = Book.query.filter(or_(
+    if search or not any((len(authors), len(publishers), len(series), len(types))): 
+        if not search: 
+            search = ''
+        query = Book.query.filter(or_(
             Book.name.ilike(f'{search}%'),
             Book.description.ilike(f'%{search}%'),
-            Book.isbn.ilike(f'{search}%'))).limit(end - start).offset(start).all()
+            Book.isbn.ilike(f'{search}%')))
+        if age_group == 1: 
+            query = query.filter_by(age_group_1=True)
+        elif age_group == 2:
+            query = query.filter_by(age_group_2=True)
+        elif age_group == 3:
+            query = query.filter_by(age_group_3=True)
+        elif age_group == 4:
+            query = query.filter_by(age_group_4=True)
+        elif age_group == 5:
+            query = query.filter_by(age_group_5=True)
+        elif age_group == 6:
+            query = query.filter_by(age_group_6=True)
+        books = query.limit(end - start).offset(start).all()
     else: 
+        age_authors = Author.get_authors(age_group, 0, 10000)
+        age_publishers = Publisher.get_publishers(age_group, 0, 10000)
+        age_series = Series.get_series(age_group, 0, 10000)
+        age_types = Format.get_types(age_group, 0, 10000)
+        
         for author in authors: 
             author_obj = Author.query.filter_by(guid=author).first()
             if author_obj.to_json() in age_authors: 
