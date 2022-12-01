@@ -43,7 +43,7 @@ def login():
             "status": "error",
             "message": "Incorrect password"
         }), 400
-    access_token_admin = jwt.encode({'id' : admin.id, 'exp' : datetime.utcnow() + timedelta(minutes=45)}, os.environ.get('SECRET_KEY'), "HS256")
+    access_token_admin = jwt.encode({'id' : admin.id}, os.environ.get('SECRET_KEY'), "HS256")
     response = make_response(jsonify({
         "status": "success",
         "admin": admin.to_json(),
