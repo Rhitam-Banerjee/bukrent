@@ -172,11 +172,6 @@ def signup():
             "message": "Invalid mobile number",
             "status": "error"
         }), 400
-    elif user.password:
-        return jsonify({
-            "message": "Already signed up",
-            "status": "error"
-        })
     elif not user.payment_id or user.payment_status != 'Paid':
         return jsonify({
             "message": "Payment not done",
@@ -200,19 +195,13 @@ def signup():
         age_groups = list(set(age_groups))
         user.add_age_groups(age_groups)
 
-        account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-        auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-        client = Client(account_sid, auth_token)
-
-        # message = client.messages.create(
-        #     body=f'Your Bukrent registration was successful! Your login credentials are:- \nMobile Number - {mobile_number} and Password - 12345 (if you did not update it)',
-        #     from_='+918750445533',
-        #     to=f'+91{mobile_number}'
-        # )
-
         db.session.commit()
 
+        print(user.id)
+
         access_token = jwt.encode({'id' : user.id}, os.environ.get('SECRET_KEY'), "HS256")
+
+        print(access_token)
 
         response = make_response(jsonify({
             "redirect": url_for('views.confirm_mobile'),
