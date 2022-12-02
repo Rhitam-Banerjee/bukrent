@@ -277,7 +277,7 @@ class User(db.Model):
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
     mobile_number = db.Column(db.String, unique=True)
-    contact_number = db.Column(db.String, unique=True)
+    contact_number = db.Column(db.String)
     source = db.Column(db.String)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
