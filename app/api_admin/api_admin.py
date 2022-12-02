@@ -182,6 +182,9 @@ def update_user(admin):
     else: 
         user.plan_date = None
 
+    user_children = Child.query.filter_by(user_id=user.id).all()
+    for child in user_children: 
+        child.delete()
     if children and type(children) == type([]):
         for child in children:
             child_obj = Child.query.filter_by(name=child['name']).first()
@@ -208,9 +211,9 @@ def update_user(admin):
     if payment_status:
         user.payment_status = payment_status
 
+    for user_address in user.address:
+        user_address.delete()
     if address and pin_code:
-        for user_address in user.address:
-            user_address.delete()
         address = Address.create({"area": address, "pin_code": pin_code}, user.id)
 
     db.session.commit()
