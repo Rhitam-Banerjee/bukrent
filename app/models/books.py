@@ -4,6 +4,8 @@ import uuid
 from app.models.annotations import Annotation
 from app.models.reviews import Review
 from app.models.details import Detail
+from app.models.buckets import DeliveryBucket, Wishlist, Suggestion, Dump
+from app.models.order import Order
 
 class BookCategory(db.Model):
     __tablename__ = 'book_categories'
@@ -134,6 +136,70 @@ class Book(db.Model):
 
         book_obj = Book(**book_dict)
         db.session.add(book_obj)
+        db.session.commit()
+
+    def delete(self):
+        try:
+            authors = BookAuthor.query.filter_by(book_id=self.id).all()
+            for author in authors:
+                db.session.delete(author)
+        except: pass
+        try:
+            categories = BookCategory.query.filter_by(book_id=self.id).all()
+            for category in categories:
+                db.session.delete(category)
+        except: pass
+        try:
+            publishers = BookPublisher.query.filter_by(book_id=self.id).all()
+            for publisher in publishers:
+                db.session.delete(publisher)
+        except: pass
+        try:
+            formats = BookFormat.query.filter_by(book_id=self.id).all()
+            for format in formats:
+                db.session.delete(format)
+        except: pass
+        try:
+            annotations = Annotation.query.filter_by(book_id=self.id).all()
+            for annotation in annotations: 
+                db.session.delete(annotation)
+        except: pass
+        try:
+            reviews = Review.query.filter_by(book_id=self.id).all()
+            for review in reviews: 
+                db.session.delete(review)
+        except: pass
+        try:
+            bucket = DeliveryBucket.query.filter_by(book_id=self.id).all()
+            for book in bucket:
+                book.delete()
+        except: pass
+        try:
+            details = Detail.query.filter_by(book_id=self.id).all()
+            for detail in details: 
+                db.session.delete(detail)
+        except: pass
+        try:
+            dumps = Dump.query.filter_by(book_id=self.id).all()
+            for book in dumps: 
+                db.session.delete(book)
+        except: pass
+        try:
+            suggestions = Suggestion.query.filter_by(book_id=self.id).all()
+            for book in suggestions: 
+                db.session.delete(book)
+        except: pass
+        try:
+            wishlists = Wishlist.query.filter_by(book_id=self.id).all()
+            for book in wishlists: 
+                db.session.delete(book)
+        except: pass
+        try:
+            orders = Order.query.filter_by(book_id=self.id).all()
+            for book in orders: 
+                db.session.delete(book)
+        except: pass
+        db.session.delete(self)
         db.session.commit()
 
     @staticmethod

@@ -704,6 +704,23 @@ class User(db.Model):
 
         db.session.commit()
 
+    def remove_from_previous(self, guid): 
+        from app.models.books import Book
+        from app.models.buckets import Dump
+
+        book = Book.query.filter_by(guid=guid).first()
+
+        order = Order.query.filter_by(user_id=self.id, book_id=book.id).first()
+
+        if order and (not self.next_delivery_date or self.next_delivery_date.strftime('%Y-%m-%d') != order.placed_on.strftime('%Y-%m-%d')): 
+            order.delete()
+        else: 
+            dump = Dump.query.filter_by(user_id=self.id, book_id=book.id).first()
+            if dump: 
+                dump.delete()
+
+        db.session.commit()
+
     def change_delivery_date(self, delivery_date):
         delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d')
 
@@ -796,7 +813,6 @@ class User(db.Model):
 
                 book_list.append(temp_dict)
 
-        random.shuffle(book_list)
         return book_list
 
     def get_dump_data(self):

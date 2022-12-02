@@ -144,6 +144,12 @@ def update_user(admin):
     password = request.json.get('password')
     children = request.json.get('children')
 
+    if not mobile_number: 
+        return jsonify({
+            "status": "error",
+            "message": "Mobile number is necessary"
+        }), 400
+
     if not id:
         return jsonify({
             "status": "error",
@@ -161,26 +167,20 @@ def update_user(admin):
         user.first_name = name.split()[0]
         if len(name.split()) > 1:
             user.last_name = ' '.join(name.split()[1:])
+    else: 
+        user.first_name = ''
+        user.last_name = ''
 
-    if mobile_number:
-        user.mobile_number = mobile_number
-
-    if contact_number:
-        user.contact_number = contact_number
+    user.mobile_number = mobile_number
+    user.contact_number = contact_number
+    user.password = password
+    user.plan_duration = plan_duration
+    user.source = source
 
     if plan_date:
         user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
-    else:
+    else: 
         user.plan_date = None
-
-    if password:
-        user.password = password
-
-    if plan_duration:
-        user.plan_duration = plan_duration
-
-    if source:
-        user.source = source
 
     if children and type(children) == type([]):
         for child in children:
@@ -575,8 +575,7 @@ def delete_book(admin):
             "status": "error",
             "message": "Invalid book ID"
         }), 400
-    db.session.delete(book)
-    db.session.commit()
+    book.delete()
     return jsonify({"status": "success"})
 
 @api_admin.route('/get-filters')
@@ -709,6 +708,29 @@ def remove_from_suggestions(admin):
             "message": "Invalid user ID"
         }), 400
     user.suggestion_to_dump(book_guid)
+    return jsonify({
+        "status": "success",
+        "user": {
+            "password": user.password,
+            "wishlist": user.get_wishlist(),
+            "suggestions": user.get_suggestions(),
+            "previous": user.get_previous_books(),
+            **user.to_json()
+        }
+    })
+
+@api_admin.route('/remove-from-previous', methods=['POST'])
+@token_required
+def remove_from_previous(admin): 
+    book_guid = request.json.get('book_guid')
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID"
+        }), 400
+    user.remove_from_previous(book_guid)
     return jsonify({
         "status": "success",
         "user": {
