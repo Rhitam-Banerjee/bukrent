@@ -50,6 +50,10 @@ def script_create_orders():
     create_orders()
 
 @cli.command()
+def seed_books_data(): 
+    seed_books()
+
+@cli.command()
 def script_25_aug():
     add_books()
     aug_25()
