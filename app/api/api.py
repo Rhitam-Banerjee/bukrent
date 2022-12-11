@@ -565,14 +565,6 @@ def add_children():
         for child in children:
             user.add_child(child)
 
-        age_groups = []
-        for child in children:
-            age_groups.append(child.get("age_group"))
-
-        age_groups = list(set(age_groups))
-
-        user.add_age_groups(age_groups)
-
         return jsonify({
             "status": "success",
             "guid": user.child[0].guid
@@ -1802,6 +1794,9 @@ def get_book_details():
                 "message": "No book with given GUID found!",
                 "status": "error"
             }), 400
+
+        if not book.details:
+            return jsonify({"book": book.to_json(), "status": "success"})
 
         return jsonify({
             "book": book.to_json(),

@@ -189,19 +189,10 @@ def signup():
 
         for child in children:
             user.add_child(child)
-        age_groups = []
-        for child in children:
-            age_groups.append(child.get("age_group"))
-        age_groups = list(set(age_groups))
-        user.add_age_groups(age_groups)
 
         db.session.commit()
 
-        print(user.id)
-
         access_token = jwt.encode({'id' : user.id}, os.environ.get('SECRET_KEY'), "HS256")
-
-        print(access_token)
 
         response = make_response(jsonify({
             "redirect": url_for('views.confirm_mobile'),

@@ -190,11 +190,6 @@ def update_user(admin):
             child_obj = Child.query.filter_by(name=child['name']).first()
             if not child_obj:
                 user.add_child(child)
-        age_groups = []
-        for child in children:
-            age_groups.append(child.get("age_group"))
-        age_groups = list(set(age_groups))
-        user.add_age_groups(age_groups)
 
     if plan_id:
         plan_id = int(plan_id)
@@ -295,11 +290,11 @@ def add_user(admin):
     if children and type(children) == type([]) and len(children):
         for child in children:
             user.add_child(child)
-        age_groups = []
-        for child in children:
-            age_groups.append(child.get("age_group"))
-        age_groups = list(set(age_groups))
-        user.add_age_groups(age_groups)
+        #age_groups = []
+        #for child in children:
+        #    age_groups.append(child.get("age_group"))
+        #age_groups = list(set(age_groups))
+        #user.add_age_groups(age_groups)
 
     bucket_size = 1
     if plan_id == os.environ.get('RZP_PLAN_2_ID'):

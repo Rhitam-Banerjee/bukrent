@@ -4,6 +4,7 @@ from flask import current_app
 
 from seed_4 import *
 from export import *
+from seed_books import seed_books
 from seed_users import *
 from script_order import *
 from scripts.script_25_aug import *
