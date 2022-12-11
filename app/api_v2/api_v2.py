@@ -61,12 +61,15 @@ def submit_mobile():
             "status": "success",
             "user": user.to_json(),
         }), 200
+    if not user: 
+        User.create('', '', mobile_number, '')
+        user = User.query.filter_by(mobile_number=mobile_number).first()
 
-    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-    client = Client(account_sid, auth_token)
+    # account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+    # auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+    # client = Client(account_sid, auth_token)
 
-    verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
+    # verification = client.verify.services(os.environ.get('OTP_SERVICE_ID')).verifications.create(to=f"+91{mobile_number}", channel="sms")
 
     if user:
         return jsonify({
