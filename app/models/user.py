@@ -195,10 +195,14 @@ class Child(db.Model):
             db.session.commit()
 
     def delete(self):
-        if self.preferences:
-            db.session.delete(self.preferences)
-        db.session.delete(self)
-        db.session.commit()
+        try: 
+            if self.preferences:
+                db.session.delete(self.preferences)
+            db.session.delete(self)
+            db.session.commit()
+        except Exception as e: 
+            db.session.rollback()
+            pass
 
     def to_json(self):
         if self.preferences:
