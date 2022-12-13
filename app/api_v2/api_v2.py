@@ -334,16 +334,21 @@ def generate_subscription_id():
     user = User.query.filter_by(mobile_number=mobile_number).first()
     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
-    if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
+    plan_name = ''
+    if user.books_per_week == 1:
+        plan_name = "RZP_PLAN_1_ID"
         plan_desc = "Get 1 Book Per Week"
-    elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"):
+    elif user.books_per_week == 2:
+        plan_name = "RZP_PLAN_2_ID"
         plan_desc = "Get 2 Books Per Week"
-    elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
+    elif user.books_per_week == 4:
+        plan_name = "RZP_PLAN_3_ID"
         plan_desc = "Get 4 Books Per Week"
 
-    print(user.plan_id)
+    print(os.environ.get(plan_name))
+
     subscription = client.subscription.create({
-        'plan_id': user.plan_id,
+        'plan_id': os.environ.get(plan_name),
         'total_count': 36
     })
 
@@ -362,13 +367,13 @@ def generate_subscription_id():
 @api_v2.route("/generate-order-id", methods=["POST"])
 def generate_order_id():
     mobile_number = request.json.get('mobile_number')
+    card = request.json.get('card')
     if not mobile_number:
         return jsonify({"message": "No mobile number" }), 400
     user = User.query.filter_by(mobile_number=mobile_number).first()
     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
-    card = request.json.get('card')
-    if card not in [1, 3, 12]:
+    if card not in [3, 12]:
         return jsonify({
             "message": "Invalid card",
             "status": "error"
