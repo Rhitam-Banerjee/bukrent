@@ -102,19 +102,10 @@ def get_users(admin):
     else:
         query = query.order_by(User.id.desc())
     all_users = query.filter_by(is_deleted=False).limit(end - start).offset(start).all()
-    users = []
-    for user in all_users:
-        user = User.query.get(user.id)
-        users.append({
-            "password": user.password,
-            "wishlist": user.get_wishlist(),
-            "suggestions": user.get_suggestions(),
-            "previous": user.get_previous_books(),
-            **user.to_json()
-        })
+
     return jsonify({
         "status": "success",
-        "users": users
+        "users": admin.get_users(all_users)
     })
 
 @api_admin.route('/get-archived-users')
@@ -216,13 +207,7 @@ def update_user(admin):
     return jsonify({
         "status": "success",
         "message": "User updated",
-        "user": {
-            "password": user.password,
-            "wishlist": user.get_wishlist(),
-            "suggestions": user.get_suggestions(),
-            "previous": user.get_previous_books(),
-            **user.to_json()
-        }
+        "user": admin.get_users([user])[0],
     })
 
 @api_admin.route('/add-user', methods=['POST'])
@@ -322,13 +307,7 @@ def add_user(admin):
     return jsonify({
         "status": "success",
         "message": "User updated",
-        "user": {
-            "password": user.password,
-            "wishlist": user.get_wishlist(),
-            "suggestions": user.get_suggestions(),
-            "previous": user.get_previous_books(),
-            **user.to_json()
-        }
+        "user": admin.get_users([user])[0],
     })
 
 @api_admin.route('/delete-user', methods=['POST'])
@@ -436,19 +415,9 @@ def get_books(admin):
 
         books = list(books.values())[start:end]
 
-    final_books = []
-    for book in books:
-        tags = []
-        book_json = book.to_json()
-        for tag in book_json['categories']:
-            tag_obj = Category.query.filter_by(name=tag).first()
-            tags.append({"guid": tag_obj.guid, "name": tag_obj.name})
-        book_json['tags'] = tags
-        final_books.append(book_json)
-
     return jsonify({
         "status": "success",
-        "books": final_books
+        "books": admin.get_books(books)
     })
 
 @api_admin.route('/add-book', methods=['POST'])
@@ -551,16 +520,9 @@ def add_book(admin):
 
     db.session.commit()
 
-    final_book = book.to_json()
-    tags = []
-    for tag in final_book['categories']:
-        tag_obj = Category.query.filter_by(name=tag).first()
-        tags.append({"guid": tag_obj.guid, "name": tag_obj.name})
-    final_book['tags'] = tags
-
     return jsonify({
         "status": "success",
-        "book": final_book
+        "book": admin.get_books([book])[0]
     })
 
 @api_admin.route('/delete-book', methods=['POST'])
@@ -639,13 +601,7 @@ def add_books_user(admin):
         "status": "success",
         "books_found": books_found,
         "books_not_found": books_not_found,
-        "user": {
-            "password": user.password,
-            "wishlist": user.get_wishlist(),
-            "suggestions": user.get_suggestions(),
-            "previous": user.get_previous_books(),
-            **user.to_json()
-        }
+        "user": admin.get_users([user])[0]
     })
 
 @api_admin.route('/add-to-wishlist', methods=['POST'])
@@ -662,13 +618,7 @@ def add_to_wishlist(admin):
     user.add_to_wishlist(book_guid)
     return jsonify({
         "status": "success",
-        "user": {
-            "password": user.password,
-            "wishlist": user.get_wishlist(),
-            "suggestions": user.get_suggestions(),
-            "previous": user.get_previous_books(),
-            **user.to_json()
-        }
+        "user": admin.get_users([user])[0]
     })
 
 @api_admin.route('/remove-from-wishlist', methods=['POST'])
@@ -683,15 +633,11 @@ def remove_from_wishlist(admin):
             "message": "Invalid user ID"
         }), 400
     user.wishlist_remove(book_guid)
+    book = Book.query.filter_by(guid=book_guid).first()
     return jsonify({
         "status": "success",
-        "user": {
-            "password": user.password,
-            "wishlist": user.get_wishlist(),
-            "suggestions": user.get_suggestions(),
-            "previous": user.get_previous_books(),
-            **user.to_json()
-        }
+        "user": admin.get_users([user])[0],
+        "book": admin.get_books([book])[0],
     })
 
 @api_admin.route('/remove-from-suggestions', methods=['POST'])
@@ -706,15 +652,11 @@ def remove_from_suggestions(admin):
             "message": "Invalid user ID"
         }), 400
     user.suggestion_to_dump(book_guid)
+    book = Book.query.filter_by(guid=book_guid).first()
     return jsonify({
         "status": "success",
-        "user": {
-            "password": user.password,
-            "wishlist": user.get_wishlist(),
-            "suggestions": user.get_suggestions(),
-            "previous": user.get_previous_books(),
-            **user.to_json()
-        }
+        "user": admin.get_users([user])[0],
+        "book": admin.get_books([book])[0],
     })
 
 @api_admin.route('/remove-from-previous', methods=['POST'])
@@ -731,11 +673,48 @@ def remove_from_previous(admin):
     user.remove_from_previous(book_guid)
     return jsonify({
         "status": "success",
-        "user": {
-            "password": user.password,
-            "wishlist": user.get_wishlist(),
-            "suggestions": user.get_suggestions(),
-            "previous": user.get_previous_books(),
-            **user.to_json()
-        }
+        "user": admin.get_users([user])[0]
+    })
+
+
+@api_admin.route('/add-users-book', methods=['POST'])
+@token_required
+def add_users_book(admin): 
+    book_guid = request.json.get('book_guid')
+    id_list = request.json.get('id_list')
+    book_type = request.json.get('type')
+
+    if not all((book_guid, id_list)) or type(id_list) != type([]): 
+        return jsonify({
+            "status": "error",
+            "message": "Provide book ID and a list of IDs"
+        }), 400
+    book = Book.query.filter_by(guid=book_guid).first()
+    if not book: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid book ID"
+        }), 400
+    
+    users_found, users_not_found = [], []
+    for id in id_list: 
+        user = User.query.get(id)
+        if not user: 
+            users_not_found.append(id)
+        else: 
+            children = Child.query.filter_by(user_id=user.id).all()
+            users_found.append(id)
+            if book_type == 'suggestions': 
+                for child in children: 
+                    Suggestion.create(user.id, book.id, child.age_group)
+            elif book_type == 'wishlist': 
+                user.add_to_wishlist(book.guid)
+            elif book_type == 'previous': 
+                Order.create(user.id, book.id, 0, datetime.now() - timedelta(days = 90))
+
+    return jsonify({
+        "status": "success",
+        "users_found": users_found,
+        "users_not_found": users_not_found,
+        "book": admin.get_books([book])[0]
     })
