@@ -25,21 +25,33 @@ class Admin(db.Model):
             orders = Order.query.filter_by(book_id=book.id).all()
             suggested_users, wishlisted_users, previous_users = [], [], []
             for suggestion in suggestions: 
-                user = User.query.get(suggestion.user_id).to_json()
-                if user not in suggested_users: 
-                    suggested_users.append(user)
+                try: 
+                    user = User.query.get(suggestion.user_id).to_json()
+                    if user not in suggested_users: 
+                        suggested_users.append(user)
+                except: 
+                    pass
             for wishlist in wishlists: 
-                user = User.query.get(wishlist.user_id).to_json()
-                if user not in wishlisted_users: 
-                    wishlisted_users.append(user)
+                try: 
+                    user = User.query.get(wishlist.user_id).to_json()
+                    if user not in wishlisted_users: 
+                        wishlisted_users.append(user)
+                except: 
+                    pass
             for dump in dumps: 
-                user = User.query.get(dump.user_id).to_json()
-                if user not in previous_users: 
-                    previous_users.append(user)
+                try: 
+                    user = User.query.get(dump.user_id).to_json()
+                    if user not in previous_users: 
+                        previous_users.append(user)
+                except: 
+                    pass
             for order in orders: 
-                user = User.query.get(order.user_id).to_json()
-                if user not in previous_users: 
-                    previous_users.append(user)
+                try: 
+                    user = User.query.get(order.user_id).to_json()
+                    if user not in previous_users: 
+                        previous_users.append(user)
+                except: 
+                    pass
             book_json['tags'] = tags
             book_json['suggested_users'] = self.get_users(suggested_users)
             book_json['wishlisted_users'] = self.get_users(wishlisted_users)
