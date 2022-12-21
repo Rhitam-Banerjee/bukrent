@@ -1,3 +1,4 @@
+from datetime import timedelta
 from app import db
 from app.models.user import User
 from app.models.buckets import Suggestion, Wishlist, Dump
@@ -25,33 +26,21 @@ class Admin(db.Model):
             orders = Order.query.filter_by(book_id=book.id).all()
             suggested_users, wishlisted_users, previous_users = [], [], []
             for suggestion in suggestions: 
-                try: 
-                    user = User.query.get(suggestion.user_id).to_json()
-                    if user not in suggested_users: 
-                        suggested_users.append(user)
-                except: 
-                    pass
+                user = User.query.get(suggestion.user_id)
+                if user: 
+                    suggested_users.append(user.to_json())
             for wishlist in wishlists: 
-                try: 
-                    user = User.query.get(wishlist.user_id).to_json()
-                    if user not in wishlisted_users: 
-                        wishlisted_users.append(user)
-                except: 
-                    pass
+                user = User.query.get(wishlist.user_id)
+                if user: 
+                    wishlisted_users.append(user.to_json())
             for dump in dumps: 
-                try: 
-                    user = User.query.get(dump.user_id).to_json()
-                    if user not in previous_users: 
-                        previous_users.append(user)
-                except: 
-                    pass
+                user = User.query.get(dump.user_id)
+                if user: 
+                    previous_users.append(user.to_json())
             for order in orders: 
-                try: 
-                    user = User.query.get(order.user_id).to_json()
-                    if user not in previous_users: 
-                        previous_users.append(user)
-                except: 
-                    pass
+                user = User.query.get(order.user_id)
+                if user: 
+                    previous_users.append(user.to_json())
             book_json['tags'] = tags
             book_json['suggested_users'] = self.get_users(suggested_users)
             book_json['wishlisted_users'] = self.get_users(wishlisted_users)
@@ -76,6 +65,28 @@ class Admin(db.Model):
                 **user.to_json()
             })
         return all_users
+
+    def get_orders(self): 
+        users = User.query.filter(User.next_delivery_date != None).all()
+        orders = []
+        for user in users: 
+            current_books = []
+            if user.last_delivery_date: 
+                current_books = Order.query.filter_by(user_id=user.id).filter(
+                    Order.placed_on >= user.last_delivery_date - timedelta(days=1),
+                    Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+                ).all()
+            delivery_books = Order.query.filter_by(user_id=user.id).filter(
+                Order.placed_on >= user.next_delivery_date - timedelta(days=1),
+                Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+            ).all()
+            if len(delivery_books): 
+                orders.append({
+                    "user": user.to_json(),
+                    "current_books": [order.book.to_json() for order in current_books],
+                    "delivery_books": [order.book.to_json() for order in delivery_books],
+                })
+        return orders
 
     def to_json(self):
         return {

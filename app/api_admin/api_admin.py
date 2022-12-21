@@ -718,3 +718,10 @@ def add_users_book(admin):
         "users_not_found": users_not_found,
         "book": admin.get_books([book])[0]
     })
+
+@api_admin.route('/get-orders')
+@token_required
+def get_orders(admin): 
+    return jsonify({
+        "orders": admin.get_orders(),
+    })
