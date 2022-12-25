@@ -428,9 +428,10 @@ def add_book(admin):
     authors = request.form.get('authors')
     copies = request.form.get('copies')
     rentals = request.form.get('rentals')
+    age_groups = request.form.get('age_groups')
     tags = request.form.get('tags')
     image = request.files.get('image')
-    type = request.form.get('type')
+    req_type = request.form.get('type')
 
     if not all((isbn, title)):
         return jsonify({
@@ -438,7 +439,7 @@ def add_book(admin):
             "message": "ISBN and title is necessary"
         }), 400
 
-    if type == 'add':
+    if req_type == 'add':
         if Book.query.filter_by(isbn=isbn).count():
             return jsonify({
                 "status": "error",
@@ -474,7 +475,7 @@ def add_book(admin):
         upload_to_aws(image, 'book_images', f'book_images/{isbn}.{extension}')
         s3_url = os.environ.get('AWS_S3_URL')
         book.image = f'{s3_url}/book_images/{isbn}.{extension}'
-    elif type == 'add':
+    elif req_type == 'add':
         book.image = ''
 
     book.isbn = isbn
@@ -503,7 +504,23 @@ def add_book(admin):
                 book_author.book_id = book.id
                 book_author.author_id = author_obj.id
                 db.session.add(book_author)
-
+    
+    if age_groups: 
+        age_groups = json.loads(age_groups)
+        if type(age_groups) == type([]): 
+            for i in range(len(age_groups)): 
+                if i == 0: 
+                    book.age_group_1 = bool(age_groups[i])
+                elif i == 1: 
+                    book.age_group_2 = bool(age_groups[i])
+                elif i == 2: 
+                    book.age_group_3 = bool(age_groups[i])
+                elif i == 3: 
+                    book.age_group_4 = bool(age_groups[i])
+                elif i == 4: 
+                    book.age_group_5 = bool(age_groups[i])
+                elif i == 5: 
+                    book.age_group_6 = bool(age_groups[i])
     if tags:
         tags = json.loads(tags)
         for tag in tags:

@@ -337,4 +337,10 @@ class Book(db.Model):
             "publishers": [publisher.name for publisher in self.publishers],
             "stock_available": self.stock_available,
             "rentals": self.rentals,
+            "age_group_1": self.age_group_1,
+            "age_group_2": self.age_group_2,
+            "age_group_3": self.age_group_3,
+            "age_group_4": self.age_group_4,
+            "age_group_5": self.age_group_5,
+            "age_group_6": self.age_group_6,
         }
