@@ -52,11 +52,9 @@ class Admin(db.Model):
         all_users = []
         for user in users: 
             user_id = ''
-            try: 
-                user_id = user.id
-            except: 
+            if type(user) == type({}): 
                 user_id = user['id']
-            user = User.query.get(user_id)
+                user = User.query.get(user_id)
             all_users.append({
                 "password": user.password,
                 "wishlist": user.get_wishlist(),
