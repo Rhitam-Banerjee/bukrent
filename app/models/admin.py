@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from datetime import timedelta
 from app import db
 from app.models.user import User
@@ -68,16 +69,18 @@ class Admin(db.Model):
         users = User.query.filter(User.next_delivery_date != None).all()
         orders = []
         for user in users: 
-            current_books = []
+            current_books, delivery_books = [], []
             if user.last_delivery_date: 
-                current_books = Order.query.filter_by(user_id=user.id).filter(
+                delivery_books = Order.query.filter_by(user_id=user.id).filter(
                     Order.placed_on >= user.last_delivery_date - timedelta(days=1),
                     Order.placed_on <= user.last_delivery_date + timedelta(days=1)
                 ).all()
-            delivery_books = Order.query.filter_by(user_id=user.id).filter(
-                Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-                Order.placed_on <= user.next_delivery_date + timedelta(days=1)
-            ).all()
+            order_dates = Order.query.filter_by(user_id=user.id).distinct(Order.placed_on).all()
+            print(order_dates)
+            dates = []
+            for date in order_dates: 
+                dates.append(date.placed_on)
+            print(dates)
             if len(delivery_books): 
                 orders.append({
                     "user": user.to_json(),
