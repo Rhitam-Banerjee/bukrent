@@ -70,22 +70,23 @@ class Admin(db.Model):
         orders = []
         for user in users: 
             current_books, delivery_books = [], []
-            if user.last_delivery_date: 
+            if user.next_delivery_date: 
                 delivery_books = Order.query.filter_by(user_id=user.id).filter(
+                    Order.placed_on >= user.next_delivery_date - timedelta(days=1),
+                    Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+                ).all()
+            if user.last_delivery_date: 
+                current_books = Order.query.filter_by(user_id=user.id).filter(
                     Order.placed_on >= user.last_delivery_date - timedelta(days=1),
                     Order.placed_on <= user.last_delivery_date + timedelta(days=1)
                 ).all()
-            order_dates = Order.query.filter_by(user_id=user.id).distinct(Order.placed_on).all()
-            print(order_dates)
-            dates = []
-            for date in order_dates: 
-                dates.append(date.placed_on)
-            print(dates)
-            if len(delivery_books): 
+            bucket = user.get_next_bucket()
+            if len(bucket) or len(delivery_books): 
                 orders.append({
                     "user": user.to_json(),
                     "current_books": [order.book.to_json() for order in current_books],
                     "delivery_books": [order.book.to_json() for order in delivery_books],
+                    "bucket": bucket
                 })
         return orders
 

@@ -735,10 +735,29 @@ def get_buckets(user):
                 "message": "User Not Found",
                 "status": "error"
             }), 400
-
         return jsonify({
             "status": "success",
             "wishlists": user.get_next_bucket()
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": str(e),
+            "status": "error"
+        }), 400
+
+@api_v2.route("/get-order-bucket")
+@token_required
+def get_order_bucket(user):
+    try:
+        if not user:
+            return jsonify({
+                "message": "User Not Found",
+                "status": "error"
+            }), 400
+        return jsonify({
+            "status": "success",
+            "wishlists": user.get_order_bucket()
         }), 200
 
     except Exception as e:

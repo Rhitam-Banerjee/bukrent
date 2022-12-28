@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import Blueprint, jsonify, request
 from app.models.books import Book
 from app.models.user import User
 from app.models.admin import Admin
@@ -11,6 +11,8 @@ from datetime import datetime
 
 import boto3
 from botocore.exceptions import NoCredentialsError
+
+api_admin = Blueprint('api_admin', __name__, url_prefix="/api_admin")
 
 def token_required(f):
    @wraps(f)
@@ -38,7 +40,6 @@ def validate_user(f):
         current_books = request.json.get('current_books')
         next_books = request.json.get('next_books')
         payment_status = request.json.get('payment_status')
-        payment_id = request.json.get('payment_id')
         password = request.json.get('password')
         children = request.json.get('children')
         try:

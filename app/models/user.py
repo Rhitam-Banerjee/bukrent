@@ -10,7 +10,6 @@ from sqlalchemy import and_
 
 from datetime import date, timedelta, datetime
 
-import random
 import os
 
 class CategoryPreferences(db.Model):
@@ -292,6 +291,8 @@ class User(db.Model):
     last_delivery_date = db.Column(db.Date)
     current_order = db.Column(db.Boolean, default=False)
     next_order_confirmed = db.Column(db.Boolean, default=False)
+    deliverer = db.Column(db.String)
+    delivery_time = db.Column(db.String)
 
     has_child_1 = db.Column(db.Boolean, default=False)
     has_child_2 = db.Column(db.Boolean, default=False)
@@ -351,6 +352,8 @@ class User(db.Model):
             "mobile_number": self.mobile_number,
             "contact_number": self.contact_number,
             "source": self.source,
+            "deliverer": self.deliverer,
+            "delivery_time": self.delivery_time
         }
 
     @staticmethod
@@ -668,9 +671,18 @@ class User(db.Model):
                 raise ValueError(f"Please set a delivery date first")
             if self.last_delivery_date and date.today() <= self.last_delivery_date:
                 raise ValueError(f"Wait until {self.last_delivery_date + timedelta(days=1)} to place a new order")
+            
+            order_count = Order.query.filter(
+                Order.placed_on >= self.next_delivery_date - timedelta(days=1),
+                Order.placed_on <= self.next_delivery_date + timedelta(days=1)
+            ).count()
+            if order_count: 
+                raise ValueError("Cannot place order yet")
 
             buckets = self.delivery_buckets
 
+            if len(buckets) != self.books_per_week: 
+                raise ValueError(f"Add {self.books_per_week - len(buckets)} book(s) to the bucket")
             for bucket in buckets:
                 if bucket.book.stock_available <= 0:
                     raise ValueError(f"Book - {bucket.book.name} with ISBN {bucket.book.isbn} is out of stock!")
@@ -679,9 +691,6 @@ class User(db.Model):
                 Order.create(self.id, bucket.book.id, bucket.age_group, self.next_delivery_date)
                 bucket.delete()
 
-            next_delivery_date = self.next_delivery_date
-            self.last_delivery_date = next_delivery_date
-            self.next_delivery_date = next_delivery_date + timedelta(days=7)
             db.session.add(self)
             db.session.commit()
         except Exception as e:
@@ -693,18 +702,8 @@ class User(db.Model):
         book = Book.query.filter_by(guid=guid).first()
         bucket = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==book.id)).first()
 
-
-        wishlists = Wishlist.query.filter_by(user_id=self.id).order_by(Wishlist.priority_order.asc()).all()
-        if not len(wishlists):
-            raise ValueError("No book to replace! Add some books in your wishlist.")
-
-        wishlist = wishlists[0]
-
         Wishlist.create(self.id, bucket.book_id, bucket.age_group)
         bucket.delete()
-        DeliveryBucket.create(self.id, wishlist.book_id, self.next_delivery_date, wishlist.age_group)
-
-        wishlist.delete()
 
         db.session.commit()
 
@@ -899,6 +898,26 @@ class User(db.Model):
 
     def get_next_bucket(self):
         buckets = self.delivery_buckets
+
+        book_list = []
+        for bucket in buckets:
+            temp_dict = {
+                "name": bucket.book.name,
+                "guid": bucket.book.guid,
+                "isbn": bucket.book.isbn,
+                "image": bucket.book.image
+                # "age_group": bucket.age_group
+            }
+
+            book_list.append(temp_dict)
+
+        return book_list
+
+    def get_order_bucket(self): 
+        buckets = Order.query.filter_by(user_id=self.id).filter(
+            Order.placed_on >= self.next_delivery_date - timedelta(days=1),
+            Order.placed_on <= self.next_delivery_date + timedelta(days=1)
+        ).all()
 
         book_list = []
         for bucket in buckets:

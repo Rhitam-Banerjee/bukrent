@@ -33,7 +33,7 @@ def create_app(script_info=None):
     from app.api_v2.api_v2 import api_v2
     app.register_blueprint(api_v2)
 
-    from app.api_admin.api_admin import api_admin
+    from app.api_admin import api_admin
     app.register_blueprint(api_admin)
 
     from app.views.views import views
