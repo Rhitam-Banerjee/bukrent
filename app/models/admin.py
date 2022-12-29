@@ -66,7 +66,7 @@ class Admin(db.Model):
         return all_users
 
     def get_orders(self): 
-        users = User.query.filter(User.next_delivery_date != None).all()
+        users = User.query.filter(User.books_per_week != None).all()
         orders = []
         for user in users: 
             current_books, delivery_books = [], []
