@@ -32,6 +32,12 @@ def add_books_user(admin):
     
     books_found, books_not_found = [], []
     children = Child.query.filter_by(user_id=user_id).all()
+    bucket_count = len(user.get_next_bucket())
+    if books_type == 'bucket' and bucket_count >= user.books_per_week: 
+        return jsonify({
+            "status": "error",
+            "message": "Bucket is full"
+        }), 400
     for isbn in isbn_list: 
         book = Book.query.filter_by(isbn=isbn).first()
         if not book: 
@@ -45,6 +51,12 @@ def add_books_user(admin):
                 user.add_to_wishlist(book.guid)
             elif books_type == 'previous': 
                 Order.create(user.id, book.id, 0, datetime.now() - timedelta(days = 90))
+            elif books_type == 'bucket': 
+                if bucket_count < user.books_per_week: 
+                    DeliveryBucket.create(user_id, book.id, user.next_delivery_date, 0)
+                    bucket_count += 1
+                else: 
+                    break
 
     return jsonify({
         "status": "success",
@@ -139,8 +151,7 @@ def remove_from_bucket(admin):
     user.bucket_remove(book_guid)
     return jsonify({
         "status": "success",
-        "user": admin.get_users([user])[0],
-        "orders": admin.get_orders(),
+        "user": admin.get_users([user])[0]
     })
 
 @api_admin.route('/add-users-book', methods=['POST'])
@@ -240,7 +251,7 @@ def confirm_order(admin):
         return jsonify({"status": "error", "message": str(e)}), 400
     return jsonify({
         "status": "success",
-        "orders": admin.get_orders(),
+        "user": admin.get_users([user])[0],
     })
 
 @api_admin.route('/complete-order', methods=['POST'])
@@ -267,5 +278,5 @@ def complete_order(admin):
     return jsonify({
         "status": "success",
         "message": "Order completed",
-        "orders": admin.get_orders(),
+        "user": admin.get_users([user])[0],
     })

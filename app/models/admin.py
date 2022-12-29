@@ -56,17 +56,34 @@ class Admin(db.Model):
             if type(user) == type({}): 
                 user_id = user['id']
                 user = User.query.get(user_id)
+            current_books, delivery_books = [], []
+            if user.next_delivery_date: 
+                delivery_books = Order.query.filter_by(user_id=user.id).filter(
+                    Order.placed_on >= user.next_delivery_date - timedelta(days=1),
+                    Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+                ).all()
+            if user.last_delivery_date: 
+                current_books = Order.query.filter_by(user_id=user.id).filter(
+                    Order.placed_on >= user.last_delivery_date - timedelta(days=1),
+                    Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+                ).all()
+            bucket = user.get_next_bucket()
             all_users.append({
                 "password": user.password,
                 "wishlist": user.get_wishlist(),
                 "suggestions": user.get_suggestions(),
                 "previous": user.get_previous_books(),
+                "order": {
+                    "current_books": [order.book.to_json() for order in current_books],
+                    "delivery_books": [order.book.to_json() for order in delivery_books],
+                    "bucket": bucket
+                },
                 **user.to_json()
             })
         return all_users
 
     def get_orders(self): 
-        users = User.query.filter(User.books_per_week != None).all()
+        users = User.query.filter(User.next_delivery_date != None).all()
         orders = []
         for user in users: 
             current_books, delivery_books = [], []
