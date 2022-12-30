@@ -676,6 +676,7 @@ class User(db.Model):
                 Order.placed_on >= self.next_delivery_date - timedelta(days=1),
                 Order.placed_on <= self.next_delivery_date + timedelta(days=1)
             ).count()
+            print(order_count)
             if order_count: 
                 raise ValueError("Cannot place order yet")
 

@@ -32,12 +32,24 @@ def add_books_user(admin):
     
     books_found, books_not_found = [], []
     children = Child.query.filter_by(user_id=user_id).all()
-    bucket_count = len(user.get_next_bucket())
-    if books_type == 'bucket' and bucket_count >= user.books_per_week: 
-        return jsonify({
-            "status": "error",
-            "message": "Bucket is full"
-        }), 400
+    bucket_count, order_count = 0, 0 
+    if books_type == 'bucket': 
+        bucket_count = len(user.get_next_bucket())
+        if bucket_count >= user.books_per_week: 
+            return jsonify({
+                "status": "error",
+                "message": "Bucket is full"
+            }), 400
+    if books_type == 'current' and user.last_delivery_date: 
+        order_count = Order.query.filter_by(user_id=user.id).filter(
+                        Order.placed_on >= user.last_delivery_date - timedelta(days=1),
+                        Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+                    ).count()
+        if order_count >= user.books_per_week: 
+            return jsonify({
+                "status": "error",
+                "message": "Current books is full"
+            }), 400
     for isbn in isbn_list: 
         book = Book.query.filter_by(isbn=isbn).first()
         if not book: 
@@ -50,11 +62,20 @@ def add_books_user(admin):
             elif books_type == 'wishlist': 
                 user.add_to_wishlist(book.guid)
             elif books_type == 'previous': 
-                Order.create(user.id, book.id, 0, datetime.now() - timedelta(days = 90))
+                Order.create(user.id, book.id, 0, datetime.now() - timedelta(days=90))
             elif books_type == 'bucket': 
                 if bucket_count < user.books_per_week: 
                     DeliveryBucket.create(user_id, book.id, user.next_delivery_date, 0)
                     bucket_count += 1
+                else: 
+                    break
+            elif books_type == 'current': 
+                if not user.last_delivery_date: 
+                    user.last_delivery_date = datetime.now() - timedelta(days=7)
+                    db.session.commit()
+                if order_count < user.books_per_week: 
+                    Order.create(user.id, book.id, 0, user.last_delivery_date)
+                    order_count += 1
                 else: 
                     break
 
