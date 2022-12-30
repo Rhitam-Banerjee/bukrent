@@ -673,7 +673,6 @@ class User(db.Model):
                 raise ValueError(f"Wait until {self.last_delivery_date + timedelta(days=1)} to place a new order")
             
             order_count = Order.query.filter(
-                Order.user_id == self.id,
                 Order.placed_on >= self.next_delivery_date - timedelta(days=1),
                 Order.placed_on <= self.next_delivery_date + timedelta(days=1)
             ).count()
