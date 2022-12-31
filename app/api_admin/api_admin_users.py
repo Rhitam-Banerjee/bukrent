@@ -169,7 +169,8 @@ def update_delivery_details(admin):
         
     delivery_date = datetime.strptime(next_delivery_date, '%Y-%m-%d')
     user = User.query.get(id)
-    if delivery_date <= datetime.today() or (user.last_delivery_date and delivery_date.date() <= user.last_delivery_date):
+    print(delivery_date.date() < date.today())
+    if delivery_date.date() < date.today() or (user.last_delivery_date and delivery_date.date() <= user.last_delivery_date):
         return jsonify({"status": "error", "message": "Invalid delivery date"}), 400
 
     user.next_delivery_date = delivery_date

@@ -677,13 +677,12 @@ class User(db.Model):
                 Order.placed_on >= self.next_delivery_date - timedelta(days=1),
                 Order.placed_on <= self.next_delivery_date + timedelta(days=1)
             ).count()
-            print(order_count)
             if order_count: 
                 raise ValueError("Cannot place order yet")
 
             buckets = self.delivery_buckets
 
-            if len(buckets) != self.books_per_week: 
+            if len(buckets) < self.books_per_week: 
                 raise ValueError(f"Add {self.books_per_week - len(buckets)} book(s) to the bucket")
             for bucket in buckets:
                 if bucket.book.stock_available <= 0:
@@ -729,7 +728,10 @@ class User(db.Model):
     def change_delivery_date(self, delivery_date):
         delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d')
 
-        if delivery_date <= datetime.today() or (self.last_delivery_date and delivery_date.date() <= self.last_delivery_date):
+        print(delivery_date < datetime.today())
+        if self.last_delivery_date: 
+            print(delivery_date.date() <= self.last_delivery_date)
+        if delivery_date < datetime.today() or (self.last_delivery_date and delivery_date.date() <= self.last_delivery_date):
             raise ValueError("Invalid delivery date")
 
         buckets = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.delivery_date==self.next_delivery_date)).all()
