@@ -6,6 +6,7 @@ from app.models.user import Address, User, Child
 from app.models.books import Book
 from app.models.buckets import DeliveryBucket
 from app.models.order import Order
+from app.models.deliverer import Deliverer
 from app import db
 
 from functools import wraps
@@ -162,19 +163,22 @@ def update_user(admin):
 def update_delivery_details(admin): 
     id = request.json.get('id')
     next_delivery_date = request.json.get('next_delivery_date')
-    deliverer = request.json.get('deliverer')
+    deliverer_id = request.json.get('deliverer_id')
     delivery_time = request.json.get('delivery_time')
-    if not all((next_delivery_date, deliverer, delivery_time)): 
+    if not all((next_delivery_date, deliverer_id, delivery_time)): 
         return jsonify({"status": "error", "message": "Provide all the details"}), 400
         
     delivery_date = datetime.strptime(next_delivery_date, '%Y-%m-%d')
     user = User.query.get(id)
-    print(delivery_date.date() < date.today())
     if delivery_date.date() < date.today() or (user.last_delivery_date and delivery_date.date() <= user.last_delivery_date):
         return jsonify({"status": "error", "message": "Invalid delivery date"}), 400
 
     user.next_delivery_date = delivery_date
-    user.deliverer = deliverer
+    if not deliverer_id: 
+        user.deliverer = None
+    else: 
+        if Deliverer.query.get(deliverer_id): 
+            user.deliverer_id = deliverer_id
     user.delivery_time = delivery_time
 
     db.session.commit()

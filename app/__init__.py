@@ -36,6 +36,9 @@ def create_app(script_info=None):
     from app.api_admin import api_admin
     app.register_blueprint(api_admin)
 
+    from app.api_delivery.api_delivery import api_delivery
+    app.register_blueprint(api_delivery)
+
     from app.views.views import views
     app.register_blueprint(views)
 

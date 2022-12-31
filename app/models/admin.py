@@ -5,7 +5,6 @@ from app.models.user import User
 from app.models.buckets import Suggestion, Wishlist, Dump
 from app.models.order import Order
 from app.models.category import Category
-from app import db
 
 class Admin(db.Model):
     __tablename__ = "admins"

@@ -3,6 +3,7 @@ import uuid
 
 from app.models.buckets import *
 from app.models.order import Order
+from app.models.deliverer import Deliverer
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
@@ -291,7 +292,7 @@ class User(db.Model):
     last_delivery_date = db.Column(db.Date)
     current_order = db.Column(db.Boolean, default=False)
     next_order_confirmed = db.Column(db.Boolean, default=False)
-    deliverer = db.Column(db.String)
+    deliverer_id = db.Column(db.Integer, db.ForeignKey('deliverers.id'))
     delivery_time = db.Column(db.String)
 
     has_child_1 = db.Column(db.Boolean, default=False)
@@ -328,9 +329,13 @@ class User(db.Model):
     #Orders
 
     def to_json(self):
-        address = ""
+        deliverer, address = {}, ""
         if len(self.address):
             address = self.address[0].to_json()
+        if self.deliverer_id: 
+            deliverer = Deliverer.query.get(self.deliverer_id)
+            if deliverer: 
+                deliverer = deliverer.to_json()
         return {
             "id": self.id,
             "guid": self.guid,
@@ -352,8 +357,8 @@ class User(db.Model):
             "mobile_number": self.mobile_number,
             "contact_number": self.contact_number,
             "source": self.source,
-            "deliverer": self.deliverer,
-            "delivery_time": self.delivery_time
+            "delivery_time": self.delivery_time,
+            "deliverer": deliverer,
         }
 
     @staticmethod
@@ -728,9 +733,6 @@ class User(db.Model):
     def change_delivery_date(self, delivery_date):
         delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d')
 
-        print(delivery_date < datetime.today())
-        if self.last_delivery_date: 
-            print(delivery_date.date() <= self.last_delivery_date)
         if delivery_date < datetime.today() or (self.last_delivery_date and delivery_date.date() <= self.last_delivery_date):
             raise ValueError("Invalid delivery date")
 
