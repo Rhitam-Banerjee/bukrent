@@ -1,11 +1,13 @@
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
+from functools import cmp_to_key
 from flask import Blueprint, jsonify, request, make_response
+from sqlalchemy import or_
 
 from app.models.deliverer import Deliverer
 from app.models.user import User
 from app.models.order import Order
 
-from app.api_delivery.utils import token_required
+from app.api_delivery.utils import sort_deliveries, token_required
 
 import os
 import jwt
@@ -64,16 +66,28 @@ def logout(deliverer):
 @token_required
 def get_deliveries(deliverer): 
     time_filter = request.args.get('time_filter')
-    sort = bool(request.args.get('sort'))
+    sort = request.args.get('sort')
+    search_query = request.args.get('search_query')
 
     if not str(time_filter).isnumeric(): 
         time_filter = 0
     else: 
         time_filter = int(time_filter)
 
+    if not str(sort).isnumeric(): 
+        sort = False
+    else: 
+        sort = bool(int(sort))
+
     deliveries = []
 
     user_query = User.query.filter_by(deliverer_id=deliverer.id).filter(
+        or_(
+            User.id.ilike(f'{search_query}'),
+            User.first_name.ilike(f'{search_query}%'),
+            User.last_name.ilike(f'{search_query}%'),
+            User.mobile_number.ilike(f'{search_query}%')
+        ),
         User.next_delivery_date >= date.today(),
         User.next_delivery_date <= date.today() + timedelta(days=time_filter)
     )
@@ -111,6 +125,11 @@ def get_deliveries(deliverer):
                     "next_delivery_date": user_json['next_delivery_date'],
                 }
             })
+
+    if sort: 
+        deliveries = sorted(deliveries, key=cmp_to_key(sort_deliveries), reverse=False)
+    else: 
+        deliveries = sorted(deliveries, key=cmp_to_key(sort_deliveries), reverse=True)
 
     return jsonify({
         "status": "success",
