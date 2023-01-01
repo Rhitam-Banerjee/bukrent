@@ -83,7 +83,6 @@ def get_deliveries(deliverer):
 
     user_query = User.query.filter_by(deliverer_id=deliverer.id).filter(
         or_(
-            User.id.ilike(f'{search_query}'),
             User.first_name.ilike(f'{search_query}%'),
             User.last_name.ilike(f'{search_query}%'),
             User.mobile_number.ilike(f'{search_query}%')
