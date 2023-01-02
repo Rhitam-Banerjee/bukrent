@@ -21,7 +21,7 @@ def get_deliverers():
     deliverers = Deliverer.query.all()
     return jsonify({
         "status": "success",
-        "deliverers": [deliverer.to_json() for deliverer in deliverers]
+        "deliverers": [deliverer.to_json() for delive7rer in deliverers]
     })
 
 @api_delivery.route('/login', methods=['POST'])
@@ -156,19 +156,22 @@ def get_delivery(deliverer, id):
             "status": "error",
             "message": "Invalid user ID",
         }), 400
-    delivery_books = Order.query.filter_by(user_id=user.id).filter(
-        Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-        Order.placed_on <= user.next_delivery_date + timedelta(days=1)
-    ).all()
+    delivery_books, return_books = [], []
+    if user.next_delivery_date: 
+        delivery_books = Order.query.filter_by(user_id=user.id).filter(
+            Order.placed_on >= user.next_delivery_date - timedelta(days=1),
+            Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+        ).all()
     if not len(delivery_books): 
         return jsonify({
             "status": "error",
             "message": "No delivery scheduled for the user",
         }), 400
-    return_books = Order.query.filter_by(user_id=user.id).filter(
-        Order.placed_on >= user.last_delivery_date - timedelta(days=1),
-        Order.placed_on <= user.last_delivery_date + timedelta(days=1)
-    ).all()
+    if user.last_delivery_date: 
+        return_books = Order.query.filter_by(user_id=user.id).filter(
+            Order.placed_on >= user.last_delivery_date - timedelta(days=1),
+            Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+        ).all()
     user_json = user.to_json()
     return jsonify({
         "status": "success",
@@ -222,11 +225,10 @@ def confirm_delivery(deliverer, id):
             "message": "Delivery is not scheduled for today",
         }), 400
     for order in current_orders: 
+        if not order.is_completed: 
+            order.delivery_time = datetime.now()
         order.received_by = received_by
         order.notes = notes
         order.is_completed = True
-        order.delivery_time = datetime.now()
         db.session.commit()
-    return jsonify({
-        "status": "success"
-    })
+    return jsonify({"status": "success"})
