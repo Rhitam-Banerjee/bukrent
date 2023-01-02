@@ -19,6 +19,11 @@ class Order(db.Model):
     is_gift = db.Column(db.Boolean, default=False)
     gift_message = db.Column(db.String)
     placed_on = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    received_by = db.Column(db.String)
+    is_completed = db.Column(db.Boolean, default=False)
+    feedback = db.Column(db.String)
+    delivery_time = db.Column(db.DateTime(timezone=True))
+    notes = db.Column(db.String)
 
     @staticmethod
     def create(user_id, book_id, age_group, placed_on):

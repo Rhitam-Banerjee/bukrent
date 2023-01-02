@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from functools import cmp_to_key
 from flask import Blueprint, jsonify, request, make_response
 from sqlalchemy import or_
@@ -8,6 +8,8 @@ from app.models.user import User
 from app.models.order import Order
 
 from app.api_delivery.utils import sort_deliveries, token_required
+
+from app import db
 
 import os
 import jwt
@@ -86,10 +88,15 @@ def get_deliveries(deliverer):
             User.first_name.ilike(f'{search_query}%'),
             User.last_name.ilike(f'{search_query}%'),
             User.mobile_number.ilike(f'{search_query}%')
-        ),
-        User.next_delivery_date >= date.today(),
-        User.next_delivery_date <= date.today() + timedelta(days=time_filter)
+        )
     )
+    if time_filter == 1: 
+        user_query = user_query.filter(User.next_delivery_date == date.today() + timedelta(days=1))
+    else: 
+        user_query = user_query.filter(
+            User.next_delivery_date >= date.today(),
+            User.next_delivery_date <= date.today() + timedelta(days=time_filter)
+        )
     if sort: 
         user_query = user_query.order_by(User.next_delivery_date)
     else: 
@@ -110,9 +117,14 @@ def get_deliveries(deliverer):
             Order.placed_on <= user.next_delivery_date + timedelta(days=1)
         ).count()
         if next_delivery_count: 
+            next_order = Order.query.filter_by(user_id=user.id).filter(
+                Order.placed_on >= user.next_delivery_date - timedelta(days=1),
+                Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+            ).first()
             deliveries.append({
                 "last_delivery_count": last_delivery_count,
                 "next_delivery_count": next_delivery_count,
+                "is_completed": next_order.is_completed,
                 "user": {
                     "id": user_json['id'],
                     "first_name": user_json['first_name'],
@@ -133,4 +145,88 @@ def get_deliveries(deliverer):
     return jsonify({
         "status": "success",
         "deliveries": deliveries
+    })
+
+@api_delivery.route('/get-delivery/<id>')
+@token_required
+def get_delivery(deliverer, id): 
+    user = User.query.get(id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID",
+        }), 400
+    delivery_books = Order.query.filter_by(user_id=user.id).filter(
+        Order.placed_on >= user.next_delivery_date - timedelta(days=1),
+        Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+    ).all()
+    if not len(delivery_books): 
+        return jsonify({
+            "status": "error",
+            "message": "No delivery scheduled for the user",
+        }), 400
+    return_books = Order.query.filter_by(user_id=user.id).filter(
+        Order.placed_on >= user.last_delivery_date - timedelta(days=1),
+        Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+    ).all()
+    user_json = user.to_json()
+    return jsonify({
+        "status": "success",
+        "delivery": {
+            "wishlist": user.get_wishlist(),
+            "suggestions": user.get_suggestions(),
+            "delivery_books": [delivery_book.book.to_json() for delivery_book in delivery_books],
+            "return_books": [return_book.book.to_json() for return_book in return_books],
+            "is_completed": delivery_books[0].is_completed,
+            "notes": delivery_books[0].notes,
+            "received_by": delivery_books[0].received_by,
+            "user": {
+                "id": user_json['id'],
+                "first_name": user_json['first_name'],
+                "last_name": user_json['last_name'],
+                "mobile_number": user_json['mobile_number'],
+                "address": user_json['address'],
+                "books_per_week": user_json['books_per_week'],
+            }
+        }
+    })
+
+@api_delivery.route('/confirm-delivery/<id>', methods=['POST'])
+@token_required
+def confirm_delivery(deliverer, id): 
+    received_by = request.json.get('received_by')
+    notes = request.json.get('notes')
+    user = User.query.get(id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID",
+        }), 400
+    if not user.next_delivery_date: 
+        return jsonify({
+            "status": "error",
+            "message": "No delivery scheduled for the user",
+        }), 400
+    current_orders = Order.query.filter_by(user_id=user.id).filter(
+        Order.placed_on >= user.next_delivery_date - timedelta(days=1),
+        Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+    ).all()
+    if not len(current_orders): 
+        return jsonify({
+            "status": "error",
+            "message": "No delivery scheduled for the user",
+        }), 400
+    if user.next_delivery_date < date.today(): 
+        return jsonify({
+            "status": "error",
+            "message": "Delivery is not scheduled for today",
+        }), 400
+    for order in current_orders: 
+        order.received_by = received_by
+        order.notes = notes
+        order.is_completed = True
+        order.delivery_time = datetime.now()
+        db.session.commit()
+    return jsonify({
+        "status": "success"
     })
