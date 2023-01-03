@@ -124,7 +124,7 @@ def get_deliveries(deliverer):
             if len(user.address): 
                 delivery_address = f'{user.address[0].area} - {user.address[0].pincode}'
             if next_order.delivery_address: 
-                delivery_address = delivery_address
+                delivery_address = next_order.delivery_address
             if not delivery_address: 
                 delivery_address = user.delivery_address
             deliveries.append({
