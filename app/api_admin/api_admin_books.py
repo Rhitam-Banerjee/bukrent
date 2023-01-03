@@ -107,6 +107,10 @@ def add_book(admin):
             "message": "ISBN and title is necessary"
         }), 400
 
+    if not rentals: 
+        rentals = 0
+    if not stock_available: 
+        stock_available = 0
     if req_type == 'add':
         if Book.query.filter_by(isbn=isbn).count():
             return jsonify({
