@@ -121,14 +121,17 @@ def get_deliveries(deliverer):
                 Order.placed_on >= user.next_delivery_date - timedelta(days=1),
                 Order.placed_on <= user.next_delivery_date + timedelta(days=1)
             ).first()
-            delivery_address = f'{user.address[0].area} - {user.address[0].pincode}'
+            if len(user.address): 
+                delivery_address = f'{user.address[0].area} - {user.address[0].pincode}'
             if next_order.delivery_address: 
                 delivery_address = delivery_address
+            if not delivery_address: 
+                delivery_address = user.delivery_address
             deliveries.append({
                 "last_delivery_count": last_delivery_count,
                 "next_delivery_count": next_delivery_count,
                 "is_completed": next_order.is_completed,
-                "delivery_address": next_order.delivery_address,
+                "delivery_address": delivery_address,
                 "user": {
                     "id": user_json['id'],
                     "first_name": user_json['first_name'],
@@ -160,7 +163,7 @@ def get_delivery(deliverer, id):
             "status": "error",
             "message": "Invalid user ID",
         }), 400
-    delivery_books, return_books, delivery_address = [], [], f'{user.address[0].area} - {user.address[0].pincode}'
+    delivery_books, return_books, delivery_address = [], [], ""
     if user.next_delivery_date: 
         delivery_books = Order.query.filter_by(user_id=user.id).filter(
             Order.placed_on >= user.next_delivery_date - timedelta(days=1),
@@ -171,6 +174,8 @@ def get_delivery(deliverer, id):
             "status": "error",
             "message": "No delivery scheduled for the user",
         }), 400
+    if len(user.address): 
+        delivery_address = f'{user.address[0].area} - {user.address[0].pincode}'
     if delivery_books[0].delivery_address: 
         delivery_address = delivery_books[0].delivery_address
     if user.last_delivery_date: 

@@ -184,7 +184,8 @@ def update_delivery_details(admin):
         user.delivery_address = delivery_address
         db.session.commit()
     else: 
-        user.delivery_address = f'{user.address[0].area} - {user.address[0].pincode}'
+        if len(user.address): 
+            user.delivery_address = f'{user.address[0].area} - {user.address[0].pincode}'
     orders = Order.query.filter_by(user_id=user.id).filter(
         Order.placed_on >= user.next_delivery_date - timedelta(days=1),
         Order.placed_on <= user.next_delivery_date + timedelta(days=1)
