@@ -63,10 +63,7 @@ class Admin(db.Model):
                 ).all()
                 if len(delivery_books): 
                     is_completed = delivery_books[0].is_completed
-                    delivery_address = delivery_books[0].delivery_address
-                if not delivery_address: 
-                    if len(user.address): 
-                        delivery_address = f'{user.address[0].area} - {user.address[0].pincode}'                    
+                    delivery_address = delivery_books[0].delivery_address               
             if user.last_delivery_date: 
                 current_books = Order.query.filter_by(user_id=user.id).filter(
                     Order.placed_on >= user.last_delivery_date - timedelta(days=1),

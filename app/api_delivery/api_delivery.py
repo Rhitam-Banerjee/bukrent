@@ -121,8 +121,7 @@ def get_deliveries(deliverer):
                 Order.placed_on >= user.next_delivery_date - timedelta(days=1),
                 Order.placed_on <= user.next_delivery_date + timedelta(days=1)
             ).first()
-            if len(user.address): 
-                delivery_address = f'{user.address[0].area} - {user.address[0].pincode}'
+            delivery_address = ""
             if next_order.delivery_address: 
                 delivery_address = next_order.delivery_address
             if not delivery_address: 
@@ -174,8 +173,6 @@ def get_delivery(deliverer, id):
             "status": "error",
             "message": "No delivery scheduled for the user",
         }), 400
-    if len(user.address): 
-        delivery_address = f'{user.address[0].area} - {user.address[0].pincode}'
     if delivery_books[0].delivery_address: 
         delivery_address = delivery_books[0].delivery_address
     if user.last_delivery_date: 

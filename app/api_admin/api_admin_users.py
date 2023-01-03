@@ -9,8 +9,6 @@ from app.models.order import Order
 from app.models.deliverer import Deliverer
 from app import db
 
-from functools import wraps
-
 from app.api_admin.utils import api_admin, validate_user, token_required
 
 import os
@@ -180,18 +178,16 @@ def update_delivery_details(admin):
     else: 
         if Deliverer.query.get(deliverer_id): 
             user.deliverer_id = deliverer_id
-    if delivery_address: 
-        user.delivery_address = delivery_address
-        db.session.commit()
-    else: 
-        if len(user.address): 
-            user.delivery_address = f'{user.address[0].area} - {user.address[0].pincode}'
+
+    user.delivery_address = delivery_address
+    db.session.commit()
     orders = Order.query.filter_by(user_id=user.id).filter(
         Order.placed_on >= user.next_delivery_date - timedelta(days=1),
         Order.placed_on <= user.next_delivery_date + timedelta(days=1)
     ).all()
     for order in orders: 
         order.delivery_address = user.delivery_address
+
     user.delivery_time = delivery_time
 
     db.session.commit()
