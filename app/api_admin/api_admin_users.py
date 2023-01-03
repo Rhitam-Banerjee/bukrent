@@ -14,7 +14,7 @@ from functools import wraps
 from app.api_admin.utils import api_admin, validate_user, token_required
 
 import os
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 @api_admin.route('/get-users')
 @token_required
@@ -165,12 +165,13 @@ def update_delivery_details(admin):
     next_delivery_date = request.json.get('next_delivery_date')
     deliverer_id = request.json.get('deliverer_id')
     delivery_time = request.json.get('delivery_time')
+    delivery_address = request.json.get('delivery_address')
     if not all((next_delivery_date, deliverer_id, delivery_time)): 
         return jsonify({"status": "error", "message": "Provide all the details"}), 400
         
     delivery_date = datetime.strptime(next_delivery_date, '%Y-%m-%d')
     user = User.query.get(id)
-    if delivery_date.date() < date.today() or (user.last_delivery_date and delivery_date.date() <= user.last_delivery_date):
+    if not delivery_date or delivery_date.date() < date.today() or (user.last_delivery_date and delivery_date.date() <= user.last_delivery_date):
         return jsonify({"status": "error", "message": "Invalid delivery date"}), 400
 
     user.next_delivery_date = delivery_date
@@ -179,6 +180,17 @@ def update_delivery_details(admin):
     else: 
         if Deliverer.query.get(deliverer_id): 
             user.deliverer_id = deliverer_id
+    if delivery_address: 
+        user.delivery_address = delivery_address
+        db.session.commit()
+    else: 
+        user.delivery_address = f'{user.address[0].area} - {user.address[0].pincode}'
+    orders = Order.query.filter_by(user_id=user.id).filter(
+        Order.placed_on >= user.next_delivery_date - timedelta(days=1),
+        Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+    ).all()
+    for order in orders: 
+        order.delivery_address = user.delivery_address
     user.delivery_time = delivery_time
 
     db.session.commit()

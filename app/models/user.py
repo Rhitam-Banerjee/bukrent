@@ -294,6 +294,7 @@ class User(db.Model):
     next_order_confirmed = db.Column(db.Boolean, default=False)
     deliverer_id = db.Column(db.Integer, db.ForeignKey('deliverers.id'))
     delivery_time = db.Column(db.String)
+    delivery_address = db.Column(db.String)
 
     has_child_1 = db.Column(db.Boolean, default=False)
     has_child_2 = db.Column(db.Boolean, default=False)
@@ -696,6 +697,17 @@ class User(db.Model):
             for bucket in buckets:
                 Order.create(self.id, bucket.book.id, bucket.age_group, self.next_delivery_date)
                 bucket.delete()
+
+            orders = Order.query.filter_by(user_id=self.id).filter(
+                Order.placed_on >= self.next_delivery_date - timedelta(days=1),
+                Order.placed_on <= self.next_delivery_date + timedelta(days=1)
+            ).all()
+
+            for order in orders: 
+                if self.delivery_address: 
+                    order.delivery_address = self.delivery_address
+                else: 
+                    order.delivery_address = f'{self.address.area} {self.address.pincode}'
 
             db.session.add(self)
             db.session.commit()

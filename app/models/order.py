@@ -23,6 +23,7 @@ class Order(db.Model):
     is_completed = db.Column(db.Boolean, default=False)
     feedback = db.Column(db.String)
     delivery_time = db.Column(db.DateTime(timezone=True))
+    delivery_address = db.Column(db.String)
     notes = db.Column(db.String)
 
     @staticmethod

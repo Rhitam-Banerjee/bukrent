@@ -55,12 +55,17 @@ class Admin(db.Model):
             if type(user) == type({}): 
                 user_id = user['id']
                 user = User.query.get(user_id)
-            current_books, delivery_books = [], []
+            current_books, delivery_books, is_completed, delivery_address = [], [], False, ""
             if user.next_delivery_date: 
                 delivery_books = Order.query.filter_by(user_id=user.id).filter(
                     Order.placed_on >= user.next_delivery_date - timedelta(days=1),
                     Order.placed_on <= user.next_delivery_date + timedelta(days=1)
                 ).all()
+                if len(delivery_books): 
+                    is_completed = delivery_books[0].is_completed
+                    delivery_address = delivery_books[0].delivery_address
+                if not delivery_address: 
+                    delivery_address = f'{user.address[0].area} - {user.address[0].pincode}'                    
             if user.last_delivery_date: 
                 current_books = Order.query.filter_by(user_id=user.id).filter(
                     Order.placed_on >= user.last_delivery_date - timedelta(days=1),
@@ -75,7 +80,9 @@ class Admin(db.Model):
                 "order": {
                     "current_books": [order.book.to_json() for order in current_books],
                     "delivery_books": [order.book.to_json() for order in delivery_books],
-                    "bucket": bucket
+                    "bucket": bucket,
+                    "is_completed": is_completed,
+                    "delivery_address": delivery_address,
                 },
                 **user.to_json()
             })
