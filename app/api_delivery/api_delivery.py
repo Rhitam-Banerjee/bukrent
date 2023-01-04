@@ -5,6 +5,7 @@ from sqlalchemy import or_
 
 from app.models.deliverer import Deliverer
 from app.models.user import User
+from app.models.buckets import DeliveryBucket
 from app.models.order import Order
 
 from app.api_delivery.utils import sort_deliveries, token_required
@@ -186,8 +187,8 @@ def get_delivery(deliverer, id):
         "delivery": {
             "wishlist": user.get_wishlist(),
             "suggestions": user.get_suggestions(),
-            "delivery_books": [delivery_book.book.to_json() for delivery_book in delivery_books],
-            "return_books": [return_book.book.to_json() for return_book in return_books],
+            "delivery_books": [delivery_book.to_json() for delivery_book in delivery_books],
+            "return_books": [return_book.to_json() for return_book in return_books],
             "is_completed": delivery_books[0].is_completed,
             "notes": delivery_books[0].notes,
             "received_by": delivery_books[0].received_by,
@@ -240,4 +241,69 @@ def confirm_delivery(deliverer, id):
         order.notes = notes
         order.is_completed = True
         db.session.commit()
+    return jsonify({"status": "success"})
+
+@api_delivery.route('/toggle-refuse-book', methods=['POST'])
+@token_required
+def toggle_refuse_book(deliverer): 
+    book_id = request.json.get('book_id')
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID",
+        }), 400
+    if not user.next_delivery_date or date.today() < user.next_delivery_date: 
+        return jsonify({
+            "status": "error",
+            "message": "No delivery scheduled for the user",
+        }), 400
+    order = Order.query.filter_by(user_id=user.id, book_id=book_id).filter(
+        Order.placed_on >= user.next_delivery_date - timedelta(days=1),
+        Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+    ).first()
+    if not order: 
+        return jsonify({
+            "status": "error",
+            "message": "Book not in delivery bucket",
+        }), 400
+    if order.is_refused: 
+        order.is_refused = False
+    else: 
+        order.is_refused = True
+    db.session.commit()
+    return jsonify({"status": "success"})
+
+@api_delivery.route('/toggle-retain-book', methods=['POST'])
+@token_required
+def toggle_retain_book(deliverer): 
+    book_id = request.json.get('book_id')
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID",
+        }), 400
+    if not user.next_delivery_date or date.today() < user.next_delivery_date: 
+        return jsonify({
+            "status": "error",
+            "message": "No delivery scheduled for the user",
+        }), 400
+    order = Order.query.filter_by(user_id=user.id, book_id=book_id).filter(
+        Order.placed_on >= user.last_delivery_date - timedelta(days=1),
+        Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+    ).first()
+    if not order: 
+        return jsonify({
+            "status": "error",
+            "message": "Book not in delivery bucket",
+        }), 400
+    bucket_book = DeliveryBucket.query.filter_by(user_id=user.id, book_id=book_id).first()
+    if not bucket_book: 
+        DeliveryBucket.create(user_id, book_id, None, 0, True)
+    else: 
+        db.session.delete(bucket_book)
+    db.session.commit()
     return jsonify({"status": "success"})

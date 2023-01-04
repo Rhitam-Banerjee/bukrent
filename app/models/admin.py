@@ -76,8 +76,8 @@ class Admin(db.Model):
                 "suggestions": user.get_suggestions(),
                 "previous": user.get_previous_books(),
                 "order": {
-                    "current_books": [order.book.to_json() for order in current_books],
-                    "delivery_books": [order.book.to_json() for order in delivery_books],
+                    "current_books": [order.to_json() for order in current_books],
+                    "delivery_books": [order.to_json() for order in delivery_books],
                     "bucket": bucket,
                     "is_completed": is_completed,
                     "delivery_address": delivery_address,
@@ -105,8 +105,8 @@ class Admin(db.Model):
             if len(bucket) or len(delivery_books): 
                 orders.append({
                     "user": user.to_json(),
-                    "current_books": [order.book.to_json() for order in current_books],
-                    "delivery_books": [order.book.to_json() for order in delivery_books],
+                    "current_books": [order.to_json() for order in current_books],
+                    "delivery_books": [order.to_json() for order in delivery_books],
                     "bucket": bucket
                 })
         return orders

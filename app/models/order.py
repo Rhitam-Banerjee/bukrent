@@ -1,5 +1,6 @@
 from app import db
 import uuid
+from app.models.buckets import DeliveryBucket
 
 from sqlalchemy.sql import func
 
@@ -25,6 +26,7 @@ class Order(db.Model):
     delivery_time = db.Column(db.DateTime(timezone=True))
     delivery_address = db.Column(db.String)
     notes = db.Column(db.String)
+    is_refused = db.Column(db.Boolean)
 
     @staticmethod
     def create(user_id, book_id, age_group, placed_on):
@@ -43,3 +45,17 @@ class Order(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+    def to_json(self): 
+        is_retained = False
+        bucket_book = DeliveryBucket.query.filter_by(user_id=self.user_id, book_id=self.book_id, is_retained=True).first()
+        if bucket_book and bucket_book.is_retained: 
+            is_retained = True
+        return {
+            "id": self.id,
+            "is_refused": self.is_refused,
+            "is_retained": is_retained,
+            "user_id": self.user_id,
+            "book_id": self.book_id,
+            "book": self.book.to_json(),
+        }
