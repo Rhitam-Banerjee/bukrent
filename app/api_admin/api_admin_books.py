@@ -14,8 +14,6 @@ import uuid
 
 import json
 
-from functools import wraps
-
 from app.api_admin.utils import api_admin, token_required, upload_to_aws
 
 import os
@@ -109,8 +107,8 @@ def add_book(admin):
 
     if not rentals: 
         rentals = 0
-    if not stock_available: 
-        stock_available = 0
+    if not copies: 
+        copies = 0
     if req_type == 'add':
         if Book.query.filter_by(isbn=isbn).count():
             return jsonify({
@@ -147,6 +145,7 @@ def add_book(admin):
         upload_to_aws(image, 'book_images', f'book_images/{isbn}.{extension}')
         s3_url = os.environ.get('AWS_S3_URL')
         book.image = f'{s3_url}/book_images/{isbn}.{extension}'
+        print(book.image)
     elif req_type == 'add':
         book.image = ''
 

@@ -52,6 +52,13 @@ def add_books_user(admin):
                     user.last_delivery_date = datetime.now() - timedelta(days=7)
                     db.session.commit()
                 Order.create(user.id, book.id, 0, user.last_delivery_date)
+            elif books_type == 'delivery': 
+                if not user.next_delivery_date: 
+                    return jsonify({
+                        "status": "error",
+                        "message": "No delivery date set"
+                    }), 400
+                Order.create(user.id, book.id, 0, user.next_delivery_date)
 
     return jsonify({
         "status": "success",
@@ -149,6 +156,35 @@ def remove_from_bucket(admin):
         "user": admin.get_users([user])[0]
     })
 
+@api_admin.route('/remove-from-delivery', methods=['POST'])
+@token_required
+def remove_from_delivery(admin): 
+    book_guid = request.json.get('book_guid')
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID"
+        }), 400
+    book = Book.query.filter_by(guid=book_guid).first()
+    if not book: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid book ID"
+        })
+    delivery = Order.query.filter_by(user_id=user_id, book_id=book.id).first()
+    if not delivery: 
+        return jsonify({
+            "status": "error",
+            "message": "No delivery found"
+        })
+    delivery.delete()
+    return jsonify({
+        "status": "success",
+        "user": admin.get_users([user])[0]
+    })
+
 @api_admin.route('/add-users-book', methods=['POST'])
 @token_required
 def add_users_book(admin): 
@@ -207,12 +243,6 @@ def add_to_bucket(admin):
         return jsonify({
             "status": "error",
             "message": "Invalid book ID"
-        }), 400
-    current_bucket = user.get_next_bucket()
-    if len(current_bucket) >= user.books_per_week: 
-        return jsonify({
-            "status": "error",
-            "message": "Bucket full"
         }), 400
     user.wishlist_remove(book_guid)
     DeliveryBucket.create(user_id, book.id, user.next_delivery_date, 0)
