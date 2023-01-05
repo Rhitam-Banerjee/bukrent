@@ -102,7 +102,8 @@ class Book(db.Model):
             language = language,
             price = price,
             description = description,
-            stock_available = stock_available
+            stock_available = stock_available,
+            rentals = 0
         )
 
         if bestseller_json:
