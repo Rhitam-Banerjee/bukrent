@@ -7,6 +7,7 @@ from app.models.deliverer import Deliverer
 from app.models.user import User
 from app.models.buckets import DeliveryBucket
 from app.models.order import Order
+from app.models.books import Book
 
 from app.api_delivery.utils import sort_deliveries, token_required
 
@@ -306,4 +307,120 @@ def toggle_retain_book(deliverer):
     else: 
         db.session.delete(bucket_book)
     db.session.commit()
+    return jsonify({"status": "success"})
+
+@api_delivery.route('/add-to-delivery', methods=['POST'])
+@token_required
+def add_to_delivery(deliverer): 
+    isbn = request.json.get('isbn')
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID",
+        }), 400
+    if not user.next_delivery_date or date.today() < user.next_delivery_date: 
+        return jsonify({
+            "status": "error",
+            "message": "No delivery scheduled for the user",
+        }), 400
+    book = Book.query.filter_by(isbn=isbn).first()
+    if not book: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid ISBN",
+        }), 400
+    Order.create(user_id, book.id, 0, user.next_delivery_date)
+    return jsonify({"status": "success"})
+
+@api_delivery.route('/remove-from-delivery', methods=['POST'])
+@token_required
+def remove_from_delivery(deliverer): 
+    book_id = request.json.get('book_id')
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID",
+        }), 400
+    if not user.next_delivery_date or date.today() < user.next_delivery_date: 
+        return jsonify({
+            "status": "error",
+            "message": "No delivery scheduled for the user",
+        }), 400
+    book = Book.query.get(book_id)
+    if not book: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid book ID",
+        }), 400
+    order = Order.query.filter_by(user_id=user_id, book_id=book.id).filter(
+        Order.placed_on >= user.next_delivery_date - timedelta(days=1),
+        Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+    ).first()
+    if not order: 
+        return jsonify({
+            "status": "error",
+            "message": "No delivery found",
+        }), 400
+    order.delete()
+    return jsonify({"status": "success"})
+
+@api_delivery.route('/add-to-previous', methods=['POST'])
+@token_required
+def add_to_previous(deliverer): 
+    isbn = request.json.get('isbn')
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID",
+        }), 400
+    book = Book.query.filter_by(isbn=isbn).first()
+    if not book: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid ISBN",
+        }), 400
+    if not user.last_delivery_date: 
+        user.last_delivery_date = user.next_delivery_date - timedelta(days=7)
+        db.session.commit()
+    Order.create(user_id, book.id, 0, user.last_delivery_date)
+    return jsonify({"status": "success"})
+
+@api_delivery.route('/remove-from-previous', methods=['POST'])
+@token_required
+def remove_from_previous(deliverer): 
+    book_id = request.json.get('book_id')
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID",
+        }), 400
+    if not user.last_delivery_date: 
+        return jsonify({
+            "status": "error",
+            "message": "No delivery found",
+        }), 400
+    book = Book.query.get(book_id)
+    if not book: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid book ID",
+        }), 400
+    order = Order.query.filter_by(user_id=user_id, book_id=book.id).filter(
+        Order.placed_on >= user.last_delivery_date - timedelta(days=1),
+        Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+    ).first()
+    if not order: 
+        return jsonify({
+            "status": "error",
+            "message": "No delivery found",
+        }), 400
+    order.delete()
     return jsonify({"status": "success"})
