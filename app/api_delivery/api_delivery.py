@@ -142,6 +142,7 @@ def get_deliveries(deliverer):
                     "delivery_time": user_json['delivery_time'],
                     "books_per_week": user_json['books_per_week'],
                     "next_delivery_date": user_json['next_delivery_date'],
+                    "delivery_order": user_json['delivery_order'],
                 }
             })
 

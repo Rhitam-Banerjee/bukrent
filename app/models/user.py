@@ -295,6 +295,7 @@ class User(db.Model):
     deliverer_id = db.Column(db.Integer, db.ForeignKey('deliverers.id'))
     delivery_time = db.Column(db.String)
     delivery_address = db.Column(db.String)
+    delivery_order = db.Column(db.Integer, default=0)
 
     has_child_1 = db.Column(db.Boolean, default=False)
     has_child_2 = db.Column(db.Boolean, default=False)
@@ -360,6 +361,7 @@ class User(db.Model):
             "source": self.source,
             "delivery_time": self.delivery_time,
             "deliverer": deliverer,
+            "delivery_order": self.delivery_order,
         }
 
     @staticmethod
@@ -756,6 +758,7 @@ class User(db.Model):
             db.session.commit()
 
         self.next_delivery_date = delivery_date
+        self.delivery_order = 0
         db.session.add(self)
         db.session.commit()
 

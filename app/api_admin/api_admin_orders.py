@@ -299,6 +299,7 @@ def complete_order(admin):
         return jsonify({"status": "error", "message": "No order placed"}), 400
     user.last_delivery_date = user.next_delivery_date
     user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
+    user.delivery_order = 0
     db.session.commit()
     return jsonify({
         "status": "success",

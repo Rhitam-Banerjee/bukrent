@@ -28,6 +28,15 @@ def sort_deliveries(d1, d2):
         if d2['is_completed']: 
             return -1
         if d1['user']['next_delivery_date'] == d2['user']['next_delivery_date']: 
+            if d1['user']['delivery_order'] and d2['user']['delivery_order']: 
+                if d1['user']['delivery_order'] < d2['user']['delivery_order']: 
+                    return -1
+                else: 
+                    return 1
+            if d1['user']['delivery_order']: 
+                return -1
+            if d2['user']['delivery_order']: 
+                return 1
             if not d1['user']['delivery_time'] or len(d1['user']['delivery_time'].split('-')[0]) < 3: 
                 return -1
             if not d2['user']['delivery_time'] or len(d2['user']['delivery_time'].split('-')[0]) < 3: 

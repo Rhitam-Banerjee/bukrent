@@ -24,6 +24,8 @@ def get_users(admin):
     payment_status = request.args.get('payment_status')
     plan = request.args.get('plan')
     plan_duration = request.args.get('duration')
+    delivery_date = request.args.get('delivery_date')
+    deliverer_id = request.args.get('deliverer_id')
 
     all_users = []
     query = User.query
@@ -37,6 +39,11 @@ def get_users(admin):
         query = query.filter_by(books_per_week=plan)
     if plan_duration:
         query = query.filter_by(plan_duration=plan_duration)
+    if delivery_date: 
+        delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d').date()
+        query = query.filter_by(next_delivery_date=delivery_date)
+    if deliverer_id: 
+        query = query.filter_by(deliverer_id=deliverer_id)
     if search:
         query = query.filter(or_(
                 User.first_name.ilike(f'{search}%'),
@@ -164,13 +171,18 @@ def update_delivery_details(admin):
     deliverer_id = request.json.get('deliverer_id')
     delivery_time = request.json.get('delivery_time')
     delivery_address = request.json.get('delivery_address')
-    if not all((next_delivery_date, deliverer_id, delivery_time)): 
+    delivery_order = request.json.get('delivery_order')
+    if not all((next_delivery_date, deliverer_id, delivery_time, delivery_order)): 
         return jsonify({"status": "error", "message": "Provide all the details"}), 400
         
     delivery_date = datetime.strptime(next_delivery_date, '%Y-%m-%d')
     user = User.query.get(id)
     if not delivery_date or delivery_date.date() < date.today() or (user.last_delivery_date and delivery_date.date() <= user.last_delivery_date):
         return jsonify({"status": "error", "message": "Invalid delivery date"}), 400
+    if delivery_order is None or not str(delivery_order).isnumeric() or int(delivery_order) < 1: 
+        return jsonify({"status": "error", "message": "Invalid delivery order input"}), 400
+    if User.query.filter_by(next_delivery_date=delivery_date.date(), delivery_order=delivery_order).count(): 
+        return jsonify({"status": "error", "message": "Provided delivery order is already marked to other delivery"}), 400
 
     user.next_delivery_date = delivery_date
     if not deliverer_id: 
@@ -179,6 +191,7 @@ def update_delivery_details(admin):
         if Deliverer.query.get(deliverer_id): 
             user.deliverer_id = deliverer_id
 
+    user.delivery_order = delivery_order
     user.delivery_address = delivery_address
     db.session.commit()
     orders = Order.query.filter_by(user_id=user.id).filter(
