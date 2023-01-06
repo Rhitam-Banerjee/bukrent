@@ -11,8 +11,8 @@ from app.models.category import Category
 from app import db
 
 import uuid
-
 import json
+import csv
 
 from app.api_admin.utils import api_admin, token_required, upload_to_aws
 
@@ -145,7 +145,6 @@ def add_book(admin):
         upload_to_aws(image, 'book_images', f'book_images/{isbn}.{extension}')
         s3_url = os.environ.get('AWS_S3_URL')
         book.image = f'{s3_url}/book_images/{isbn}.{extension}'
-        print(book.image)
     elif req_type == 'add':
         book.image = ''
 
@@ -249,3 +248,93 @@ def get_filters(admin):
         "types": types,
         "tags": [tag.to_json() for tag in tags]
     })
+
+@api_admin.route('/add-books-from-csv', methods=['POST'])
+@token_required
+def add_books_from_csv(admin): 
+    books_csv_file = request.files.get('books_csv')
+    if books_csv_file.filename.split(".")[-1] != 'csv': 
+        return jsonify({"status": "success", "message": "Only CSV files are supported"}), 400
+    filename = './temporary.csv'
+    books_csv_file.save(filename)
+    books = []
+    with open(filename, mode="r", encoding='utf8') as file:
+        csv_file = csv.reader(file)
+        for line in csv_file:
+            books.append(line)
+    if len(books) < 2: 
+        return jsonify({"status": "success", "message": "Empty CSV file"}), 400
+    columns = dict()
+    for i in range(len(books[0])): 
+        columns[str(books[0][i]).lower()] = i
+    books = books[1:]
+    if 'isbn' not in columns or 'name' not in columns: 
+        return jsonify({"status": "success", "message": "CSV file should have atleast ISBN and name column"}), 400
+    added_isbns, not_added_isbns = [], []
+    print(f'Parsing {len(books)} book(s)')
+    for book in books: 
+        isbn = book[columns['isbn']]
+        name = book[columns['name']]
+        print(f'Parsing book - {isbn}')
+        if not isbn or not name or Book.query.filter_by(isbn=isbn).count(): 
+            if isbn: 
+                print(f'marked as not added')
+                not_added_isbns.append(isbn)
+            continue
+        rating = '5'
+        book_format = ''
+        language = 'English'
+        price = ''
+        description = ''
+        stock_available = 1
+        if 'rating' in columns: 
+            rating = book[columns['rating']]
+        if 'book_format' in columns: 
+            book_format = book[columns['book_format']]
+        if 'language' in columns: 
+            language = book[columns['language']]
+        if 'price' in columns: 
+            price = book[columns['price']]
+        if 'description' in columns: 
+            description = book[columns['description']]
+        if 'stock_available' in columns: 
+            val = book[columns['stock_available']]
+            if val.isnumeric() and int(val) >= 0: 
+                stock_available = int(val)
+        print('set book details')
+        Book.create(
+            name, #name
+            '', #image 
+            isbn, #isbn
+            rating, #rating
+            '', #review_count
+            book_format, #book_format
+            language, #language
+            price, #price
+            description, #description
+            stock_available, #stock_available
+            None, #series_id
+            None, #bestseller_json
+            None, #borrowed_json
+            None, #suggestion_json
+        )
+        print('created book db')
+        book = Book.query.filter_by(isbn=isbn).first()
+        if 'age_group_1' in columns: 
+            book.age_group_1 = bool(book[columns['age_group_1']])
+        if 'age_group_2' in columns: 
+            book.age_group_2 = bool(book[columns['age_group_2']])
+        if 'age_group_3' in columns: 
+            book.age_group_3 = bool(book[columns['age_group_3']])
+        if 'age_group_4' in columns: 
+            book.age_group_4 = bool(book[columns['age_group_4']])
+        if 'age_group_5' in columns: 
+            book.age_group_5 = bool(book[columns['age_group_5']])
+        if 'age_group_6' in columns: 
+            book.age_group_6 = bool(book[columns['age_group_6']])
+        print('updated age groups')
+        added_isbns.append(isbn)
+        db.session.commit()
+    os.remove(filename)
+    print('removed temporary csv')
+    return jsonify({"status": "success", "added_isbns": added_isbns, "not_added_isbns": not_added_isbns})
