@@ -241,11 +241,11 @@ def confirm_delivery(deliverer, id):
             "status": "error",
             "message": "No delivery scheduled for the user",
         }), 400
-    if user.next_delivery_date < date.today(): 
-        return jsonify({
-            "status": "error",
-            "message": "Delivery is not scheduled for today",
-        }), 400
+    #if user.next_delivery_date < date.today(): 
+        #return jsonify({
+         #   "status": "error",
+          #  "message": "Delivery is not scheduled for today",
+        #}), 400
     for order in current_orders: 
         if not order.is_completed: 
             order.delivery_time = datetime.now()
