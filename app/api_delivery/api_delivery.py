@@ -92,7 +92,6 @@ def get_deliveries(deliverer):
             User.mobile_number.ilike(f'{search_query}%')
         )
     )
-    print(time_filter)
     if time_filter == 1: 
         user_query = user_query.filter(User.next_delivery_date == date.today() + timedelta(days=1))
     elif time_filter == -1: 
@@ -141,6 +140,7 @@ def get_deliveries(deliverer):
                 "last_delivery_count": last_delivery_count,
                 "next_delivery_count": next_delivery_count - next_delivery_refused_count,
                 "delivery_address": delivery_address,
+                "is_completed": next_order.is_completed,
                 "user": {
                     "id": user_json['id'],
                     "first_name": user_json['first_name'],
@@ -203,6 +203,7 @@ def get_delivery(deliverer, id):
             "return_books": [return_book.to_json() for return_book in return_books],
             "notes": delivery_books[0].notes,
             "received_by": delivery_books[0].received_by,
+            "is_completed": delivery_books[0].is_completed,
             "delivery_address": delivery_address,
             "user": {
                 "id": user_json['id'],
@@ -251,9 +252,9 @@ def confirm_delivery(deliverer, id):
         order.received_by = received_by
         order.notes = notes
         order.is_completed = True
-    user.last_delivery_date = user.next_delivery_date
-    user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
-    user.delivery_order = 0
+    # user.last_delivery_date = user.next_delivery_date
+    # user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
+    # user.delivery_order = 0
     db.session.commit()
     return jsonify({"status": "success"})
 
