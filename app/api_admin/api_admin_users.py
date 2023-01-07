@@ -131,7 +131,7 @@ def update_user(admin):
         child.delete()
     if children and type(children) == type([]):
         for child in children:
-            child_obj = Child.query.filter_by(name=child['name']).first()
+            child_obj = Child.query.filter_by(user_id=user.id, name=child['name']).first()
             if not child_obj:
                 user.add_child(child)
 
