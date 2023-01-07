@@ -181,7 +181,11 @@ def update_delivery_details(admin):
         return jsonify({"status": "error", "message": "Invalid delivery date"}), 400
     if delivery_order is None or not str(delivery_order).isnumeric() or int(delivery_order) < 1: 
         return jsonify({"status": "error", "message": "Invalid delivery order input"}), 400
-    if User.query.filter_by(next_delivery_date=delivery_date.date(), delivery_order=delivery_order).filter(User.id != user.id).count(): 
+    if User.query.filter_by(
+        next_delivery_date=delivery_date.date(), 
+        delivery_order=delivery_order,
+        deliverer_id=deliverer_id,
+    ).filter(User.id != user.id).count(): 
         return jsonify({"status": "error", "message": "Provided delivery order is already marked to other delivery"}), 400
 
     user.next_delivery_date = delivery_date

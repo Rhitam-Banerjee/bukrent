@@ -73,7 +73,7 @@ def get_deliveries(deliverer):
     sort = request.args.get('sort')
     search_query = request.args.get('search_query')
 
-    if not str(time_filter).isnumeric(): 
+    if not str(time_filter).strip('-').isnumeric(): 
         time_filter = 0
     else: 
         time_filter = int(time_filter)
@@ -92,8 +92,11 @@ def get_deliveries(deliverer):
             User.mobile_number.ilike(f'{search_query}%')
         )
     )
+    print(time_filter)
     if time_filter == 1: 
         user_query = user_query.filter(User.next_delivery_date == date.today() + timedelta(days=1))
+    elif time_filter == -1: 
+        user_query = user_query.filter(User.next_delivery_date == date.today() - timedelta(days=1))
     else: 
         user_query = user_query.filter(
             User.next_delivery_date >= date.today(),
@@ -114,10 +117,16 @@ def get_deliveries(deliverer):
                 Order.placed_on >= user.last_delivery_date - timedelta(days=1),
                 Order.placed_on <= user.last_delivery_date + timedelta(days=1)
             ).count()
-        next_delivery_count = Order.query.filter_by(user_id=user.id).filter(
+            last_delivery_count -= DeliveryBucket.query.filter_by(
+                user_id=user.id, 
+                delivery_date=user.last_delivery_date
+            ).count()
+        total_delivery_query = Order.query.filter_by(user_id=user.id).filter(
             Order.placed_on >= user.next_delivery_date - timedelta(days=1),
             Order.placed_on <= user.next_delivery_date + timedelta(days=1)
-        ).count()
+        )
+        next_delivery_count = total_delivery_query.count()
+        next_delivery_refused_count = total_delivery_query.filter_by(is_refused=True).count()
         if next_delivery_count: 
             next_order = Order.query.filter_by(user_id=user.id).filter(
                 Order.placed_on >= user.next_delivery_date - timedelta(days=1),
@@ -126,12 +135,11 @@ def get_deliveries(deliverer):
             delivery_address = ""
             if next_order.delivery_address: 
                 delivery_address = next_order.delivery_address
-            if not delivery_address: 
+            if user.delivery_address: 
                 delivery_address = user.delivery_address
             deliveries.append({
                 "last_delivery_count": last_delivery_count,
-                "next_delivery_count": next_delivery_count,
-                "is_completed": next_order.is_completed,
+                "next_delivery_count": next_delivery_count - next_delivery_refused_count,
                 "delivery_address": delivery_address,
                 "user": {
                     "id": user_json['id'],
@@ -178,6 +186,8 @@ def get_delivery(deliverer, id):
         }), 400
     if delivery_books[0].delivery_address: 
         delivery_address = delivery_books[0].delivery_address
+    if user.delivery_address: 
+        delivery_address = user.delivery_address
     if user.last_delivery_date: 
         return_books = Order.query.filter_by(user_id=user.id).filter(
             Order.placed_on >= user.last_delivery_date - timedelta(days=1),
@@ -191,7 +201,6 @@ def get_delivery(deliverer, id):
             "suggestions": user.get_suggestions(),
             "delivery_books": [delivery_book.to_json() for delivery_book in delivery_books],
             "return_books": [return_book.to_json() for return_book in return_books],
-            "is_completed": delivery_books[0].is_completed,
             "notes": delivery_books[0].notes,
             "received_by": delivery_books[0].received_by,
             "delivery_address": delivery_address,
@@ -242,7 +251,10 @@ def confirm_delivery(deliverer, id):
         order.received_by = received_by
         order.notes = notes
         order.is_completed = True
-        db.session.commit()
+    user.last_delivery_date = user.next_delivery_date
+    user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
+    user.delivery_order = 0
+    db.session.commit()
     return jsonify({"status": "success"})
 
 @api_delivery.route('/toggle-refuse-book', methods=['POST'])
@@ -304,7 +316,7 @@ def toggle_retain_book(deliverer):
         }), 400
     bucket_book = DeliveryBucket.query.filter_by(user_id=user.id, book_id=book_id).first()
     if not bucket_book: 
-        DeliveryBucket.create(user_id, book_id, None, 0, True)
+        DeliveryBucket.create(user_id, book_id, user.last_delivery_date, 0, True)
     else: 
         db.session.delete(bucket_book)
     db.session.commit()

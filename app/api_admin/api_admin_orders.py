@@ -278,31 +278,3 @@ def confirm_order(admin):
         "status": "success",
         "user": admin.get_users([user])[0],
     })
-
-@api_admin.route('/complete-order', methods=['POST'])
-@token_required
-def complete_order(admin): 
-    user_id = request.json.get('id')
-    user = User.query.get(user_id)
-    if not user: 
-        return jsonify({
-            "status": "error",
-            "message": "Invalid user ID"
-        }), 400
-    if not user.next_delivery_date: 
-        return jsonify({"status": "error", "message": "No order placed"}), 400
-    order_count = Order.query.filter(
-        Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-        Order.placed_on <= user.next_delivery_date + timedelta(days=1)
-    ).count()
-    if not order_count: 
-        return jsonify({"status": "error", "message": "No order placed"}), 400
-    user.last_delivery_date = user.next_delivery_date
-    user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
-    user.delivery_order = 0
-    db.session.commit()
-    return jsonify({
-        "status": "success",
-        "message": "Order completed",
-        "user": admin.get_users([user])[0],
-    })
