@@ -7,7 +7,7 @@ from app.models.deliverer import Deliverer
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
-from sqlalchemy import and_
+from sqlalchemy import Date, and_, cast
 
 from datetime import date, timedelta, datetime
 
@@ -682,8 +682,7 @@ class User(db.Model):
             
             order_count = Order.query.filter(
                 Order.user_id == self.id,
-                Order.placed_on >= self.next_delivery_date - timedelta(days=1),
-                Order.placed_on <= self.next_delivery_date + timedelta(days=1)
+                cast(Order.placed_on, Date) == cast(self.next_delivery_date, Date),
             ).count()
             if order_count: 
                 raise ValueError("Cannot place order yet")
@@ -701,8 +700,7 @@ class User(db.Model):
                 bucket.delete()
 
             orders = Order.query.filter_by(user_id=self.id).filter(
-                Order.placed_on >= self.next_delivery_date - timedelta(days=1),
-                Order.placed_on <= self.next_delivery_date + timedelta(days=1)
+                cast(Order.placed_on, Date) == cast(self.next_delivery_date, Date),
             ).all()
 
             for order in orders: 
@@ -936,8 +934,7 @@ class User(db.Model):
 
     def get_order_bucket(self): 
         buckets = Order.query.filter_by(user_id=self.id).filter(
-            Order.placed_on >= self.next_delivery_date - timedelta(days=1),
-            Order.placed_on <= self.next_delivery_date + timedelta(days=1)
+            cast(Order.placed_on, Date) == cast(self.next_delivery_date, Date),
         ).all()
 
         book_list = []

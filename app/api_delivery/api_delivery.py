@@ -1,7 +1,8 @@
 from datetime import date, datetime, timedelta
 from functools import cmp_to_key
 from flask import Blueprint, jsonify, request, make_response
-from sqlalchemy import or_
+from sqlalchemy import or_, cast, Date
+
 
 from app.models.deliverer import Deliverer
 from app.models.user import User
@@ -107,35 +108,34 @@ def get_deliveries(deliverer):
         user_query = user_query.order_by(User.next_delivery_date.desc())
 
     users = user_query.all()
+
+    completed_deliveries_count = 0
     
     for user in users: 
         user_json = user.to_json()
         last_delivery_count = 0
         if user.last_delivery_date: 
             last_delivery_count = Order.query.filter_by(user_id=user.id).filter(
-                Order.placed_on >= user.last_delivery_date - timedelta(days=1),
-                Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+                cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
             ).count()
             last_delivery_count -= DeliveryBucket.query.filter_by(
                 user_id=user.id, 
                 delivery_date=user.last_delivery_date
             ).count()
         total_delivery_query = Order.query.filter_by(user_id=user.id).filter(
-            Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-            Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+            cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
         )
         next_delivery_count = total_delivery_query.count()
         next_delivery_refused_count = total_delivery_query.filter_by(is_refused=True).count()
         if next_delivery_count: 
-            next_order = Order.query.filter_by(user_id=user.id).filter(
-                Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-                Order.placed_on <= user.next_delivery_date + timedelta(days=1)
-            ).first()
+            next_order = total_delivery_query.first()
             delivery_address = ""
             if next_order.delivery_address: 
                 delivery_address = next_order.delivery_address
             if user.delivery_address: 
                 delivery_address = user.delivery_address
+            if next_order.is_completed: 
+                completed_deliveries_count += 1
             deliveries.append({
                 "last_delivery_count": last_delivery_count,
                 "next_delivery_count": next_delivery_count - next_delivery_refused_count,
@@ -161,7 +161,8 @@ def get_deliveries(deliverer):
 
     return jsonify({
         "status": "success",
-        "deliveries": deliveries
+        "deliveries": deliveries,
+        "completed_deliveries_count": completed_deliveries_count,
     })
 
 @api_delivery.route('/get-delivery/<id>')
@@ -176,8 +177,7 @@ def get_delivery(deliverer, id):
     delivery_books, return_books, delivery_address = [], [], ""
     if user.next_delivery_date: 
         delivery_books = Order.query.filter_by(user_id=user.id).filter(
-            Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-            Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+            cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
         ).all()
     if not len(delivery_books): 
         return jsonify({
@@ -190,8 +190,7 @@ def get_delivery(deliverer, id):
         delivery_address = user.delivery_address
     if user.last_delivery_date: 
         return_books = Order.query.filter_by(user_id=user.id).filter(
-            Order.placed_on >= user.last_delivery_date - timedelta(days=1),
-            Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+            cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
         ).all()
     user_json = user.to_json()
     return jsonify({
@@ -233,8 +232,7 @@ def confirm_delivery(deliverer, id):
             "message": "No delivery scheduled for the user",
         }), 400
     current_orders = Order.query.filter_by(user_id=user.id).filter(
-        Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-        Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+        cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
     ).all()
     if not len(current_orders): 
         return jsonify({
@@ -275,8 +273,7 @@ def toggle_refuse_book(deliverer):
             "message": "No delivery scheduled for the user",
         }), 400
     order = Order.query.filter_by(user_id=user.id, book_id=book_id).filter(
-        Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-        Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+        cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
     ).first()
     if not order: 
         return jsonify({
@@ -307,8 +304,7 @@ def toggle_retain_book(deliverer):
             "message": "No delivery scheduled for the user",
         }), 400
     order = Order.query.filter_by(user_id=user.id, book_id=book_id).filter(
-        Order.placed_on >= user.last_delivery_date - timedelta(days=1),
-        Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+        cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
     ).first()
     if not order: 
         return jsonify({
@@ -371,8 +367,7 @@ def remove_from_delivery(deliverer):
             "message": "Invalid book ID",
         }), 400
     order = Order.query.filter_by(user_id=user_id, book_id=book.id).filter(
-        Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-        Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+        cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
     ).first()
     if not order: 
         return jsonify({
@@ -428,8 +423,7 @@ def remove_from_previous(deliverer):
             "message": "Invalid book ID",
         }), 400
     order = Order.query.filter_by(user_id=user_id, book_id=book.id).filter(
-        Order.placed_on >= user.last_delivery_date - timedelta(days=1),
-        Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+        cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
     ).first()
     if not order: 
         return jsonify({

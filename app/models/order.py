@@ -19,7 +19,7 @@ class Order(db.Model):
 
     is_gift = db.Column(db.Boolean, default=False)
     gift_message = db.Column(db.String)
-    placed_on = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    placed_on = db.Column(db.Date)
     received_by = db.Column(db.String)
     is_completed = db.Column(db.Boolean, default=False)
     feedback = db.Column(db.String)

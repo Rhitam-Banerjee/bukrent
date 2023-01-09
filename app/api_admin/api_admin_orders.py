@@ -1,4 +1,5 @@
 from flask import jsonify, request
+from sqlalchemy import cast, Date
 
 from app.models.user import User, Child
 from app.models.books import Book
@@ -292,8 +293,7 @@ def complete_order(admin):
     if not user.next_delivery_date: 
         return jsonify({"status": "error", "message": "No order placed"}), 400
     order_count = Order.query.filter(
-        Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-        Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+        cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date)
     ).count()
     if not order_count: 
         return jsonify({"status": "error", "message": "No order placed"}), 400

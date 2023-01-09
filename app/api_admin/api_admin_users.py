@@ -2,6 +2,9 @@ from flask import jsonify, request
 
 from sqlalchemy import or_
 
+from sqlalchemy import cast, Date
+
+
 from app.models.user import Address, User, Child
 from app.models.books import Book
 from app.models.buckets import DeliveryBucket
@@ -199,8 +202,7 @@ def update_delivery_details(admin):
     user.delivery_address = delivery_address
     db.session.commit()
     orders = Order.query.filter_by(user_id=user.id).filter(
-        Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-        Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+        cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
     ).all()
     for order in orders: 
         order.delivery_address = user.delivery_address

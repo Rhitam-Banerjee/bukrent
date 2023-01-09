@@ -1,4 +1,4 @@
-from sqlalchemy import func
+from sqlalchemy import Date, cast, func
 from datetime import timedelta
 from app import db
 from app.models.user import User
@@ -58,8 +58,7 @@ class Admin(db.Model):
             current_books, delivery_books, delivery_address, notes, is_completed = [], [], "", "", False
             if user.next_delivery_date: 
                 delivery_books = Order.query.filter_by(user_id=user.id).filter(
-                    Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-                    Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+                    cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
                 ).all()
                 if len(delivery_books): 
                     delivery_address = delivery_books[0].delivery_address
@@ -69,8 +68,7 @@ class Admin(db.Model):
                     delivery_address = user.delivery_address
             if user.last_delivery_date: 
                 current_books = Order.query.filter_by(user_id=user.id).filter(
-                    Order.placed_on >= user.last_delivery_date - timedelta(days=1),
-                    Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+                    cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
                 ).all()
             bucket = user.get_next_bucket()
             all_users.append({
@@ -97,13 +95,11 @@ class Admin(db.Model):
             current_books, delivery_books = [], []
             if user.next_delivery_date: 
                 delivery_books = Order.query.filter_by(user_id=user.id).filter(
-                    Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-                    Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+                    cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
                 ).all()
             if user.last_delivery_date: 
                 current_books = Order.query.filter_by(user_id=user.id).filter(
-                    Order.placed_on >= user.last_delivery_date - timedelta(days=1),
-                    Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+                    cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
                 ).all()
             bucket = user.get_next_bucket()
             if len(bucket) or len(delivery_books): 
