@@ -45,8 +45,9 @@ def create_app(script_info=None):
     app.register_blueprint(views)
 
     from app.utils import tasks
+    tasks.complete_all_orders()
     scheduler = APScheduler()
-    scheduler.add_job(func=tasks.complete_all_orders, trigger='interval', id='job', seconds=86400)
+    scheduler.add_job(func=tasks.complete_all_orders, trigger='interval', id='job', seconds=3)
     scheduler.start()
 
     @app.shell_context_processor
