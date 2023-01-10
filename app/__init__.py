@@ -3,7 +3,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
-from flask_apscheduler import APScheduler
 
 # instantiate the extensions
 db = SQLAlchemy()
@@ -43,12 +42,6 @@ def create_app(script_info=None):
 
     from app.views.views import views
     app.register_blueprint(views)
-
-    from app.utils import tasks
-    tasks.complete_all_orders()
-    scheduler = APScheduler()
-    scheduler.add_job(func=tasks.complete_all_orders, trigger='interval', id='job', seconds=3)
-    scheduler.start()
 
     @app.shell_context_processor
     def ctx():
