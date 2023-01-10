@@ -34,28 +34,28 @@ from datetime import date, timedelta
 load_dotenv()
 
 app = create_app()
-app.app_context().push()
+# app.app_context().push()
 
-def complete_all_orders(): 
-    with app.app_context(): 
-        print('Completing All Orders')
-        users = User.query.filter(User.next_delivery_date <= date.today() - timedelta(days=2)).all()
-        for user in users: 
-            order = Order.query.filter_by(user_id=user.id).filter(
-                cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
-            ).first()
-            if order.is_completed: 
-                print(f'Completing Order Of {user.first_name} {user.last_name}')
-                user.last_delivery_date = user.next_delivery_date
-                user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
-                user.delivery_order = 0
-        db.session.commit()
-        print('Completed All Orders')
+# def complete_all_orders(): 
+#     with app.app_context(): 
+#         print('Completing All Orders')
+#         users = User.query.filter(User.next_delivery_date <= date.today() - timedelta(days=2)).all()
+#         for user in users: 
+#             order = Order.query.filter_by(user_id=user.id).filter(
+#                 cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
+#             ).first()
+#             if order.is_completed: 
+#                 print(f'Completing Order Of {user.first_name} {user.last_name}')
+#                 user.last_delivery_date = user.next_delivery_date
+#                 user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
+#                 user.delivery_order = 0
+#         db.session.commit()
+#         print('Completed All Orders')
 
-complete_all_orders()
-scheduler = APScheduler()
-scheduler.add_job(func=complete_all_orders, trigger='interval', id='job', seconds=86400)
-scheduler.start()
+# complete_all_orders()
+# scheduler = APScheduler()
+# scheduler.add_job(func=complete_all_orders, trigger='interval', id='job', seconds=86400)
+# scheduler.start()
 
 cli = FlaskGroup(create_app=create_app)
 
