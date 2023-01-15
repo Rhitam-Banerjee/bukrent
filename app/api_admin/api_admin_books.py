@@ -43,9 +43,9 @@ def get_books(admin):
         if not search: 
             search = ''
         query = Book.query.filter(or_(
-                Book.name.ilike(f'{search}%'),
-                Book.description.ilike(f'%{search}%'),
-                Book.isbn.ilike(f'{search}%')
+            Book.name.ilike(f'{search}%'),
+            Book.description.ilike(f'%{search}%'),
+            Book.isbn.ilike(f'{search}%')
         ))
         if most_borrowed: 
             query = query.filter_by(most_borrowed=True)
