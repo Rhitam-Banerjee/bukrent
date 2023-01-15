@@ -10,6 +10,7 @@ class Admin(db.Model):
     __tablename__ = "admins"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, nullable=False, unique=True)
+    is_super_admin = db.Column(db.Boolean, default=False)
     password = db.Column(db.String, nullable=False)
 
     def get_books(self, books): 

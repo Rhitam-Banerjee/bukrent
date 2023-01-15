@@ -28,6 +28,14 @@ def token_required(f):
        return f(admin, *args, **kwargs)
    return decorator
 
+def super_admin(f): 
+    @wraps(f)
+    def decorator(admin, *args, **kwargs): 
+        if not admin.is_super_admin: 
+            return jsonify({'message': 'Unauthorized'}), 401
+        return f(admin, *args, **kwargs)
+    return decorator
+
 def validate_user(f):
     @wraps(f)
     def decorator(*args, **kwargs):

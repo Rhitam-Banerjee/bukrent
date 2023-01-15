@@ -8,12 +8,13 @@ from app.models.order import Order
 
 from app import db
 
-from app.api_admin.utils import api_admin, token_required
+from app.api_admin.utils import api_admin, token_required, super_admin
 
 from datetime import datetime, timedelta
 
 @api_admin.route('/add-books-user', methods=['POST'])
 @token_required
+@super_admin
 def add_books_user(admin): 
     user_id = request.json.get('user_id')
     isbn_list = request.json.get('isbn_list')
@@ -70,6 +71,7 @@ def add_books_user(admin):
 
 @api_admin.route('/add-to-wishlist', methods=['POST'])
 @token_required
+@super_admin
 def add_to_wishlist(admin): 
     book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
@@ -87,6 +89,7 @@ def add_to_wishlist(admin):
 
 @api_admin.route('/remove-from-wishlist', methods=['POST'])
 @token_required
+@super_admin
 def remove_from_wishlist(admin): 
     book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
@@ -106,6 +109,7 @@ def remove_from_wishlist(admin):
 
 @api_admin.route('/remove-from-suggestions', methods=['POST'])
 @token_required
+@super_admin
 def remove_from_suggestions(admin): 
     book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
@@ -125,6 +129,7 @@ def remove_from_suggestions(admin):
 
 @api_admin.route('/remove-from-previous', methods=['POST'])
 @token_required
+@super_admin
 def remove_from_previous(admin): 
     book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
@@ -142,6 +147,7 @@ def remove_from_previous(admin):
 
 @api_admin.route('/remove-from-bucket', methods=['POST'])
 @token_required
+@super_admin
 def remove_from_bucket(admin): 
     book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
@@ -159,6 +165,7 @@ def remove_from_bucket(admin):
 
 @api_admin.route('/remove-from-delivery', methods=['POST'])
 @token_required
+@super_admin
 def remove_from_delivery(admin): 
     book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
@@ -188,6 +195,7 @@ def remove_from_delivery(admin):
 
 @api_admin.route('/add-users-book', methods=['POST'])
 @token_required
+@super_admin
 def add_users_book(admin): 
     book_guid = request.json.get('book_guid')
     mobile_number_list = request.json.get('mobile_number_list')
@@ -230,6 +238,7 @@ def add_users_book(admin):
 
 @api_admin.route('/add-to-bucket', methods=['POST'])
 @token_required
+@super_admin
 def add_to_bucket(admin): 
     user_id = request.json.get('user_id')
     book_guid = request.json.get('book_guid')
@@ -255,6 +264,7 @@ def add_to_bucket(admin):
 
 @api_admin.route('/get-orders')
 @token_required
+@super_admin
 def get_orders(admin): 
     return jsonify({
         "status": "success",
@@ -263,6 +273,7 @@ def get_orders(admin):
 
 @api_admin.route('/confirm-order', methods=['POST'])
 @token_required
+@super_admin
 def confirm_order(admin): 
     user_id = request.json.get('id')
     user = User.query.get(user_id)
@@ -282,6 +293,7 @@ def confirm_order(admin):
 
 @api_admin.route('/complete-order', methods=['POST'])
 @token_required
+@super_admin
 def complete_order(admin): 
     user_id = request.json.get('id')
     user = User.query.get(user_id)

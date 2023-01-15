@@ -25,10 +25,17 @@ def get_books(admin):
     end = int(request.args.get('end'))
     search = request.args.get('query')
     age_group = int(request.args.get('age_group'))
+    amazon_bestseller = request.args.get('amazon_bestseller')
+    most_borrowed = request.args.get('most_borrowed')
     authors = request.json.get('authors')
     publishers = request.json.get('publishers')
     series = request.json.get('series')
     types = request.json.get('types')
+
+    if amazon_bestseller and str(amazon_bestseller).isnumeric(): 
+        amazon_bestseller = int(amazon_bestseller)
+    if most_borrowed and str(most_borrowed).isnumeric(): 
+        most_borrowed = int(most_borrowed)
     
     books = {}
 
@@ -36,9 +43,14 @@ def get_books(admin):
         if not search: 
             search = ''
         query = Book.query.filter(or_(
-            Book.name.ilike(f'{search}%'),
-            Book.description.ilike(f'%{search}%'),
-            Book.isbn.ilike(f'{search}%')))
+                Book.name.ilike(f'{search}%'),
+                Book.description.ilike(f'%{search}%'),
+                Book.isbn.ilike(f'{search}%')
+        ))
+        if most_borrowed: 
+            query = query.filter_by(most_borrowed=True)
+        if amazon_bestseller: 
+            query = query.filter_by(amazon_bestseller=True)
         if age_group == 1: 
             query = query.filter_by(age_group_1=True)
         elif age_group == 2:
@@ -60,22 +72,22 @@ def get_books(admin):
         
         for author in authors: 
             author_obj = Author.query.filter_by(guid=author).first()
-            if author_obj.to_json() in age_authors: 
+            if author_obj and author_obj.to_json() in age_authors: 
                 for book in author_obj.books: 
                     books[book.isbn] = book
         for publisher in publishers: 
             publisher_obj = Publisher.query.filter_by(guid=publisher).first()
-            if publisher_obj.to_json() in age_publishers: 
+            if publisher_obj and publisher_obj.to_json() in age_publishers: 
                 for book in publisher_obj.books: 
                     books[book.isbn] = book
         for serie in series: 
             serie_obj = Series.query.filter_by(guid=serie).first()
-            if serie_obj.to_json() in age_series: 
+            if serie_obj and serie_obj.to_json() in age_series: 
                 for book in serie_obj.books: 
                     books[book.isbn] = book
         for format in types: 
             format_obj = Format.query.filter_by(guid=format).first()
-            if format_obj.to_json() in age_types: 
+            if format_obj and format_obj.to_json() in age_types: 
                 for book in format_obj.books: 
                     books[book.isbn] = book
 

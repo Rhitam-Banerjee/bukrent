@@ -12,13 +12,14 @@ from app.models.order import Order
 from app.models.deliverer import Deliverer
 from app import db
 
-from app.api_admin.utils import api_admin, validate_user, token_required
+from app.api_admin.utils import api_admin, validate_user, token_required, super_admin
 
 import os
 from datetime import datetime, date, timedelta
 
 @api_admin.route('/get-users')
 @token_required
+@super_admin
 def get_users(admin):
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
@@ -66,6 +67,7 @@ def get_users(admin):
 
 @api_admin.route('/get-archived-users')
 @token_required
+@super_admin
 def get_archived_users(admin):
     users = User.query.filter_by(is_deleted=True).all()
     return jsonify({
@@ -75,6 +77,7 @@ def get_archived_users(admin):
 
 @api_admin.route('/update-user', methods=['POST'])
 @token_required
+@super_admin
 @validate_user
 def update_user(admin):
     id = request.json.get('id')
@@ -168,6 +171,7 @@ def update_user(admin):
 
 @api_admin.route('/update-delivery-details', methods=['POST'])
 @token_required
+@super_admin
 def update_delivery_details(admin): 
     id = request.json.get('id')
     next_delivery_date = request.json.get('next_delivery_date')
@@ -219,6 +223,7 @@ def update_delivery_details(admin):
 
 @api_admin.route('/add-user', methods=['POST'])
 @token_required
+@super_admin
 @validate_user
 def add_user(admin):
     name = request.json.get('name')
@@ -319,6 +324,7 @@ def add_user(admin):
 
 @api_admin.route('/delete-user', methods=['POST'])
 @token_required
+@super_admin
 def delete_user(admin):
     id = request.json.get('id')
 
@@ -340,6 +346,7 @@ def delete_user(admin):
 
 @api_admin.route('/restore-user', methods=['POST'])
 @token_required
+@super_admin
 def restore_user(admin):
     id = request.json.get('id')
 
