@@ -44,7 +44,7 @@ def complete_all_orders():
             order = Order.query.filter_by(user_id=user.id).filter(
                 cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
             ).first()
-            if order.is_completed: 
+            if order and order.is_completed: 
                 print(f'Completing Order Of {user.first_name} {user.last_name}')
                 user.last_delivery_date = user.next_delivery_date
                 user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
