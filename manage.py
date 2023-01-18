@@ -41,11 +41,14 @@ def complete_all_orders():
         print('Completing All Orders')
         users = User.query.filter(User.next_delivery_date <= date.today() - timedelta(days=2)).all()
         for user in users: 
-            order = Order.query.filter_by(user_id=user.id).filter(
-                cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
-            ).first()
-            if order and order.is_completed: 
-                print(f'Completing Order Of {user.first_name} {user.last_name}')
+            orders = Order.query.filter_by(user_id=user.id).order_by(Order.placed_on.desc()).all()
+            is_completed = False
+            for order in orders: 
+                if order.placed_on == user.next_delivery_date and order.is_completed: 
+                    is_completed = True
+                    break
+            if is_completed: 
+                print(f'Compeleted Order Of {user.first_name} {user.last_name}')
                 user.last_delivery_date = user.next_delivery_date
                 user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
                 user.delivery_order = 0
