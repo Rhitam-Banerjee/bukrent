@@ -1,4 +1,6 @@
+import io
 from flask import jsonify, request
+import requests
 
 from sqlalchemy import or_
 
@@ -283,11 +285,9 @@ def add_books_from_csv(admin):
     if 'isbn' not in columns or 'name' not in columns: 
         return jsonify({"status": "success", "message": "CSV file should have atleast ISBN and name column"}), 400
     added_isbns, not_added_isbns = [], []
-    print(f'Parsing {len(books)} book(s)')
     for book in books: 
         isbn = book[columns['isbn']]
         name = book[columns['name']]
-        print(f'Parsing book - {isbn}')
         if not isbn or not name or Book.query.filter_by(isbn=isbn).count(): 
             if isbn: 
                 print(f'marked as not added')
@@ -299,6 +299,7 @@ def add_books_from_csv(admin):
         price = ''
         description = ''
         stock_available = 1
+        image = ''
         if 'rating' in columns: 
             rating = book[columns['rating']]
         if 'book_format' in columns: 
@@ -313,10 +314,19 @@ def add_books_from_csv(admin):
             val = book[columns['stock_available']]
             if val.isnumeric() and int(val) >= 0: 
                 stock_available = int(val)
-        print('set book details')
+        if 'image' in columns: 
+            image_url = book[columns['image']]
+            try: 
+                response = requests.get(image_url)
+                extension = image_url.split('.')[-1]
+                upload_to_aws(io.BytesIO(response.content), 'book_images', f'book_images/{isbn}.{extension}')
+                s3_url = os.environ.get('AWS_S3_URL')
+                image = f'{s3_url}/book_images/{isbn}.{extension}'
+            except Exception as e: 
+                print(e)
         Book.create(
             name, #name
-            '', #image 
+            image, #image 
             isbn, #isbn
             rating, #rating
             '', #review_count
@@ -330,7 +340,6 @@ def add_books_from_csv(admin):
             None, #borrowed_json
             None, #suggestion_json
         )
-        print('created book db')
         book = Book.query.filter_by(isbn=isbn).first()
         if 'age_group_1' in columns: 
             book.age_group_1 = bool(book[columns['age_group_1']])
@@ -344,9 +353,7 @@ def add_books_from_csv(admin):
             book.age_group_5 = bool(book[columns['age_group_5']])
         if 'age_group_6' in columns: 
             book.age_group_6 = bool(book[columns['age_group_6']])
-        print('updated age groups')
         added_isbns.append(isbn)
-        db.session.commit()
+        # db.session.commit()
     os.remove(filename)
-    print('removed temporary csv')
     return jsonify({"status": "success", "added_isbns": added_isbns, "not_added_isbns": not_added_isbns})
