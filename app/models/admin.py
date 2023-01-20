@@ -45,9 +45,9 @@ class Admin(db.Model):
                     user = User.query.get(order.user_id)
                     if user: 
                         previous_users.append(user.to_json())
-                book_json['suggested_users'] = [user.to_json() for user in suggested_users]
-                book_json['wishlisted_users'] = [user.to_json() for user in wishlisted_users]
-                book_json['previous_users'] = [user.to_json() for user in previous_users]
+                book_json['suggested_users'] = suggested_users
+                book_json['wishlisted_users'] = wishlisted_users
+                book_json['previous_users'] = previous_users
             final_books.append(book_json)
         return final_books
 
