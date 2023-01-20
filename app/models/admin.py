@@ -1,5 +1,5 @@
-from sqlalchemy import Date, cast, func
-from datetime import timedelta
+from sqlalchemy import Date, cast
+from sqlalchemy.orm import load_only
 from app import db
 from app.models.user import User
 from app.models.buckets import Suggestion, Wishlist, Dump
@@ -13,7 +13,7 @@ class Admin(db.Model):
     is_super_admin = db.Column(db.Boolean, default=False)
     password = db.Column(db.String, nullable=False)
 
-    def get_books(self, books): 
+    def get_books(self, books, fetch_user_data=False): 
         final_books = []
         for book in books:
             tags = []
@@ -21,31 +21,33 @@ class Admin(db.Model):
             for tag in book_json['categories']:
                 tag_obj = Category.query.filter_by(name=tag).first()
                 tags.append({"guid": tag_obj.guid, "name": tag_obj.name})
-            suggestions = Suggestion.query.filter_by(book_id=book.id).all()
-            wishlists = Wishlist.query.filter_by(book_id=book.id).all()
-            dumps = Dump.query.filter_by(book_id=book.id, read_before=True).all()
-            orders = Order.query.filter_by(book_id=book.id).all()
-            suggested_users, wishlisted_users, previous_users = [], [], []
-            for suggestion in suggestions: 
-                user = User.query.get(suggestion.user_id)
-                if user: 
-                    suggested_users.append(user.to_json())
-            for wishlist in wishlists: 
-                user = User.query.get(wishlist.user_id)
-                if user: 
-                    wishlisted_users.append(user.to_json())
-            for dump in dumps: 
-                user = User.query.get(dump.user_id)
-                if user: 
-                    previous_users.append(user.to_json())
-            for order in orders: 
-                user = User.query.get(order.user_id)
-                if user: 
-                    previous_users.append(user.to_json())
             book_json['tags'] = tags
-            book_json['suggested_users'] = self.get_users(suggested_users)
-            book_json['wishlisted_users'] = self.get_users(wishlisted_users)
-            book_json['previous_users'] = self.get_users(previous_users)
+            if fetch_user_data: 
+                fields = ['user_id']
+                suggestions = Suggestion.query.filter_by(book_id=book.id).options(load_only(*fields)).all()
+                wishlists = Wishlist.query.filter_by(book_id=book.id).options(load_only(*fields)).all()
+                dumps = Dump.query.filter_by(book_id=book.id, read_before=True).options(load_only(*fields)).all()
+                orders = Order.query.filter_by(book_id=book.id).options(load_only(*fields)).all()
+                suggested_users, wishlisted_users, previous_users = [], [], []
+                for suggestion in suggestions: 
+                    user = User.query.get(suggestion.user_id)
+                    if user: 
+                        suggested_users.append(user.to_json())
+                for wishlist in wishlists: 
+                    user = User.query.get(wishlist.user_id)
+                    if user: 
+                        wishlisted_users.append(user.to_json())
+                for dump in dumps: 
+                    user = User.query.get(dump.user_id)
+                    if user: 
+                        previous_users.append(user.to_json())
+                for order in orders: 
+                    user = User.query.get(order.user_id)
+                    if user: 
+                        previous_users.append(user.to_json())
+                book_json['suggested_users'] = [user.to_json() for user in suggested_users]
+                book_json['wishlisted_users'] = [user.to_json() for user in wishlisted_users]
+                book_json['previous_users'] = [user.to_json() for user in previous_users]
             final_books.append(book_json)
         return final_books
 

@@ -29,6 +29,8 @@ def get_books(admin):
     age_group = int(request.args.get('age_group'))
     amazon_bestseller = request.args.get('amazon_bestseller')
     most_borrowed = request.args.get('most_borrowed')
+    fetch_user_data = bool(request.args.get('fetch_user_data'))
+    available = request.args.get('available')
     authors = request.json.get('authors')
     publishers = request.json.get('publishers')
     series = request.json.get('series')
@@ -53,6 +55,12 @@ def get_books(admin):
             query = query.filter_by(most_borrowed=True)
         if amazon_bestseller: 
             query = query.filter_by(amazon_bestseller=True)
+        if available and str(available).strip('-').isnumeric() and int(available) != 0: 
+            available = int(available)
+            if available == -1: 
+                query = query.filter_by(stock_available=0)
+            else: 
+                query = query.filter(Book.stock_available > 0)
         if age_group == 1: 
             query = query.filter_by(age_group_1=True)
         elif age_group == 2:
@@ -97,7 +105,7 @@ def get_books(admin):
 
     return jsonify({
         "status": "success",
-        "books": admin.get_books(books)
+        "books": admin.get_books(books, fetch_user_data=fetch_user_data)
     })
 
 @api_admin.route('/add-book', methods=['POST'])

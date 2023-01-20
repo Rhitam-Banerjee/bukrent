@@ -267,7 +267,7 @@ def toggle_refuse_book(deliverer):
             "status": "error",
             "message": "Invalid user ID",
         }), 400
-    if not user.next_delivery_date or date.today() < user.next_delivery_date: 
+    if not user.next_delivery_date: 
         return jsonify({
             "status": "error",
             "message": "No delivery scheduled for the user",
@@ -298,7 +298,7 @@ def toggle_retain_book(deliverer):
             "status": "error",
             "message": "Invalid user ID",
         }), 400
-    if not user.next_delivery_date or date.today() < user.next_delivery_date: 
+    if not user.next_delivery_date: 
         return jsonify({
             "status": "error",
             "message": "No delivery scheduled for the user",
@@ -330,7 +330,7 @@ def add_to_delivery(deliverer):
             "status": "error",
             "message": "Invalid user ID",
         }), 400
-    if not user.next_delivery_date or date.today() < user.next_delivery_date: 
+    if not user.next_delivery_date: 
         return jsonify({
             "status": "error",
             "message": "No delivery scheduled for the user",
@@ -355,7 +355,7 @@ def remove_from_delivery(deliverer):
             "status": "error",
             "message": "Invalid user ID",
         }), 400
-    if not user.next_delivery_date or date.today() < user.next_delivery_date: 
+    if not user.next_delivery_date: 
         return jsonify({
             "status": "error",
             "message": "No delivery scheduled for the user",
