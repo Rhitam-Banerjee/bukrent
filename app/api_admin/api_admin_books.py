@@ -22,8 +22,8 @@ from app.api_admin.utils import api_admin, token_required, upload_to_aws
 import os
 
 @api_admin.route('/get-books', methods=['POST'])
-#@token_required
-def get_books():
+@token_required
+def get_books(admin):
     start = int(request.args.get('start'))
     end = int(request.args.get('end'))
     search = request.args.get('query')
@@ -103,7 +103,7 @@ def get_books():
                     books[book.isbn] = book
 
         books = list(books.values())[start:end]
-    admin = Admin.query.first()
+
     return jsonify({
         "status": "success",
         "books": admin.get_books(books, fetch_user_data=fetch_user_data)
