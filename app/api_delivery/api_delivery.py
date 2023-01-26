@@ -304,7 +304,7 @@ def toggle_retain_book(deliverer):
             "message": "No delivery scheduled for the user",
         }), 400
     order = Order.query.filter_by(user_id=user.id, book_id=book_id).filter(
-        cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
+        cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
     ).first()
     if not order: 
         return jsonify({
