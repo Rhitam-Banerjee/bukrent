@@ -1,3 +1,4 @@
+from sqlalchemy.orm import load_only
 import io
 from flask import jsonify, request
 import requests
@@ -8,7 +9,6 @@ from app.models.books import Book, BookAuthor, BookCategory
 from app.models.author import Author
 from app.models.publishers import Publisher
 from app.models.series import Series
-from app.models.admin import Admin
 from app.models.format import Format
 from app.models.category import Category
 from app import db
@@ -272,6 +272,54 @@ def get_filters(admin):
         "tags": [tag.to_json() for tag in tags]
     })
 
+@api_admin.route('/set-most-borrowed-ranks', methods=['POST'])
+@token_required
+def set_most_borrowed_ranks(admin): 
+    book_guids = request.json.get('book_guids')
+    if not book_guids or not len(book_guids): 
+        return jsonify({"success": False, "message": "Provide rank and book ID"}), 400
+    fields = ['guid']
+    books = Book.query.filter_by(most_borrowed=True).options(load_only(*fields)).all()
+    most_borrowed_guids = []
+    for book in books: 
+        most_borrowed_guids.append(book.guid)
+    if len(most_borrowed_guids) != len(book_guids): 
+        return jsonify({"success": False, "message": "Provide ranks for all most borrowed books"}), 400
+    most_borrowed_guids = set(most_borrowed_guids)
+    for guid in book_guids: 
+        most_borrowed_guids.remove(guid)
+    if len(most_borrowed_guids): 
+        return jsonify({"success": False, "message": "Provide ranks for all most borrowed books"}), 400
+    for i in range(len(book_guids)): 
+        book = Book.query.filter_by(guid=book_guids[i]).first()
+        book.most_borrowed_rank = i + 1
+    db.session.commit()
+    return jsonify({"success": True})
+
+@api_admin.route('/set-amazon-bestseller-ranks', methods=['POST'])
+@token_required
+def set_amazon_bestseller_ranks(admin): 
+    book_guids = request.json.get('book_guids')
+    if not book_guids or not len(book_guids): 
+        return jsonify({"success": False, "message": "Provide rank and book ID"}), 400
+    fields = ['guid']
+    books = Book.query.filter_by(amazon_bestseller=True).options(load_only(*fields)).all()
+    amazon_bestseller_guids = []
+    for book in books: 
+        amazon_bestseller_guids.append(book.guid)
+    if len(amazon_bestseller_guids) != len(book_guids): 
+        return jsonify({"success": False, "message": "Provide ranks for all amazon bestseller books"}), 400
+    amazon_bestseller_guids = set(amazon_bestseller_guids)
+    for guid in book_guids: 
+        amazon_bestseller_guids.remove(guid)
+    if len(amazon_bestseller_guids): 
+        return jsonify({"success": False, "message": "Provide ranks for all amazon bestseller books"}), 400
+    for i in range(len(book_guids)): 
+        book = Book.query.filter_by(guid=book_guids[i]).first()
+        book.amazon_bestseller_rank = i + 1
+    db.session.commit()
+    return jsonify({"success": True})
+
 @api_admin.route('/add-books-from-csv', methods=['POST'])
 @token_required
 def add_books_from_csv(admin): 
@@ -366,3 +414,71 @@ def add_books_from_csv(admin):
         # db.session.commit()
     os.remove(filename)
     return jsonify({"status": "success", "added_isbns": added_isbns, "not_added_isbns": not_added_isbns})
+
+@api_admin.route('/add-author', methods=['POST'])
+@token_required
+def add_author(admin): 
+    name = request.json.get('name')
+    age_groups = request.json.get('age_groups')
+    image = request.json.get('display')
+    if not name: 
+        return jsonify({"success": False, "message": "Provide a name"})
+    if not age_groups or type(age_groups) != type([]) or len(age_groups) < 6: 
+        return jsonify({"success": False, "message": "Age groups are required"})
+    display = False
+    if image: 
+        display = True
+    ages = [bool(age) for age in age_groups[:6]]
+    Author.create(name, 'author', ages[0], ages[1], ages[2], ages[3], ages[4], ages[5], 0, display)
+    return jsonify({"success": True})
+
+@api_admin.route('/add-publisher', methods=['POST'])
+@token_required
+def add_publisher(admin): 
+    name = request.json.get('name')
+    age_groups = request.json.get('age_groups')
+    image = request.json.get('display')
+    if not name: 
+        return jsonify({"success": False, "message": "Provide a name"})
+    if not age_groups or type(age_groups) != type([]) or len(age_groups) < 6: 
+        return jsonify({"success": False, "message": "Age groups are required"})
+    display = False
+    if image: 
+        display = True
+    ages = [bool(age) for age in age_groups[:6]]
+    Publisher.create(name, ages[0], ages[1], ages[2], ages[3], ages[4], ages[5], 0, display)
+    return jsonify({"success": True})
+
+@api_admin.route('/add-series', methods=['POST'])
+@token_required
+def add_series(admin): 
+    name = request.json.get('name')
+    age_groups = request.json.get('age_groups')
+    image = request.json.get('display')
+    if not name: 
+        return jsonify({"success": False, "message": "Provide a name"})
+    if not age_groups or type(age_groups) != type([]) or len(age_groups) < 6: 
+        return jsonify({"success": False, "message": "Age groups are required"})
+    display = False
+    if image: 
+        display = True
+    ages = [bool(age) for age in age_groups[:6]]
+    Series.create(name, ages[0], ages[1], ages[2], ages[3], ages[4], ages[5], 0, display)
+    return jsonify({"success": True})
+
+@api_admin.route('/add-format', methods=['POST'])
+@token_required
+def add_format(admin): 
+    name = request.json.get('name')
+    age_groups = request.json.get('age_groups')
+    image = request.json.get('display')
+    if not name: 
+        return jsonify({"success": False, "message": "Provide a name"})
+    if not age_groups or type(age_groups) != type([]) or len(age_groups) < 6: 
+        return jsonify({"success": False, "message": "Age groups are required"})
+    display = False
+    if image: 
+        display = True
+    ages = [bool(age) for age in age_groups[:6]]
+    Format.create(name, ages[0], ages[1], ages[2], ages[3], ages[4], ages[5], 0, display)
+    return jsonify({"success": True})

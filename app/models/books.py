@@ -46,6 +46,8 @@ class Book(db.Model):
     description = db.Column(db.String, nullable=False)
     stock_available = db.Column(db.Integer)
     rentals = db.Column(db.Integer, default=0)
+    most_borrowed_rank = db.Column(db.Integer)
+    amazon_bestseller_rank = db.Column(db.Integer)
 
     amazon_bestseller = db.Column(db.Boolean, default=False)
     bestseller_age1 = db.Column(db.Boolean, default=False)
@@ -207,19 +209,21 @@ class Book(db.Model):
     def get_most_borrowed(age_group, start, end):
         if age_group:
             if age_group == 1:
-                books = Book.query.filter_by(age_group_1=True, most_borrowed=True).order_by(Book.id.desc()).all()[start:end]
+                books = Book.query.filter_by(age_group_1=True, most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
             elif age_group == 2:
-                books = Book.query.filter_by(age_group_2=True, most_borrowed=True).order_by(Book.id.desc()).all()[start:end]
+                books = Book.query.filter_by(age_group_2=True, most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
             elif age_group == 3:
-                books = Book.query.filter_by(age_group_3=True, most_borrowed=True).order_by(Book.id.desc()).all()[start:end]
+                books = Book.query.filter_by(age_group_3=True, most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
             elif age_group == 4:
-                books = Book.query.filter_by(age_group_4=True, most_borrowed=True).order_by(Book.id.desc()).all()[start:end]
+                books = Book.query.filter_by(age_group_4=True, most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
             elif age_group == 5:
-                books = Book.query.filter_by(age_group_5=True, most_borrowed=True).order_by(Book.id.desc()).all()[start:end]
+                books = Book.query.filter_by(age_group_5=True, most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
             elif age_group == 6:
-                books = Book.query.filter_by(age_group_6=True, most_borrowed=True).order_by(Book.id.desc()).all()[start:end]
+                books = Book.query.filter_by(age_group_6=True, most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
+            else: 
+                books = Book.query.filter_by(most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
         else:
-            books = Book.query.filter_by(most_borrowed=True).order_by(Book.id.desc()).all()[start:end]
+            books = Book.query.filter_by(most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
 
         final_books = []
         for book in books:
@@ -231,19 +235,21 @@ class Book(db.Model):
     def get_bestsellers(age_group, start, end):
         if age_group:
             if age_group == 1:
-                books = Book.query.filter_by(age_group_1=True, amazon_bestseller=True).all()[start:end]
+                books = Book.query.filter_by(age_group_1=True, amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
             elif age_group == 2:
-                books = Book.query.filter_by(age_group_2=True, amazon_bestseller=True).all()[start:end]
+                books = Book.query.filter_by(age_group_2=True, amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
             elif age_group == 3:
-                books = Book.query.filter_by(age_group_3=True, amazon_bestseller=True).all()[start:end]
+                books = Book.query.filter_by(age_group_3=True, amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
             elif age_group == 4:
-                books = Book.query.filter_by(age_group_4=True, amazon_bestseller=True).all()[start:end]
+                books = Book.query.filter_by(age_group_4=True, amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
             elif age_group == 5:
-                books = Book.query.filter_by(age_group_5=True, amazon_bestseller=True).all()[start:end]
+                books = Book.query.filter_by(age_group_5=True, amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
             elif age_group == 6:
-                books = Book.query.filter_by(age_group_6=True, amazon_bestseller=True).all()[start:end]
+                books = Book.query.filter_by(age_group_6=True, amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
+            else: 
+                books = Book.query.filter_by(amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
         else:
-            books = Book.query.filter_by(amazon_bestseller=True).all()[start:end]
+            books = Book.query.filter_by(amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
 
         final_books = []
         for book in books:

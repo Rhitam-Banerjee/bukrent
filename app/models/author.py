@@ -66,6 +66,7 @@ class Author(db.Model):
                 Author.age5==True,
                 Author.age6==True
             )).all()[start:end]
+        print(len(authors))
 
         final_authors = []
         for author in authors:

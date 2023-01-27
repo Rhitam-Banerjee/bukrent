@@ -2,7 +2,7 @@ from sqlalchemy import Date, cast
 from sqlalchemy.orm import load_only
 from app import db
 from app.models.user import User
-from app.models.buckets import Suggestion, Wishlist, Dump
+from app.models.buckets import DeliveryBucket, Suggestion, Wishlist, Dump
 from app.models.order import Order
 from app.models.category import Category
 
@@ -73,6 +73,7 @@ class Admin(db.Model):
                 current_books = Order.query.filter_by(user_id=user.id).filter(
                     cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
                 ).all()
+            retained_books = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).all()
             bucket = user.get_next_bucket()
             all_users.append({
                 "password": user.password,
@@ -80,7 +81,7 @@ class Admin(db.Model):
                 "suggestions": user.get_suggestions(),
                 "previous": user.get_previous_books(),
                 "order": {
-                    "current_books": [order.to_json() for order in current_books],
+                    "current_books": [order.to_json() for order in [*current_books, *retained_books]],
                     "delivery_books": [order.to_json() for order in delivery_books],
                     "bucket": bucket,
                     "delivery_address": delivery_address,
