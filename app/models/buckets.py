@@ -62,6 +62,16 @@ class DeliveryBucket(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def to_json(self): 
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "book_id": self.book_id,
+            "book": self.book.to_json(),
+            "is_retained": self.is_retained,
+            "delivery_date": self.delivery_date,
+        }
+
 class Wishlist(db.Model):
     __tablename__ = "wishlist"
     id = db.Column(db.Integer, primary_key=True)

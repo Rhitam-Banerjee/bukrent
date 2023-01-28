@@ -920,6 +920,8 @@ class User(db.Model):
 
         book_list = []
         for bucket in buckets:
+            if bucket.is_retained: 
+                continue
             temp_dict = {
                 "name": bucket.book.name,
                 "guid": bucket.book.guid,
