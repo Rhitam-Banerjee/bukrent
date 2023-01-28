@@ -345,6 +345,7 @@ class User(db.Model):
             "last_name": self.last_name,
             "email": self.email,
             "next_delivery_date": self.next_delivery_date,
+            "last_delivery_date": self.last_delivery_date,
             "is_subscribed": self.is_subscribed,
             "plan_id": self.plan_id,
             "plan_date": self.plan_date,
@@ -919,7 +920,7 @@ class User(db.Model):
         buckets = self.delivery_buckets
 
         book_list = []
-        for bucket in buckets:
+        for bucket in buckets: 
             if bucket.is_retained: 
                 continue
             temp_dict = {

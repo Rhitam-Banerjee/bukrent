@@ -68,8 +68,8 @@ class DeliveryBucket(db.Model):
             "user_id": self.user_id,
             "book_id": self.book_id,
             "book": self.book.to_json(),
-            "is_retained": self.is_retained,
             "delivery_date": self.delivery_date,
+            "is_retained": self.is_retained
         }
 
 class Wishlist(db.Model):

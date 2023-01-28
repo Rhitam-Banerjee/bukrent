@@ -15,7 +15,7 @@ from app import db
 from app.api_admin.utils import api_admin, validate_user, token_required, super_admin
 
 import os
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 
 @api_admin.route('/get-users')
 @token_required
@@ -45,6 +45,7 @@ def get_users(admin):
         query = query.filter_by(plan_duration=plan_duration)
     if delivery_date: 
         delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d').date()
+        print(delivery_date)
         query = query.filter_by(next_delivery_date=delivery_date)
     if deliverer_id: 
         query = query.filter_by(deliverer_id=deliverer_id)
