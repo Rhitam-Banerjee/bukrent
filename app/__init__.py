@@ -17,16 +17,13 @@ def create_app(script_info=None):
 
     CORS(app, supports_credentials=True, origins=[
         'http://localhost:3000',
-        'http://localhost:3001',
-        'https://bukrent-browse-library.vercel.app',
-        "https://bukrent.vercel.app",
         "https://bukrent.com",
         "https://www.bukrent.com",
         "https://payment.bukrent.com",
-        "https://bukrent-admin.vercel.app",
         "https://admin.bukrent.com",
         "https://delivery.bukrent.com",
         "https://edit.bukrent.com",
+        "https://ops.bukrent.com",
     ])
 
     from app.api.api import api

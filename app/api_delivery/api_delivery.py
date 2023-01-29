@@ -127,6 +127,7 @@ def get_deliveries(deliverer):
         )
         next_delivery_count = total_delivery_query.count()
         next_delivery_refused_count = total_delivery_query.filter_by(is_refused=True).count()
+        retain_count = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).count()
         if next_delivery_count: 
             next_order = total_delivery_query.first()
             delivery_address = ""
@@ -137,7 +138,7 @@ def get_deliveries(deliverer):
             if next_order.is_completed: 
                 completed_deliveries_count += 1
             deliveries.append({
-                "last_delivery_count": last_delivery_count,
+                "last_delivery_count": last_delivery_count + retain_count,
                 "next_delivery_count": next_delivery_count - next_delivery_refused_count,
                 "delivery_address": delivery_address,
                 "is_completed": next_order.is_completed,
@@ -192,6 +193,8 @@ def get_delivery(deliverer, id):
         return_books = Order.query.filter_by(user_id=user.id).filter(
             cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
         ).all()
+    retained_books = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).all()
+    return_books = [*return_books, *retained_books]
     user_json = user.to_json()
     return jsonify({
         "status": "success",
