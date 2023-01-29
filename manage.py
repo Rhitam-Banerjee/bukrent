@@ -1,7 +1,7 @@
 from flask.cli import FlaskGroup
 from app import create_app, db
 from flask import current_app
-
+from sqlalchemy import cast, Date
 from flask_apscheduler import APScheduler
 
 from app import db
@@ -44,7 +44,7 @@ def complete_all_orders():
             orders = Order.query.filter_by(user_id=user.id).order_by(Order.placed_on.desc()).all()
             is_completed = False
             for order in orders: 
-                if order.placed_on == user.next_delivery_date and order.is_completed: 
+                if order.placed_on.date() == user.next_delivery_date and order.is_completed: 
                     is_completed = True
                     break
             if is_completed: 
