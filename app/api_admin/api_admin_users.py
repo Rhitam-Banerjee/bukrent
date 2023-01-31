@@ -66,6 +66,21 @@ def get_users(admin):
         "users": admin.get_users(all_users)
     })
 
+@api_admin.route('/get-user/<id>')
+@token_required
+@super_admin
+def get_user(admin, id): 
+    user = User.query.filter_by(id=id).first()
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID"
+        }), 400
+    return jsonify({
+        "status": "success",
+        "user": admin.get_users([user])[0]
+    })
+
 @api_admin.route('/get-archived-users')
 @token_required
 @super_admin
