@@ -3,6 +3,7 @@ import uuid
 
 from app.models.buckets import *
 from app.models.order import Order
+from app.models.books import Book
 from app.models.deliverer import Deliverer
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -698,6 +699,9 @@ class User(db.Model):
 
             for bucket in buckets:
                 Order.create(self.id, bucket.book.id, bucket.age_group, self.next_delivery_date)
+                book = Book.query.get(bucket.book.id)
+                book.stock_available -= 1
+                book.rentals += 1
                 bucket.delete()
 
             orders = Order.query.filter_by(user_id=self.id).filter(
@@ -875,8 +879,8 @@ class User(db.Model):
         read_books = self.get_read_books()
         books = []
         for order in orders: 
-            if order.book: 
-                books.append(order.book.to_json())
+            if order.book and order.placed_on < self.next_delivery_date: 
+                books.append({**order.book.to_json(), "placed_on": order.placed_on})
         for book in read_books:
             if book: 
                 books.append(book)

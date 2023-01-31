@@ -247,15 +247,21 @@ def confirm_delivery(deliverer, id):
             "status": "error",
             "message": "Delivery is not scheduled for today",
         }), 400
+    previous_orders = Order.query.filter_by(user_id=user.id).filter(
+        cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
+    ).all()
+    for order in previous_orders: 
+        is_retained = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).count()
+        if not is_retained: 
+            book = Book.query.get(order.book_id)
+            book.stock_available += 1
+            book.rentals -= 1
     for order in current_orders: 
         if not order.is_completed: 
             order.delivery_time = datetime.now()
         order.received_by = received_by
         order.notes = notes
         order.is_completed = True
-    # user.last_delivery_date = user.next_delivery_date
-    # user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
-    # user.delivery_order = 0
     db.session.commit()
     return jsonify({"status": "success"})
 
@@ -344,7 +350,10 @@ def add_to_delivery(deliverer):
             "status": "error",
             "message": "Invalid ISBN",
         }), 400
+    book.stock_available -= 1
+    book.rentals += 1
     Order.create(user_id, book.id, 0, user.next_delivery_date)
+    db.session.commit()
     return jsonify({"status": "success"})
 
 @api_delivery.route('/remove-from-delivery', methods=['POST'])
@@ -377,7 +386,10 @@ def remove_from_delivery(deliverer):
             "status": "error",
             "message": "No delivery found",
         }), 400
+    book.stock_available += 1
+    book.rentals -= 1
     order.delete()
+    db.session.commit()
     return jsonify({"status": "success"})
 
 @api_delivery.route('/add-to-previous', methods=['POST'])

@@ -33,11 +33,17 @@ def add_books_user(admin):
         }), 400
     
     books_found, books_not_found = [], []
+    books_not_in_stock, books_not_available = [], []
     children = Child.query.filter_by(user_id=user_id).all()
     for isbn in isbn_list: 
         book = Book.query.filter_by(isbn=isbn).first()
         if not book: 
             books_not_found.append(isbn)
+        elif not book.stock_available: 
+            if book.rentals: 
+                books_not_available.append(isbn)
+            else: 
+                books_not_in_stock.append(isbn)
         else: 
             books_found.append(isbn)
             if books_type == 'suggestions': 
@@ -61,11 +67,15 @@ def add_books_user(admin):
                         "message": "No delivery date set"
                     }), 400
                 Order.create(user.id, book.id, 0, user.next_delivery_date)
+                book.stock_available -= 1
+                book.rentals += 1
 
     return jsonify({
         "status": "success",
         "books_found": books_found,
         "books_not_found": books_not_found,
+        "books_not_in_stock": books_not_in_stock,
+        "books_not_available": books_not_available,
         "user": admin.get_users([user])[0]
     })
 
@@ -187,7 +197,10 @@ def remove_from_delivery(admin):
             "status": "error",
             "message": "No delivery found"
         })
+    book.stock_available += 1
+    book.rentals -= 1
     delivery.delete()
+    db.session.commit()
     return jsonify({
         "status": "success",
         "user": admin.get_users([user])[0]
