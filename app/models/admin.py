@@ -1,3 +1,4 @@
+from datetime import timedelta
 from sqlalchemy import Date, cast
 from sqlalchemy.orm import load_only
 from app import db
@@ -61,7 +62,8 @@ class Admin(db.Model):
             current_books, delivery_books, delivery_address, notes, is_completed = [], [], "", "", False
             if user.next_delivery_date: 
                 delivery_books = Order.query.filter_by(user_id=user.id).filter(
-                    cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
+                    Order.placed_on >= user.next_delivery_date - timedelta(days=1),
+                    Order.placed_on <= user.next_delivery_date + timedelta(days=1)
                 ).all()
                 if len(delivery_books): 
                     delivery_address = delivery_books[0].delivery_address
@@ -71,7 +73,8 @@ class Admin(db.Model):
                     delivery_address = user.delivery_address
             if user.last_delivery_date: 
                 current_books = Order.query.filter_by(user_id=user.id).filter(
-                    cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
+                    Order.placed_on >= user.last_delivery_date - timedelta(days=1),
+                    Order.placed_on <= user.last_delivery_date + timedelta(days=1)
                 ).all()
             retained_books = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).all()
             bucket = user.get_next_bucket()

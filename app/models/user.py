@@ -879,8 +879,12 @@ class User(db.Model):
         read_books = self.get_read_books()
         books = []
         for order in orders: 
-            if order.book and order.placed_on.date() < self.next_delivery_date: 
-                books.append({**order.book.to_json(), "placed_on": order.placed_on})
+            try: 
+                if order.book and order.placed_on.date() < self.next_delivery_date: 
+                    books.append({**order.book.to_json(), "placed_on": order.placed_on})
+            except: 
+                if order.book and order.placed_on < self.next_delivery_date: 
+                    books.append({**order.book.to_json(), "placed_on": order.placed_on})
         for book in read_books:
             if book: 
                 books.append(book)
