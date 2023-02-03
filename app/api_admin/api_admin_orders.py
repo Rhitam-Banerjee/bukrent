@@ -210,22 +210,18 @@ def remove_from_delivery(admin):
 @token_required
 @super_admin
 def add_users_book(admin): 
-    book_guid = request.json.get('book_guid')
+    book_guids = request.json.get('book_guid')
     mobile_number_list = request.json.get('mobile_number_list')
     book_type = request.json.get('type')
 
-    if not all((book_guid, mobile_number_list)) or type(mobile_number_list) != type([]): 
+    if not all((book_guids, mobile_number_list)) or type(mobile_number_list) != type([]): 
         return jsonify({
             "status": "error",
             "message": "Provide book ID and a list of mobile numbers"
         }), 400
-    book = Book.query.filter_by(guid=book_guid).first()
-    if not book: 
-        return jsonify({
-            "status": "error",
-            "message": "Invalid book ID"
-        }), 400
-    
+    if type(book_guids) != type([]): 
+        book_guids = [book_guids]
+
     users_found, users_not_found = [], []
     for mobile_number in mobile_number_list: 
         user = User.query.filter_by(mobile_number=mobile_number).first()
@@ -234,13 +230,17 @@ def add_users_book(admin):
         else: 
             children = Child.query.filter_by(user_id=user.id).all()
             users_found.append(mobile_number)
-            if book_type == 'suggestions': 
-                for child in children: 
-                    Suggestion.create(user.id, book.id, child.age_group)
-            elif book_type == 'wishlist': 
-                user.add_to_wishlist(book.guid)
-            elif book_type == 'previous': 
-                Order.create(user.id, book.id, 0, datetime.now() - timedelta(days = 90))
+            for book_guid in book_guids: 
+                book = Book.query.filter_by(guid=book_guid).first()
+                if not book: 
+                    continue
+                if book_type == 'suggestions': 
+                    for child in children: 
+                        Suggestion.create(user.id, book.id, child.age_group)
+                elif book_type == 'wishlist': 
+                    user.add_to_wishlist(book.guid)
+                elif book_type == 'previous': 
+                    Order.create(user.id, book.id, 0, datetime.now() - timedelta(days = 90))
 
     return jsonify({
         "status": "success",
