@@ -697,12 +697,13 @@ class User(db.Model):
                 if bucket.book.stock_available <= 0:
                     raise ValueError(f"Book - {bucket.book.name} with ISBN {bucket.book.isbn} is out of stock!")
 
-            for bucket in buckets:
-                Order.create(self.id, bucket.book.id, bucket.age_group, self.next_delivery_date)
-                book = Book.query.get(bucket.book.id)
-                book.stock_available -= 1
-                book.rentals += 1
-                bucket.delete()
+            for bucket in buckets: 
+                if not bucket.is_retained: 
+                    Order.create(self.id, bucket.book.id, bucket.age_group, self.next_delivery_date)
+                    book = Book.query.get(bucket.book.id)
+                    book.stock_available -= 1
+                    book.rentals += 1
+                    bucket.delete()
 
             orders = Order.query.filter_by(user_id=self.id).filter(
                 cast(Order.placed_on, Date) == cast(self.next_delivery_date, Date),
@@ -880,10 +881,10 @@ class User(db.Model):
         books = []
         for order in orders: 
             try: 
-                if order.book and self.next_delivery_date and order.placed_on.date() < self.next_delivery_date: 
+                if order.book and order.placed_on and self.next_delivery_date and order.placed_on.date() < self.next_delivery_date: 
                     books.append({**order.book.to_json(), "placed_on": order.placed_on})
             except: 
-                if order.book and self.next_delivery_date and order.placed_on < self.next_delivery_date: 
+                if order.book and order.placed_on and self.next_delivery_date and order.placed_on < self.next_delivery_date: 
                     books.append({**order.book.to_json(), "placed_on": order.placed_on})
         for book in read_books:
             if book: 
