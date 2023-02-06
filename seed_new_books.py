@@ -51,5 +51,5 @@ def seed_new_books():
             )
 
             print(f'Added book - {book[2]} - {i + 1}/{len(books)}')
-        except: 
+        except Exception as e:  
             continue
