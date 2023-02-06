@@ -20,23 +20,23 @@ def seed_new_books():
     books = books[1:]
 
     for i in range(len(books)): 
+        book = books[i]
+        if NewBook.query.filter_by(isbn=book[5]).count(): 
+            print(f'Already added book - {book[2]} - {i + 1}/{len(books)}')
+            continue
+        '''
+        0 - min_age
+        1 - max_age
+        2 - category_order
+        3 - category
+        4 - book_order
+        5 - isbn
+        6 - image
+        7 - name
+        8 - rating
+        9 - review_count
+        '''
         try: 
-            book = books[i]
-            if NewBook.query.filter_by(isbn=book[5]).count(): 
-                print(f'Already added book - {book[2]} - {i + 1}/{len(books)}')
-                continue
-            '''
-            0 - min_age
-            1 - max_age
-            2 - category_order
-            3 - category
-            4 - book_order
-            5 - isbn
-            6 - image
-            7 - name
-            8 - rating
-            9 - review_count
-            '''
             NewBook.create(
                 book[7],
                 book[6],
@@ -49,8 +49,6 @@ def seed_new_books():
                 book[0],
                 book[1],
             )
-
             print(f'Added book - {book[2]} - {i + 1}/{len(books)}')
-        except Exception as e:  
-            print(e)
-            break
+        except: 
+            continue
