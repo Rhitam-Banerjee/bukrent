@@ -571,7 +571,7 @@ Minimum Age,Max Age,Category Order,Main Category,Book Order,ISBN 13,Image Link,N
 9,11,102,Theodore Boone,7,9.78E+12,https://m.media-amazon.com/images/I/51UzPBSfFWL._SY200_.jpg,Theodore Boone: The Accomplice: 7,4.4,"3,102",525556281
 4,7,25,Dr. Seuss,85,9.78E+12,https://m.media-amazon.com/images/I/81CqHF16SuL._AC_US218_..jpg,"Dr. Seuss Workbook: Preschool: 300+ Fun Activities with Stickers and More! (Alphabet, ABCs, Tracing, Early Reading, Colors and Shapes, Numbers, ... Emotions, Science) (Dr. Seuss Workbooks)",4.5,177,525572198
 4,7,25,Dr. Seuss,87,9.78E+12,https://m.media-amazon.com/images/I/81PIMwvuu+L._AC_US218_..jpg,DR SEUSS WORKBK KINDERGARTEN,4.5,152,525572201
-6,9,76,Geronimo Stilton Special Edition,null,9.78E+12,https://m.media-amazon.com/images/I/51R6JSkKQJL._SY300_.jpg,"Special E - Christmas Catastrophe: Geronimo Stilton (1 October, 2007)",4.7,301,545009022
+6,9,76,Geronimo Stilton Special Edition,100,9.78E+12,https://m.media-amazon.com/images/I/51R6JSkKQJL._SY300_.jpg,"Special E - Christmas Catastrophe: Geronimo Stilton (1 October, 2007)",4.7,301,545009022
 7,9,41,I Survived,3,9.78E+12,https://m.media-amazon.com/images/I/51hHy3IonxL._SY200_.jpg,"I Survived Hurricane Katrina, 2005 (I Survived #3): Volume 3",4.8,"1,972",545206960
 7,9,41,I Survived,5,9.78E+12,https://m.media-amazon.com/images/I/41BVlzlmtpL._SY200_.jpg,"I Survived the San Francisco Earthquake, 1906 (I Survived #5)",4.8,"1,025",545206995
 6,9,17,Creepella von Cacklefur,1,9.78E+12,https://m.media-amazon.com/images/I/51kZffcWjqL._SY300_.jpg,Creepella Von Cacklefur - 1 The Thirteen Ghosts: 01 (Geronimo Stilton),4.5,465,545307422
@@ -1262,7 +1262,7 @@ Minimum Age,Max Age,Category Order,Main Category,Book Order,ISBN 13,Image Link,N
 4,6,112,Where's Waldo?,4,9.78E+12,https://m.media-amazon.com/images/I/61qN-zoEF+L._SY300_.jpg,Where's Waldo? The Wonder Book,4.8,5234,153621308X
 4,6,112,Where's Waldo?,7,9.78E+12,https://m.media-amazon.com/images/I/61+0WNCVo3L._SY300_.jpg,Where's Waldo? the Incredible Paper Chase,4.7,850,1536215104
 3,5,46,Jon Klassen,8,9.78E+12,https://m.media-amazon.com/images/I/913HqHNDmhL._AC_US218_..jpg,"The Wolf, the Duck, and the Mouse",4.5,436,153622779X
-6,9,76,Geronimo Stilton Special Edition,null,9.78E+12,https://m.media-amazon.com/images/I/51q8ZonRHhL._SY300_.jpg,"Geronimo Stilton 3-in-1: The Discovery of America, The Secret of the Sphinx, and The Coliseum Con (Geronimo Stilton,Geronimo Stilton) (12 December, 2017)",4.5,219,1545801150
+6,9,76,Geronimo Stilton Special Edition,100,9.78E+12,https://m.media-amazon.com/images/I/51q8ZonRHhL._SY300_.jpg,"Geronimo Stilton 3-in-1: The Discovery of America, The Secret of the Sphinx, and The Coliseum Con (Geronimo Stilton,Geronimo Stilton) (12 December, 2017)",4.5,219,1545801150
 0,2,62,My Little World,9,9.78E+12,https://m.media-amazon.com/images/I/51vcJnFRTdL._SY300_.jpg,"I Spy on the Farm (My Little World) (1 September, 2015)",4.7,90,1589253124
 0,2,62,My Little World,6,9.78E+12,https://m.media-amazon.com/images/I/51moJE9l8bL._SY300_.jpg,"I Spy Learn and Go (My Little World) (1 September, 2015)",4.7,169,1589253132
 0,2,62,My Little World,1,9.78E+12,https://m.media-amazon.com/images/I/51-0NP5UvmL._SY300_.jpg,"123 Counting Sticker Book (My Little World) (4 March, 2014)",4.6,1877,1589254449
@@ -1638,14 +1638,14 @@ Minimum Age,Max Age,Category Order,Main Category,Book Order,ISBN 13,Image Link,N
 0,3,32,Fiona Watt,37,9.78E+12,https://m.media-amazon.com/images/I/91XXkOKb8JL._AC_US218_..jpg,Magic Painting Book by Fiona Watt (1-May-2015) Paperback,4.5,292,B011T7IAHM
 10,13,93,The Mystery,14,9.78E+12,https://m.media-amazon.com/images/G/01/kcp/sugarland/icons/no-book-cover-121168._V290254891_.png,Mystery of the Strange Messages,5,2,B01BITBGUY
 4,7,25,Dr. Seuss,24,978-0375858079,https://m.media-amazon.com/images/I/516XOgk3mLL._AC_US218_..jpg,The Big Green Book of Beginner Books,4.5,"3,984",B01BITPFV0
-6,9,76,Geronimo Stilton Special Edition,null,978-0545872508,https://m.media-amazon.com/images/I/519MPRc0ypL._SY300_.jpg,"The Hunt for the Secret Papyrus (Geronimo Stilton: Special Edition) (29 March, 2016)",4.5,467,B01BXC8D7A
+6,9,76,Geronimo Stilton Special Edition,100,978-0545872508,https://m.media-amazon.com/images/I/519MPRc0ypL._SY300_.jpg,"The Hunt for the Secret Papyrus (Geronimo Stilton: Special Edition) (29 March, 2016)",4.5,467,B01BXC8D7A
 7,10,24,Dork Diaries,11,978-1471119125,https://m.media-amazon.com/images/I/31c8zQqn7gL._SY200_.jpg,Dork Diaries Skating Sensation,4.8,"2,095",B01D33CRBU
 0,3,29,Eric Hill,16,978-0723295914,https://m.media-amazon.com/images/I/51Nq80vpV6L._AC_US218_..jpg,Spots Lift-the-Flap Peekaboo,4.5,437,B01GY1OLT4
 0,3,53,Little Blue Truck,5,978-0544772533,https://m.media-amazon.com/images/I/618NcbRHeCL._SY300_.jpg,"Little Blue Truck's Halloween (5 July, 2016)",4.9,12516,B01HPGSYRC
 3,5,94,The Questioneers (Picture Books),2,978-1419721373,https://m.media-amazon.com/images/I/612lx3JpSTL._SY300_.jpg,"Ada Twist, Scientist (6 September, 2016)",4.9,4632,B01I1HCF9W
 0,2,80,THAT'S NOT MY,8,9.78E+12,https://m.media-amazon.com/images/I/51wio-LaVHL._SY300_.jpg,That's Not My Lamb... (Usborne Touchy-Feely Books) by NA(1905-07-04),4.7,520,B01K8ZST0E
 8,10,30,Famous Five Series,15,978-0340894682,https://m.media-amazon.com/images/I/31fZfUeU8lL._SY300_.jpg,FAMOUS FIVE:15: FIVE ON A SECRET TRAIL,4.7,325,B01KB08G5Y
-6,9,76,Geronimo Stilton Special Edition,null,978-1338087789,https://m.media-amazon.com/images/I/51wlbWvKcTL._SY300_.jpg,"The Hunt for the 100th Key (Geronimo Stilton Special Edition) (28 March, 2017)",4.5,616,B01L2XH7AY
+6,9,76,Geronimo Stilton Special Edition,100,978-1338087789,https://m.media-amazon.com/images/I/51wlbWvKcTL._SY300_.jpg,"The Hunt for the 100th Key (Geronimo Stilton Special Edition) (28 March, 2017)",4.5,616,B01L2XH7AY
 0,3,35,"Goodnight, Goodnight, Construction Site",3,978-1452152165,https://m.media-amazon.com/images/I/61M6FBUuzdL._SY300_.jpg,"Mighty, Mighty Construction Site (Goodnight, Goodnight Construction Site) (14 February, 2017)",4.9,3945,B01LZO05UJ
 0,3,54,Llama Llama,7,978-1101997154,https://m.media-amazon.com/images/I/A1BYFbAhQTL._AC_US218_..jpg,Llama Llama Gives Thanks,4.5,"3,233",B01MQM783N
 0,3,29,Eric Hill,9,978-0141362861,https://m.media-amazon.com/images/I/51z45UfymxL._AC_US218_..jpg,Spot Loves Bedtime,4.5,"1,008",B01MR3UMLT
@@ -1653,7 +1653,7 @@ Minimum Age,Max Age,Category Order,Main Category,Book Order,ISBN 13,Image Link,N
 0,3,29,Eric Hill,3,9.79E+11,https://m.media-amazon.com/images/I/61PIZr6C3gS._AC_US218_..jpg,Spot Says Goodnight,4.5,"2,042",B06XVDFBK4
 4,7,31,Fancy Nancy,13,978-0062269874,https://m.media-amazon.com/images/I/61nMge1nKgL._SY200_.jpg,"Fancy Nancy: Oodles of Kittens (2 January, 2018)",4.8,188,B06ZZLMXNG
 4,7,25,Dr. Seuss,7,978-0307975867,https://m.media-amazon.com/images/I/61pBbPeHZKL._AC_US218_..jpg,The Little Blue Box of Bright and Early Board Books,4.5,"14,151",B07226SYK4
-6,9,76,Geronimo Stilton Special Edition,null,978-1338215229,https://m.media-amazon.com/images/I/515Q7VxK-PL._SY300_.jpg,"The Hunt for the Colosseum Ghost (Geronimo Stilton Special Edition) (27 March, 2018)",4.5,808,B0754N1QJR
+6,9,76,Geronimo Stilton Special Edition,100,978-1338215229,https://m.media-amazon.com/images/I/515Q7VxK-PL._SY300_.jpg,"The Hunt for the Colosseum Ghost (Geronimo Stilton Special Edition) (27 March, 2018)",4.5,808,B0754N1QJR
 8,12,78,Sudha murthy,23,9.78E+12,https://m.media-amazon.com/images/I/41yfLNGUSnL._AC_US218_..jpg,Teen Hajar Take,4.5,594,B0785QWQ12
 0,3,53,Little Blue Truck,4,978-0544938090,https://m.media-amazon.com/images/I/61aJJG9EPeL._SY300_.jpg,"Little Blue Truck's Springtime (2 January, 2018)",4.8,13829,B0789BMG5R
 3,6,65,Oliver Jeffers,4,978-0007150366,https://m.media-amazon.com/images/I/41Ayy1o3AAL._AC_US218_..jpg,Lost and Found,4.5,"3,086",B078SYQM1L
