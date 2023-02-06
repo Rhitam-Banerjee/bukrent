@@ -22,7 +22,7 @@ def seed_new_books():
     for i in range(len(books)): 
         book = books[i]
         if NewBook.query.filter_by(isbn=book[5]).count(): 
-            print(f'Already added book - {book[2]} - {i + 1}/{len(books)}')
+            # print(f'Already added book - {book[2]} - {i + 1}/{len(books)}')
             continue
         '''
         0 - min_age
@@ -49,6 +49,6 @@ def seed_new_books():
                 book[0],
                 book[1],
             )
-            print(f'Added book - {book[2]} - {i + 1}/{len(books)}')
-        except: 
+            # print(f'Added book - {book[2]} - {i + 1}/{len(books)}')
+        except Exception as e: 
             continue
