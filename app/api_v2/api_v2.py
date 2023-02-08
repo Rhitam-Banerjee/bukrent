@@ -345,8 +345,6 @@ def generate_subscription_id():
         plan_name = "RZP_PLAN_3_ID"
         plan_desc = "Get 4 Books Per Week"
 
-    print(os.environ.get(plan_name))
-
     subscription = client.subscription.create({
         'plan_id': os.environ.get(plan_name),
         'total_count': 36
@@ -381,20 +379,31 @@ def generate_order_id():
 
     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
-    if user.plan_id == os.environ.get("RZP_PLAN_1_ID"):
-        amount = 399 * card
+    amount = 0
+    if user.plan_id == os.environ.get("RZP_PLAN_1_ID"): 
+        if card == 1: 
+            amount = 399
+        elif card == 3: 
+            amount = 1199
+        elif card == 12: 
+            amount = 4299
         plan_desc = "Get 1 Book Per Week"
-    elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"):
-        amount = 549 * card
+    elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"): 
+        if card == 1: 
+            amount = 599
+        elif card == 3: 
+            amount = 1799
+        elif card == 12: 
+            amount = 6399
         plan_desc = "Get 2 Books Per Week"
     elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
-        amount = 749 * card
+        if card == 1: 
+            amount = 799
+        elif card == 3: 
+            amount = 2399
+        elif card == 12: 
+            amount = 8599
         plan_desc = "Get 4 Books Per Week"
-
-    if card == 3:
-        amount = int(amount - 0.1 * amount)
-    if card == 12:
-        amount = int(amount - 0.25 * amount)
 
     order = client.order.create({
         "amount": amount * 100,
