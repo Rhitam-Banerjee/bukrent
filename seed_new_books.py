@@ -18,6 +18,7 @@ def seed_new_books():
             books.append(line)
 
     books = books[1:]
+    print(len(books))
 
     for i in range(len(books)): 
         book = books[i]
@@ -49,6 +50,7 @@ def seed_new_books():
                 book[0],
                 book[1],
             )
-            # print(f'Added book - {book[2]} - {i + 1}/{len(books)}')
+            print(f'Added book - {book[2]} - {i + 1}/{len(books)}')
         except Exception as e: 
+            print(e)
             continue
