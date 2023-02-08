@@ -1,6 +1,49 @@
 from app import db
 import uuid
 
+class NewCategoryBook(db.Model): 
+    __tablename__ = 'new_category_books'
+    id = db.Column(db.Integer, primary_key=True)
+    guid = db.Column(db.String, nullable=False, unique=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('new_categories.id'))
+    book_id = db.Column(db.Integer, db.ForeignKey('new_books.id'))
+
+    @staticmethod
+    def create(category_id, book_id): 
+        if NewCategoryBook.query.filter_by(category_id=category_id, book_id=book_id).count(): 
+            return
+        category_book_dict = dict(
+            guid = str(uuid.uuid4()),
+            category_id = category_id,
+            book_id = book_id,
+        )
+        new_category_book_obj = NewCategoryBook(**category_book_dict)
+        db.session.add(new_category_book_obj)
+        db.session.commit()
+
+class NewCategory(db.Model): 
+    __tablename__ = 'new_categories'
+    id = db.Column(db.Integer, primary_key=True)
+    guid = db.Column(db.String, nullable=False, unique=True)
+    name = db.Column(db.String, nullable=False)
+    category_order = db.Column(db.Integer)
+    min_age = db.Column(db.Integer)
+    max_age = db.Column(db.Integer)
+    books = db.relationship('NewBook', secondary=NewCategoryBook.__table__)
+
+    @staticmethod
+    def create(name, category_order, min_age, max_age): 
+        category_dict = dict(
+            guid = str(uuid.uuid4()),
+            name = name,
+            category_order = category_order,
+            min_age = min_age,
+            max_age = max_age
+        )
+        new_category_obj = NewCategory(**category_dict)
+        db.session.add(new_category_obj)
+        db.session.commit()
+
 class NewBook(db.Model): 
     __tablename__ = 'new_books'
     id = db.Column(db.Integer, primary_key=True)
@@ -10,14 +53,10 @@ class NewBook(db.Model):
     isbn = db.Column(db.String, nullable=False)
     rating = db.Column(db.String)
     review_count = db.Column(db.String)
-    category = db.Column(db.String, nullable=False)
     book_order = db.Column(db.Integer)
-    category_order = db.Column(db.Integer)
-    min_age = db.Column(db.Integer)
-    max_age = db.Column(db.Integer)
 
     @staticmethod
-    def create(name, image, isbn, rating, review_count, category, book_order, category_order, min_age, max_age):
+    def create(name, image, isbn, rating, review_count, book_order):
         book_dict = dict(
             guid = str(uuid.uuid4()),
             name = name,
@@ -25,13 +64,8 @@ class NewBook(db.Model):
             isbn = isbn,
             rating = rating,
             review_count = review_count,
-            category = category,
             book_order = book_order,
-            category_order = category_order,
-            min_age = min_age,
-            max_age = max_age
         )
-
         new_book_obj = NewBook(**book_dict)
         db.session.add(new_book_obj)
         db.session.commit()

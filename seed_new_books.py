@@ -2,7 +2,7 @@ import csv
 
 from app import db
 
-from app.models.new_books import NewBook
+from app.models.new_books import NewCategory, NewCategoryBook, NewBook
 
 print(db)
 
@@ -18,13 +18,40 @@ def seed_new_books():
             books.append(line)
 
     books = books[1:]
-    print(len(books))
 
     for i in range(len(books)): 
         book = books[i]
-        if NewBook.query.filter_by(isbn=book[5]).count(): 
-            # print(f'Already added book - {book[2]} - {i + 1}/{len(books)}')
-            continue
+        added_book = NewBook.query.filter_by(isbn=book[5]).first()
+        if not added_book: 
+            try: 
+                NewBook.create(
+                    book[7],
+                    book[6],
+                    book[5],
+                    book[8],
+                    book[9].replace(',', ''),
+                    book[4],
+                )
+                added_book = NewBook.query.filter_by(isbn=book[5]).first()
+                print(f'Added book - {book[2]} - {i + 1}/{len(books)}')
+            except Exception as e: 
+                print(e)
+                continue
+        else: 
+            print(f'Already added book - {book[2]} - {i + 1}/{len(books)}')
+        category = NewCategory.query.filter_by(name=book[3]).first()
+        if not category: 
+            NewCategory.create(
+                book[3],
+                book[2],
+                book[0],
+                book[1]
+            )
+            category = NewCategory.query.filter_by(name=book[3]).first()
+        NewCategoryBook.create(
+            category.id,
+            added_book.id
+        )
         '''
         0 - min_age
         1 - max_age
@@ -37,20 +64,3 @@ def seed_new_books():
         8 - rating
         9 - review_count
         '''
-        try: 
-            NewBook.create(
-                book[7],
-                book[6],
-                book[5],
-                book[8],
-                book[9].replace(',', ''),
-                book[3],
-                book[4],
-                book[2],
-                book[0],
-                book[1],
-            )
-            print(f'Added book - {book[2]} - {i + 1}/{len(books)}')
-        except Exception as e: 
-            print(e)
-            continue
