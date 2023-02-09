@@ -31,6 +31,8 @@ def seed_new_books():
                     book[8],
                     book[9].replace(',', ''),
                     book[4],
+                    book[0],
+                    book[1],
                 )
                 added_book = NewBook.query.filter_by(isbn=book[5]).first()
                 print(f'Added book - {book[2]} - {i + 1}/{len(books)}')
@@ -48,6 +50,9 @@ def seed_new_books():
                 book[1]
             )
             category = NewCategory.query.filter_by(name=book[3]).first()
+        category.min_age = min(category.min_age, int(book[0]))
+        category.max_age = max(category.max_age, int(book[1]))
+        db.session.commit()
         NewCategoryBook.create(
             category.id,
             added_book.id

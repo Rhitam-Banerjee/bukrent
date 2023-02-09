@@ -54,9 +54,11 @@ class NewBook(db.Model):
     rating = db.Column(db.String)
     review_count = db.Column(db.String)
     book_order = db.Column(db.Integer)
+    min_age = db.Column(db.Integer)
+    max_age = db.Column(db.Integer)
 
     @staticmethod
-    def create(name, image, isbn, rating, review_count, book_order):
+    def create(name, image, isbn, rating, review_count, book_order, min_age, max_age):
         book_dict = dict(
             guid = str(uuid.uuid4()),
             name = name,
@@ -65,6 +67,8 @@ class NewBook(db.Model):
             rating = rating,
             review_count = review_count,
             book_order = book_order,
+            min_age = min_age,
+            max_age = max_age
         )
         new_book_obj = NewBook(**book_dict)
         db.session.add(new_book_obj)
