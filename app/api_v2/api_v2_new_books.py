@@ -38,3 +38,15 @@ def get_book_set():
             "books": books
         })
     return jsonify({"success": True, "book_set": book_set})
+
+@api_v2_new_books.route('/get-category-books')
+def get_category_books(): 
+    category_name = request.args.get('category_name')
+    if not category_name: 
+        return jsonify({"success": False, "message": "Provide category name"}), 400
+    category = NewCategory.query.filter_by(name=category_name).first()
+    if not category: 
+        return jsonify({"success": False, "message": "Invalid category name"}), 400
+    books = category.books
+    random.shuffle(books)
+    return jsonify({"success": True, "books": [book.to_json() for book in books]})
