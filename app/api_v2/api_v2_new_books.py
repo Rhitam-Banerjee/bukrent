@@ -30,8 +30,8 @@ def get_book_set():
                 and_(NewBook.min_age <= age, NewBook.max_age >= age),
                 and_(NewBook.min_age <= age + 1, NewBook.max_age >= age + 1)
             )
-        )
-        books = [book.to_json() for book in category.books]
+        ).all()
+        books = [book[0].to_json() for book in books]
         random.shuffle(books)
         book_set.append({
             "category": category.name,
