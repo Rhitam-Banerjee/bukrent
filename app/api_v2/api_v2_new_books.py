@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-
 import random
+import json
 
 from sqlalchemy import and_, or_
 
@@ -8,6 +8,8 @@ from app import db
 from app.models.new_books import NewBook, NewCategory, NewCategoryBook
 
 api_v2_new_books = Blueprint('api_v2_new_books', __name__, url_prefix="/api_v2_new_books")
+
+must_read_books = json.loads(open('./app/must-read-books.json', mode="r", encoding='utf8').read())
 
 @api_v2_new_books.route('/get-book-set')
 def get_book_set(): 
@@ -50,3 +52,16 @@ def get_category_books():
     books = category.books
     random.shuffle(books)
     return jsonify({"success": True, "books": [book.to_json() for book in books]})
+
+@api_v2_new_books.route('/get-must-read-book-set')
+def get_must_read_book_set(): 
+    age = request.args.get('age')
+    if age is None or not str(age).isnumeric(): 
+        return jsonify({"success": False, "message": "Provide age group"})
+    _age = f'{int(age)}-{int(age) + 1}'
+    if _age not in must_read_books: 
+        return jsonify({"success": True, "book_set": []})
+    book_set = must_read_books[f'{_age}']
+    for books in book_set: 
+        random.shuffle(books['books'])
+    return jsonify({"success": True, "book_set": book_set})
