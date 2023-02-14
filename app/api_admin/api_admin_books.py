@@ -238,8 +238,8 @@ def add_book(admin):
 @api_admin.route('/delete-book', methods=['POST'])
 @token_required
 def delete_book(admin): 
-    guid = request.json.get('guid')
-    book = Book.query.filter_by(guid=guid).first()
+    isbn = request.json.get('isbn')
+    book = Book.query.filter_by(isbn=isbn).first()
     if not book: 
         return jsonify({
             "status": "error",

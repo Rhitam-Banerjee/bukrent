@@ -50,7 +50,7 @@ def add_books_user(admin):
                 for child in children: 
                     Suggestion.create(user.id, book.id, child.age_group)
             elif books_type == 'wishlist': 
-                user.add_to_wishlist(book.guid)
+                user.add_to_wishlist(book.isbn)
             elif books_type == 'previous': 
                 Order.create(user.id, book.id, 0, datetime.now() - timedelta(days=90))
             elif books_type == 'bucket': 
@@ -83,7 +83,7 @@ def add_books_user(admin):
 @token_required
 @super_admin
 def add_to_wishlist(admin): 
-    book_guid = request.json.get('book_guid')
+    isbn = request.json.get('isbn')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
     if not user: 
@@ -91,7 +91,7 @@ def add_to_wishlist(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.add_to_wishlist(book_guid)
+    user.add_to_wishlist(isbn)
     return jsonify({
         "status": "success",
         "user": admin.get_users([user])[0]
@@ -101,7 +101,7 @@ def add_to_wishlist(admin):
 @token_required
 @super_admin
 def remove_from_wishlist(admin): 
-    book_guid = request.json.get('book_guid')
+    isbn = request.json.get('isbn')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
     if not user: 
@@ -109,8 +109,8 @@ def remove_from_wishlist(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.wishlist_remove(book_guid)
-    book = Book.query.filter_by(guid=book_guid).first()
+    user.wishlist_remove(isbn)
+    book = Book.query.filter_by(isbn=isbn).first()
     return jsonify({
         "status": "success",
         "user": admin.get_users([user])[0],
@@ -121,7 +121,7 @@ def remove_from_wishlist(admin):
 @token_required
 @super_admin
 def remove_from_suggestions(admin): 
-    book_guid = request.json.get('book_guid')
+    isbn = request.json.get('isbn')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
     if not user: 
@@ -129,8 +129,8 @@ def remove_from_suggestions(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.suggestion_to_dump(book_guid)
-    book = Book.query.filter_by(guid=book_guid).first()
+    user.suggestion_to_dump(isbn)
+    book = Book.query.filter_by(isbn=isbn).first()
     return jsonify({
         "status": "success",
         "user": admin.get_users([user])[0],
@@ -141,7 +141,7 @@ def remove_from_suggestions(admin):
 @token_required
 @super_admin
 def remove_from_previous(admin): 
-    book_guid = request.json.get('book_guid')
+    isbn = request.json.get('isbn')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
     if not user: 
@@ -149,7 +149,7 @@ def remove_from_previous(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.remove_from_previous(book_guid)
+    user.remove_from_previous(isbn)
     return jsonify({
         "status": "success",
         "user": admin.get_users([user])[0]
@@ -159,7 +159,7 @@ def remove_from_previous(admin):
 @token_required
 @super_admin
 def remove_from_bucket(admin): 
-    book_guid = request.json.get('book_guid')
+    isbn = request.json.get('isbn')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
     if not user: 
@@ -167,7 +167,7 @@ def remove_from_bucket(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.bucket_remove(book_guid)
+    user.bucket_remove(isbn)
     return jsonify({
         "status": "success",
         "user": admin.get_users([user])[0]
@@ -177,7 +177,7 @@ def remove_from_bucket(admin):
 @token_required
 @super_admin
 def remove_from_delivery(admin): 
-    book_guid = request.json.get('book_guid')
+    isbn = request.json.get('isbn')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
     if not user: 
@@ -185,7 +185,7 @@ def remove_from_delivery(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    book = Book.query.filter_by(guid=book_guid).first()
+    book = Book.query.filter_by(isbn=isbn).first()
     if not book: 
         return jsonify({
             "status": "error",
@@ -210,17 +210,17 @@ def remove_from_delivery(admin):
 @token_required
 @super_admin
 def add_users_book(admin): 
-    book_guids = request.json.get('book_guid')
+    book_isbns = request.json.get('isbn')
     mobile_number_list = request.json.get('mobile_number_list')
     book_type = request.json.get('type')
 
-    if not all((book_guids, mobile_number_list)) or type(mobile_number_list) != type([]): 
+    if not all((book_isbns, mobile_number_list)) or type(mobile_number_list) != type([]): 
         return jsonify({
             "status": "error",
             "message": "Provide book ID and a list of mobile numbers"
         }), 400
-    if type(book_guids) != type([]): 
-        book_guids = [book_guids]
+    if type(book_isbns) != type([]): 
+        book_isbns = [book_isbns]
 
     users_found, users_not_found = [], []
     for mobile_number in mobile_number_list: 
@@ -230,15 +230,15 @@ def add_users_book(admin):
         else: 
             children = Child.query.filter_by(user_id=user.id).all()
             users_found.append(mobile_number)
-            for book_guid in book_guids: 
-                book = Book.query.filter_by(guid=book_guid).first()
+            for isbn in book_isbns: 
+                book = Book.query.filter_by(isbn=isbn).first()
                 if not book: 
                     continue
                 if book_type == 'suggestions': 
                     for child in children: 
                         Suggestion.create(user.id, book.id, child.age_group)
                 elif book_type == 'wishlist': 
-                    user.add_to_wishlist(book.guid)
+                    user.add_to_wishlist(book.isbn)
                 elif book_type == 'previous': 
                     Order.create(user.id, book.id, 0, datetime.now() - timedelta(days = 90))
 
@@ -254,20 +254,20 @@ def add_users_book(admin):
 @super_admin
 def add_to_bucket(admin): 
     user_id = request.json.get('user_id')
-    book_guid = request.json.get('book_guid')
+    isbn = request.json.get('isbn')
     user = User.query.get(user_id)
     if not user: 
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    book = Book.query.filter_by(guid=book_guid).first()
+    book = Book.query.filter_by(isbn=isbn).first()
     if not book: 
         return jsonify({
             "status": "error",
             "message": "Invalid book ID"
         }), 400
-    user.wishlist_remove(book_guid)
+    user.wishlist_remove(isbn)
     DeliveryBucket.create(user_id, book.id, user.next_delivery_date, 0)
     return jsonify({
         "status": "success",

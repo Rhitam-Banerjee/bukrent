@@ -482,19 +482,19 @@ class User(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def add_to_wishlist(self, guid):
+    def add_to_wishlist(self, isbn):
         from app.models.books import Book
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
 
         existing = Wishlist.query.filter(and_(Wishlist.user_id==self.id, Wishlist.book_id==book.id)).first()
         if not existing:
             Wishlist.create(self.id, book.id, 1)
 
-    def suggestion_to_wishlist(self, guid):
+    def suggestion_to_wishlist(self, isbn):
         from app.models.books import Book
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
         suggestion = Suggestion.query.filter(and_(Suggestion.user_id==self.id, Suggestion.book_id==book.id)).first()
         age_group = suggestion.age_group
         suggestion.delete()
@@ -517,19 +517,19 @@ class User(db.Model):
         # if len(buckets) < self.books_per_week:
         #     DeliveryBucket.create(self.id, book.id, self.next_delivery_date, age_group)
 
-    def suggestion_to_dump(self, guid):
+    def suggestion_to_dump(self, isbn):
         from app.models.books import Book
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
         suggestion = Suggestion.query.filter(and_(Suggestion.user_id==self.id, Suggestion.book_id==book.id)).first()
         suggestion.delete()
 
         Dump.create(self.id, book.id)
 
-    def dump_action_read(self, guid):
+    def dump_action_read(self, isbn):
         from app.models.books import Book
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
         dump = Dump.query.filter(and_(Dump.user_id==self.id, Dump.book_id==book.id)).first()
 
         dump.read_before = True
@@ -537,10 +537,10 @@ class User(db.Model):
         db.session.add(dump)
         db.session.commit()
 
-    def dump_action_dislike(self, guid):
+    def dump_action_dislike(self, isbn):
         from app.models.books import Book
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
         dump = Dump.query.filter(and_(Dump.user_id==self.id, Dump.book_id==book.id)).first()
 
         dump.disliked = True
@@ -548,10 +548,10 @@ class User(db.Model):
         db.session.add(dump)
         db.session.commit()
 
-    def wishlist_next(self, guid):
+    def wishlist_next(self, isbn):
         from app.models.books import Book
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
 
         first_item = Wishlist.query.filter(and_(Wishlist.user_id==self.id, Wishlist.book_id==book.id)).first()
 
@@ -582,10 +582,10 @@ class User(db.Model):
         db.session.add(second_item)
         db.session.commit()
 
-    def wishlist_prev(self, guid):
+    def wishlist_prev(self, isbn):
         from app.models.books import Book
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
 
         second_item = Wishlist.query.filter(and_(Wishlist.user_id==self.id, Wishlist.book_id==book.id)).first()
 
@@ -616,10 +616,10 @@ class User(db.Model):
         db.session.add(first_item)
         db.session.commit()
 
-    def wishlist_remove(self, guid):
+    def wishlist_remove(self, isbn):
         from app.models.books import Book
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
         wishlist = Wishlist.query.filter_by(user_id=self.id, book_id=book.id).first()
 
         # bucket_removed = False
@@ -720,10 +720,10 @@ class User(db.Model):
         except Exception as e:
             raise ValueError(str(e))
 
-    def bucket_remove(self, guid):
+    def bucket_remove(self, isbn):
         from app.models.books import Book
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
         bucket = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.book_id==book.id)).first()
 
         Wishlist.create(self.id, bucket.book_id, bucket.age_group)
@@ -731,11 +731,11 @@ class User(db.Model):
 
         db.session.commit()
 
-    def remove_from_previous(self, guid): 
+    def remove_from_previous(self, isbn): 
         from app.models.books import Book
         from app.models.buckets import Dump
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
 
         order = Order.query.filter_by(user_id=self.id, book_id=book.id).first()
 
@@ -766,10 +766,10 @@ class User(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def retain_book(self, guid):
+    def retain_book(self, isbn):
         from app.models.books import Book
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
         buckets = self.delivery_buckets
 
         if len(buckets) == 0:
@@ -784,13 +784,13 @@ class User(db.Model):
         order = Order.query.filter(and_(Order.user_id==self.id, order.book_id==book.id)).first()
         DeliveryBucket.create(self.id, book.id, self.next_delivery_date, order.age_group, is_retained=True)
 
-    def retain_current_book(self, guid):
+    def retain_current_book(self, isbn):
         from app.models.books import Book
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
         existing = Wishlist.query.filter(and_(Wishlist.user_id==self.id, Wishlist.book_id==book.id)).first()
         if not existing:
             Wishlist.create(self.id, book.id, 1)
-            order = Order.query.filter_by(user_id=self.id, book_id=guid).first()
+            order = Order.query.filter_by(user_id=self.id, book_id=isbn).first()
             if order:
                 order.placed_on = None
                 db.session.commit()
@@ -894,11 +894,12 @@ class User(db.Model):
     def get_current_books(self):
         orders = Order.query.filter_by(user_id=self.id).all()
         books = []
-        last_delivery_date = self.last_delivery_date.strftime('%Y-%m-%d')
-        for order in orders:
-            if last_delivery_date == order.placed_on.strftime('%Y-%m-%d'):
-                if order.book: 
-                    books.append(order.book.to_json())
+        if self.last_delivery_date: 
+            last_delivery_date = self.last_delivery_date.strftime('%Y-%m-%d')
+            for order in orders:
+                if last_delivery_date == order.placed_on.strftime('%Y-%m-%d'):
+                    if order.book: 
+                        books.append(order.book.to_json())
         return books
 
     def get_wishlist(self):

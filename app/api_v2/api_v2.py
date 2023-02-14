@@ -778,7 +778,7 @@ def get_order_bucket(user):
 @api_v2.route("/add-to-wishlist", methods=["POST"])
 @token_required
 def add_to_wishlist(user):
-    guid = request.json.get("guid")
+    isbn = request.json.get("isbn")
     try:
         if not user:
             return jsonify({
@@ -786,7 +786,7 @@ def add_to_wishlist(user):
                 "status": "error"
             }), 400
 
-        user.add_to_wishlist(guid)
+        user.add_to_wishlist(isbn)
 
         return jsonify({
             "status": "success"
@@ -800,7 +800,7 @@ def add_to_wishlist(user):
 @api_v2.route("/suggestion-to-wishlist", methods=["POST"])
 @token_required
 def suggestion_to_wishlist(user):
-    guid = request.json.get("guid")
+    isbn = request.json.get("isbn")
     try:
         if not user:
             return jsonify({
@@ -808,7 +808,7 @@ def suggestion_to_wishlist(user):
                 "status": "error"
             }), 400
 
-        user.suggestion_to_wishlist(guid)
+        user.suggestion_to_wishlist(isbn)
 
         suggestions = user.get_suggestions()
         wishlists = user.get_wishlist()
@@ -828,7 +828,7 @@ def suggestion_to_wishlist(user):
 @api_v2.route("/suggestion-to-dump", methods=["POST"])
 @token_required
 def suggestion_to_dump(user):
-    guid = request.json.get("guid")
+    isbn = request.json.get("isbn")
     try:
         if not user:
             return jsonify({
@@ -836,7 +836,7 @@ def suggestion_to_dump(user):
                 "status": "error"
             }), 400
 
-        user.suggestion_to_dump(guid)
+        user.suggestion_to_dump(isbn)
 
         suggestions = user.get_suggestions()
         dumps = user.get_dump_data()
@@ -855,7 +855,7 @@ def suggestion_to_dump(user):
 @api_v2.route("/dump-action-read", methods=["POST"])
 @token_required
 def dump_action_read(user):
-    guid = request.json.get("guid")
+    isbn = request.json.get("isbn")
     try:
         if not user:
             return jsonify({
@@ -863,7 +863,7 @@ def dump_action_read(user):
                 "status": "error"
             }), 400
 
-        user.dump_action_read(guid)
+        user.dump_action_read(isbn)
 
         dumps = user.get_dump_data()
         read_books = user.get_read_books()
@@ -882,7 +882,7 @@ def dump_action_read(user):
 @api_v2.route("/dump-action-dislike", methods=["POST"])
 @token_required
 def dump_action_dislike(user):
-    guid = request.json.get("guid")
+    isbn = request.json.get("isbn")
     try:
         if not user:
             return jsonify({
@@ -890,7 +890,7 @@ def dump_action_dislike(user):
                 "status": "error"
             }), 400
 
-        user.dump_action_dislike(guid)
+        user.dump_action_dislike(isbn)
 
         dumps = user.get_dump_data()
 
@@ -907,7 +907,7 @@ def dump_action_dislike(user):
 @api_v2.route("/wishlist-next", methods=["POST"])
 @token_required
 def wishlist_next(user):
-    guid = request.json.get("guid")
+    isbn = request.json.get("isbn")
     try:
         if not user:
             return jsonify({
@@ -915,7 +915,7 @@ def wishlist_next(user):
                 "status": "error"
             }), 400
 
-        user.wishlist_next(guid)
+        user.wishlist_next(isbn)
 
         wishlists = user.get_wishlist()
 
@@ -932,7 +932,7 @@ def wishlist_next(user):
 @api_v2.route("/wishlist-prev", methods=["POST"])
 @token_required
 def wishlist_prev(user):
-    guid = request.json.get("guid")
+    isbn = request.json.get("isbn")
     try:
         if not user:
             return jsonify({
@@ -940,7 +940,7 @@ def wishlist_prev(user):
                 "status": "error"
             }), 400
 
-        user.wishlist_prev(guid)
+        user.wishlist_prev(isbn)
 
         wishlists = user.get_wishlist()
 
@@ -957,7 +957,7 @@ def wishlist_prev(user):
 @api_v2.route("/wishlist-remove", methods=["POST"])
 @token_required
 def wishlist_remove(user):
-    guid = request.json.get("guid")
+    isbn = request.json.get("isbn")
     try:
         if not user:
             return jsonify({
@@ -965,7 +965,7 @@ def wishlist_remove(user):
                 "status": "error"
             }), 400
 
-        user.wishlist_remove(guid)
+        user.wishlist_remove(isbn)
 
         wishlists = user.get_wishlist()
         dumps = user.get_dump_data()
@@ -1006,14 +1006,14 @@ def create_bucket_list(user):
 @token_required
 def bucket_remove(user):
     try:
-        guid = request.json.get("guid")
+        isbn = request.json.get("isbn")
         if not user:
             return jsonify({
                 "message": "User Not Found",
                 "status": "error"
             }), 400
 
-        user.bucket_remove(guid)
+        user.bucket_remove(isbn)
         return jsonify({
             "status": "success"
         }), 201
@@ -1067,7 +1067,7 @@ def confirm_order(user):
 @api_v2.route("/retain-book", methods=["POST"])
 @token_required
 def retain_book(user):
-    guid = request.json.get("guid")
+    isbn = request.json.get("isbn")
     try:
         if not user:
             return jsonify({
@@ -1075,7 +1075,7 @@ def retain_book(user):
                 "status": "error"
             }), 400
 
-        user.retain_book(guid)
+        user.retain_book(isbn)
         return jsonify({
             "status": "success"
         }), 201
@@ -1089,14 +1089,14 @@ def retain_book(user):
 @token_required
 def retain_current_book(user):
     try:
-        guid = request.json.get("guid")
+        isbn = request.json.get("isbn")
         if not user:
             return jsonify({
                 "message": "User Not Found",
                 "status": "error"
             }), 400
 
-        user.retain_current_book(guid)
+        user.retain_current_book(isbn)
         return jsonify({
             "status": "success"
         }), 201
@@ -1394,14 +1394,14 @@ def search():
 @api_v2.route("/get-book-details")
 def get_book_details():
     try:
-        guid = request.args.get("guid")
-        if not guid:
+        isbn = request.args.get("isbn")
+        if not isbn:
             return jsonify({
                 "message": "Book GUID is required!",
                 "status": "error"
             }), 400
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
 
         if not book:
             return jsonify({
