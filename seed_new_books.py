@@ -14,7 +14,7 @@ def seed_new_books():
     ############################# Books
 
     books = []
-    with open("./new_books_data.csv", mode="r", encoding='utf8') as file:
+    with open("./must-read-books.csv", mode="r", encoding='utf8') as file:
         csv_file = csv.reader(file)
         for line in csv_file:
             books.append(line)
@@ -74,6 +74,8 @@ def seed_new_books():
             except Exception as e: 
                 print(e)
                 continue
+        else: 
+            print(f'Already added {book[7]}')
 
         # added_book = NewBook.query.filter_by(isbn=book[5]).first()
         # if not added_book: 
