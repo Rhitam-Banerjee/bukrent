@@ -5,7 +5,7 @@ import json
 from sqlalchemy import and_, or_
 
 from app import db
-from app.models.new_books import NewBook, NewCategory, NewCategoryBook
+from app.models.new_books import NewBookSection, NewBook, NewCategory, NewCategoryBook
 
 api_v2_new_books = Blueprint('api_v2_new_books', __name__, url_prefix="/api_v2_new_books")
 
@@ -14,8 +14,14 @@ must_read_books = json.loads(open('./app/must-read-books.json', mode="r", encodi
 @api_v2_new_books.route('/get-book-set')
 def get_book_set(): 
     age = request.args.get('age')
-    if age is None or not str(age).isnumeric(): 
-        return jsonify({"success": False, "message": "Provide age group"})
+    section_name = request.args.get('section_name')
+    if not section_name or age is None: 
+        return jsonify({"success": False, "message": "Provide age group and section name"})
+    if not str(age).isnumeric(): 
+        return jsonify({"success": False, "message": "Invalid age group"})
+    section = NewBookSection.query.filter_by(name=section_name).first()
+    if not section: 
+        return jsonify({"success": False, "message": "Invalid section name"})
     age = int(age)
     categories = NewCategory.query.filter(
         or_(
@@ -28,6 +34,7 @@ def get_book_set():
         books = db.session.query(NewBook, NewCategoryBook).filter(
             NewBook.id == NewCategoryBook.book_id,
             NewCategoryBook.category_id == category.id,
+            NewCategoryBook.section_id == section.id,
             or_(
                 and_(NewBook.min_age <= age, NewBook.max_age >= age),
                 and_(NewBook.min_age <= age + 1, NewBook.max_age >= age + 1)
@@ -35,10 +42,11 @@ def get_book_set():
         ).all()
         books = [book[0].to_json() for book in books]
         random.shuffle(books)
-        book_set.append({
-            "category": category.name,
-            "books": books
-        })
+        if len(books): 
+            book_set.append({
+                "category": category.name,
+                "books": books
+            })
     return jsonify({"success": True, "book_set": book_set})
 
 @api_v2_new_books.route('/get-category-books')

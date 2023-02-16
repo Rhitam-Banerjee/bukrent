@@ -1,21 +1,41 @@
 from app import db
 import uuid
 
+class NewBookSection(db.Model): 
+    __tablename__ = 'new_book_sections'
+    id = db.Column(db.Integer, primary_key=True)
+    guid = db.Column(db.String, nullable=False, unique=True)
+    name = db.Column(db.String, nullable=False, unique=True)
+
+    @staticmethod
+    def create(name): 
+        if NewBookSection.query.filter_by(name=name).count(): 
+            return
+        book_section_dict = dict(
+            guid = str(uuid.uuid4()),
+            name = name
+        )
+        new_book_section_obj = NewBookSection(**book_section_dict)
+        db.session.add(new_book_section_obj)
+        db.session.commit()
+
 class NewCategoryBook(db.Model): 
     __tablename__ = 'new_category_books'
     id = db.Column(db.Integer, primary_key=True)
     guid = db.Column(db.String, nullable=False, unique=True)
     category_id = db.Column(db.Integer, db.ForeignKey('new_categories.id'))
     book_id = db.Column(db.Integer, db.ForeignKey('new_books.id'))
+    section_id = db.Column(db.Integer, db.ForeignKey('new_book_sections.id'))
 
     @staticmethod
-    def create(category_id, book_id): 
-        if NewCategoryBook.query.filter_by(category_id=category_id, book_id=book_id).count(): 
+    def create(category_id, book_id, section_id): 
+        if NewCategoryBook.query.filter_by(category_id=category_id, book_id=book_id, section_id=section_id).count(): 
             return
         category_book_dict = dict(
             guid = str(uuid.uuid4()),
             category_id = category_id,
             book_id = book_id,
+            section_id=section_id
         )
         new_category_book_obj = NewCategoryBook(**category_book_dict)
         db.session.add(new_category_book_obj)
@@ -33,6 +53,8 @@ class NewCategory(db.Model):
 
     @staticmethod
     def create(name, category_order, min_age, max_age): 
+        if NewCategory.query.filter_by(name=name).count(): 
+            return
         category_dict = dict(
             guid = str(uuid.uuid4()),
             name = name,
