@@ -19,6 +19,13 @@ class NewBookSection(db.Model):
         db.session.add(new_book_section_obj)
         db.session.commit()
 
+    def to_json(self): 
+        return {
+            "id": self.id,
+            "guid": self.guid,
+            "name": self.name,
+        }
+
 class NewCategoryBook(db.Model): 
     __tablename__ = 'new_category_books'
     id = db.Column(db.Integer, primary_key=True)
@@ -31,15 +38,30 @@ class NewCategoryBook(db.Model):
     def create(category_id, book_id, section_id): 
         if NewCategoryBook.query.filter_by(category_id=category_id, book_id=book_id, section_id=section_id).count(): 
             return
-        category_book_dict = dict(
-            guid = str(uuid.uuid4()),
-            category_id = category_id,
-            book_id = book_id,
-            section_id=section_id
-        )
-        new_category_book_obj = NewCategoryBook(**category_book_dict)
-        db.session.add(new_category_book_obj)
+        try: 
+            category_book_dict = dict(
+                guid = str(uuid.uuid4()),
+                category_id = category_id,
+                book_id = book_id,
+                section_id=section_id
+            )
+            new_category_book_obj = NewCategoryBook(**category_book_dict)
+            db.session.add(new_category_book_obj)
+            db.session.commit()
+        except: 
+            pass
+
+    def delete(self): 
+        db.session.delete(self)
         db.session.commit()
+
+    def to_json(self): 
+        return {
+            "id": self.id,
+            "guid": self.guid,
+            "category": NewCategory.query.get(self.category_id).to_json(),
+            "section": NewBookSection.query.get(self.section_id).to_json()
+        }
 
 class NewCategory(db.Model): 
     __tablename__ = 'new_categories'
@@ -108,6 +130,12 @@ class NewBook(db.Model):
         db.session.add(new_book_obj)
         db.session.commit()
 
+    def delete(self): 
+        for category in NewCategoryBook.query.filter_by(book_id=self.id).all(): 
+            category.delete()
+        db.session.delete(self)
+        db.session.commit()
+
     def to_json(self): 
         return {
             "id": self.id,
@@ -120,5 +148,5 @@ class NewBook(db.Model):
             "book_order": self.book_order,
             "min_age": self.min_age,
             "max_age": self.max_age,
-            "categories": [category.to_json() for category in self.categories],
+            "categories": [category.to_json() for category in NewCategoryBook.query.filter_by(book_id=self.id).all()],
         }

@@ -73,7 +73,7 @@ def get_new_books():
     age = request.args.get('age')
     category_id = request.args.get('category_id')
     search_query = request.args.get('search_query')
-    if age is None or (not str(age).isnumeric() and age != '-1'): 
+    if age and not str(age).isnumeric() and age != '-1': 
         return jsonify({"success": False, "message": "Provide age group"}), 400
     if category_id and not NewCategory.query.filter_by(id=category_id).count(): 
         return jsonify({"success": False, "message": "Invalid category name"}), 400
@@ -133,6 +133,11 @@ def get_categories():
     categories = [category.to_json() for category in categories_query.order_by(NewCategory.category_order).limit(end - start).offset(start).all()]
     return jsonify({"success": True, "categories": categories})
 
+@api_v2_new_books.route('/get-sections')
+def get_sections(): 
+    sections = [section.to_json() for section in NewBookSection.query.all()]
+    return jsonify({"success": True, "sections": sections})
+
 @api_v2_new_books.route('/new-book', methods=['POST', 'PUT'])
 def new_book(): 
     id = request.form.get('id')
@@ -144,7 +149,8 @@ def new_book():
     rating = request.form.get('rating')
     review_count = request.form.get('review_count')
     categories = request.form.get('categories')
-    if not all((id, isbn, name, min_age, max_age, image, rating, review_count, categories)): 
+    image_file = request.files.get('image')
+    if not all((isbn, name, min_age, max_age, rating, review_count, categories)) or (not image and not image_file): 
         return jsonify({"success": False, "message": "Provide all the data"}), 400
     if not str(min_age).isnumeric() or not str(max_age).isnumeric() or int(min_age) < 0 or int(min_age) > int(max_age): 
         return jsonify({"success": False, "message": "Invalid minimum and maximum age"}), 400
@@ -158,13 +164,13 @@ def new_book():
     max_age = int(max_age)
     categories = json.loads(categories)
     if request.method == 'POST': 
-        if NewBook.query.filter_by(isbn=isbn).count() or Book.query.filter_by(isbn=isbn).count(): 
+        if NewBook.query.filter_by(isbn=isbn).count(): 
             return jsonify({"success": False, "message": "Book with given ISBN already exists"}), 400
         
         book_image = image
-        if not image.startswith('http'): 
-            extension = image.filename.split(".")[-1]
-            upload_to_aws(image, 'book_images', f'book_images/{isbn}.{extension}')
+        if not image or not image.startswith('http'): 
+            extension = image_file.filename.split(".")[-1]
+            upload_to_aws(image_file, 'book_images', f'book_images/{isbn}.{extension}')
             s3_url = os.environ.get('AWS_S3_URL')
             book_image = f'{s3_url}/book_images/{isbn}.{extension}'
 
@@ -178,25 +184,32 @@ def new_book():
             min_age, 
             max_age
         )
+        new_book = NewBook.query.filter_by(isbn=isbn).first()
 
-        Book.create(
-            name, 
-            book_image, 
-            isbn, 
-            rating, 
-            review_count, 
-            None, 
-            'English', 
-            None, 
-            None, 
-            1, 
-            None, 
-            None, 
-            None,
-            None, 
-            None
-        )
+        for category in categories: 
+            NewCategoryBook.create(
+                category['category']['id'],
+                new_book.id,
+                category['section']['id'],
+            )
 
+        if Book.query.filter_by(isbn=isbn).count():
+            Book.create(
+                name, 
+                book_image, 
+                isbn, 
+                rating, 
+                review_count, 
+                '', 
+                'English', 
+                '', 
+                '', 
+                1, 
+                None, 
+                None, 
+                None,
+                None
+            )
         book = Book.query.filter_by(isbn=isbn).first()
         book.age_group_1 = (min_age >= 0 and min_age <= 2) or (max_age >= 0 and max_age <= 2)
         book.age_group_2 = (min_age >= 3 and min_age <= 5) or (max_age >= 3 and max_age <= 5)
@@ -207,8 +220,6 @@ def new_book():
 
         db.session.commit()
         
-        new_book = NewBook.query.filter_by(isbn=isbn).first()
-
         return jsonify({"success": True, "book": new_book.to_json()})
     elif request.method == 'PUT': 
         new_book = NewBook.query.filter_by(id=id).first()
@@ -218,9 +229,9 @@ def new_book():
         book = Book.query.filter_by(isbn=new_book.isbn).first()
 
         book_image = image
-        if not image.startswith('http'): 
-            extension = image.filename.split(".")[-1]
-            upload_to_aws(image, 'book_images', f'book_images/{isbn}.{extension}')
+        if not image or not image.startswith('http'): 
+            extension = image_file.filename.split(".")[-1]
+            upload_to_aws(image_file, 'book_images', f'book_images/{isbn}.{extension}')
             s3_url = os.environ.get('AWS_S3_URL')
             book_image = f'{s3_url}/book_images/{isbn}.{extension}'
 
@@ -232,6 +243,15 @@ def new_book():
         new_book.min_age = min_age
         new_book.max_age = max_age
 
+        for category in NewCategoryBook.query.filter_by(book_id=new_book.id).all(): 
+            category.delete()
+        for category in categories: 
+            NewCategoryBook.create(
+                category['category']['id'],
+                new_book.id,
+                category['section']['id'],
+            )
+
         book.age_group_1 = (min_age >= 0 and min_age <= 2) or (max_age >= 0 and max_age <= 2)
         book.age_group_2 = (min_age >= 3 and min_age <= 5) or (max_age >= 3 and max_age <= 5)
         book.age_group_3 = (min_age >= 6 and min_age <= 8) or (max_age >= 6 and max_age <= 8)
@@ -242,3 +262,12 @@ def new_book():
         db.session.commit()
 
         return jsonify({"success": True, "book": new_book.to_json()})
+
+@api_v2_new_books.route('/delete-new-book', methods=['POST'])
+def delete_new_book(): 
+    id = request.json.get('id')
+    new_book = NewBook.query.filter_by(id=id).first()
+    if not new_book: 
+        return jsonify({"success": False, "message": "Invalid book ID"}), 404
+    new_book.delete()
+    return jsonify({"success": True})
