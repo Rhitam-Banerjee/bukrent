@@ -66,6 +66,16 @@ class NewCategory(db.Model):
         db.session.add(new_category_obj)
         db.session.commit()
 
+    def to_json(self): 
+        return {
+            "id": self.id,
+            "guid": self.guid,
+            "name": self.name,
+            "category_order": self.category_order,
+            "min_age": self.min_age,
+            "max_age": self.max_age
+        }
+
 class NewBook(db.Model): 
     __tablename__ = 'new_books'
     id = db.Column(db.Integer, primary_key=True)
@@ -78,6 +88,8 @@ class NewBook(db.Model):
     book_order = db.Column(db.Integer)
     min_age = db.Column(db.Integer)
     max_age = db.Column(db.Integer)
+
+    categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
     @staticmethod
     def create(name, image, isbn, rating, review_count, book_order, min_age, max_age):
@@ -105,5 +117,8 @@ class NewBook(db.Model):
             "isbn": self.isbn,
             "rating": self.rating,
             "review_count": self.review_count,
-            "book_order": self.book_order
+            "book_order": self.book_order,
+            "min_age": self.min_age,
+            "max_age": self.max_age,
+            "categories": [category.to_json() for category in self.categories],
         }
