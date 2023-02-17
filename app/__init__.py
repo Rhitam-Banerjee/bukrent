@@ -27,6 +27,7 @@ def create_app(script_info=None):
         "https://brightr.vercel.app",
         "https://brightr.com",
         "https://brightr.club",
+        "https://edit.brightr.club",
     ])
 
     from app.api.api import api
