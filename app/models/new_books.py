@@ -88,6 +88,12 @@ class NewCategory(db.Model):
         db.session.add(new_category_obj)
         db.session.commit()
 
+    def delete(self): 
+        for category_book in NewCategoryBook.query.filter_by(category_id=self.id).all(): 
+            category_book.delete()
+        db.session.delete(self)
+        db.session.commit()
+
     def to_json(self): 
         return {
             "id": self.id,
