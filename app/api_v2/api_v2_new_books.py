@@ -193,7 +193,7 @@ def new_book():
                 category['section']['id'],
             )
 
-        if Book.query.filter_by(isbn=isbn).count():
+        if not Book.query.filter_by(isbn=isbn).count():
             Book.create(
                 name, 
                 book_image, 
