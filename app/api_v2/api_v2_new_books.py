@@ -85,7 +85,7 @@ def get_new_books():
         end = 10
     if str(age) == '-1': 
         age = None
-    else: 
+    elif age: 
         age = int(age)
     start = int(start)
     end = int(end)
