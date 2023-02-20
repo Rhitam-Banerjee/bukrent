@@ -20,20 +20,33 @@ must_read_books = json.loads(open('./app/must-read-books.json', mode="r", encodi
 def get_book_set(): 
     age = request.args.get('age')
     section_name = request.args.get('section_name')
+    start = request.args.get('start')
+    end = request.args.get('end')
     if not section_name or age is None: 
         return jsonify({"success": False, "message": "Provide age group and section name"})
     if not str(age).isnumeric(): 
         return jsonify({"success": False, "message": "Invalid age group"})
+    if start and str(start).isnumeric(): 
+        start = int(start)
+    else: 
+        start = None
+    if end and str(end).isnumeric(): 
+        end = int(end)
+    else: 
+        end = None
     section = NewBookSection.query.filter_by(name=section_name).first()
     if not section: 
         return jsonify({"success": False, "message": "Invalid section name"})
     age = int(age)
-    categories = NewCategory.query.filter(
+    categories_query = NewCategory.query.filter(
         or_(
             and_(NewCategory.min_age <= age, NewCategory.max_age >= age),
             and_(NewCategory.min_age <= age + 1, NewCategory.max_age >= age + 1)
         )
-    ).order_by(NewCategory.category_order).all()
+    ).order_by(NewCategory.category_order)
+    if start is not None and end is not None: 
+        categories_query = categories_query.limit(end - start).offset(start)
+    categories = categories_query.all()
     book_set = []
     for category in categories: 
         books = db.session.query(NewBook, NewCategoryBook).filter(
