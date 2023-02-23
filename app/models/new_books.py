@@ -104,6 +104,28 @@ class NewCategory(db.Model):
             "max_age": self.max_age
         }
 
+class NewBookImage(db.Model): 
+    __tablename__ = 'new_book_images'
+    id = db.Column(db.Integer, primary_key=True)
+    guid = db.Column(db.String, nullable=False, unique=True)
+    source = db.Column(db.String, nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('new_books.id'))
+
+    @staticmethod
+    def create(source, book_id): 
+        if NewBook.query.filter_by(id=book_id).count() and not NewBookImage.query.filter_by(source=source, book_id=book_id).count(): 
+            book_image_dict = dict(
+                guid = str(uuid.uuid4()),
+                source = source,
+                book_id = book_id,
+            )
+            new_book_image_obj = NewBookImage(**book_image_dict)
+            db.session.add(new_book_image_obj)
+            db.session.commit()
+
+    def to_json(self): 
+        return self.source
+
 class NewBook(db.Model): 
     __tablename__ = 'new_books'
     id = db.Column(db.Integer, primary_key=True)
@@ -155,4 +177,5 @@ class NewBook(db.Model):
             "min_age": self.min_age,
             "max_age": self.max_age,
             "categories": [category.to_json() for category in NewCategoryBook.query.filter_by(book_id=self.id).all()],
+            "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=self.id).all()],
         }

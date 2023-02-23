@@ -21,6 +21,7 @@ from scripts.script_26_aug import *
 from scripts.script_30_aug import *
 from scripts.script_8_sept import *
 from scripts.script_23_sept import *
+from scripts.script_multiple_images import seed_multiple_images
 
 from app.models.annotations import Annotation
 from app.models.author import Author
@@ -113,6 +114,10 @@ def seed_books_data():
 @cli.command()
 def seed_new_books_data(): 
     seed_new_books()
+
+@cli.command()
+def seed_multiple_images_data(): 
+    seed_multiple_images()
 
 @cli.command()
 def script_create_orders():
