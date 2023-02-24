@@ -139,6 +139,16 @@ class NewBook(db.Model):
     min_age = db.Column(db.Integer)
     max_age = db.Column(db.Integer)
 
+    price = db.Column(db.Float)
+    for_age = db.Column(db.String)
+    grade_level = db.Column(db.String)
+    lexile_measure = db.Column(db.String)
+    pages = db.Column(db.Integer)
+    dimensions = db.Column(db.String)
+    publisher = db.Column(db.String)
+    publication_date = db.Column(db.Date)
+    language = db.Column(db.String)
+
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
     @staticmethod
@@ -176,6 +186,15 @@ class NewBook(db.Model):
             "book_order": self.book_order,
             "min_age": self.min_age,
             "max_age": self.max_age,
+            "price": self.price,
+            "for_age": self.for_age,
+            "lexile_measure": self.lexile_measure,
+            "grade_level": self.grade_level,
+            "pages": self.pages,
+            "dimensions": self.dimensions,
+            "publisher": self.publisher,
+            "publication_date": self.publication_date,
+            "language": self.language,
             "categories": [category.to_json() for category in NewCategoryBook.query.filter_by(book_id=self.id).all()],
             "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=self.id).all()],
         }

@@ -86,10 +86,13 @@ def get_new_books():
     age = request.args.get('age')
     category_id = request.args.get('category_id')
     search_query = request.args.get('search_query')
+    section_id = request.args.get('section_id')
     if age and not str(age).isnumeric() and age != '-1': 
         return jsonify({"success": False, "message": "Provide age group"}), 400
     if category_id and not NewCategory.query.filter_by(id=category_id).count(): 
-        return jsonify({"success": False, "message": "Invalid category name"}), 400
+        return jsonify({"success": False, "message": "Invalid category ID"}), 400
+    if section_id and not NewBookSection.query.filter_by(id=section_id).count(): 
+        return jsonify({"success": False, "message": "Invalid section ID"}), 400
     if not search_query: 
         search_query = ''
     if not start or not start.isnumeric(): 
@@ -115,10 +118,21 @@ def get_new_books():
                 and_(NewBook.min_age <= age + 1, NewBook.max_age >= age + 1)
             )
         )
-    if category_id: 
+    if category_id and section_id: 
         books_query = books_query.filter(
             NewBook.id == NewCategoryBook.book_id,
             NewCategoryBook.category_id == category_id,
+            NewCategoryBook.section_id == section_id,
+        )
+    elif category_id: 
+        books_query = books_query.filter(
+            NewBook.id == NewCategoryBook.book_id,
+            NewCategoryBook.category_id == category_id
+        )
+    elif section_id: 
+        books_query = books_query.filter(
+            NewBook.id == NewCategoryBook.book_id,
+            NewCategoryBook.section_id == section_id
         )
     books = [book.to_json() for book in books_query.order_by(NewBook.book_order).limit(end - start).offset(start).all()]
     return jsonify({"success": True, "books": books})
