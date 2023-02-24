@@ -694,7 +694,7 @@ class User(db.Model):
             if len(buckets) < self.books_per_week: 
                 raise ValueError(f"Add {self.books_per_week - len(buckets)} book(s) to the bucket")
             for bucket in buckets:
-                if bucket.book.stock_available <= 0:
+                if bucket.book.stock_available <= 0 and not bucket.is_retained: 
                     raise ValueError(f"Book - {bucket.book.name} with ISBN {bucket.book.isbn} is out of stock!")
 
             for bucket in buckets: 
