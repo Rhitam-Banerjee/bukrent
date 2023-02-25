@@ -33,11 +33,11 @@ def create_app(script_info=None):
     from app.api.api import api
     app.register_blueprint(api)
 
-    from app.api_v2.api_v2 import api_v2
+    from app.api_v2 import api_v2
     app.register_blueprint(api_v2)
 
-    from app.api_v2.api_v2_new_books import api_v2_new_books
-    app.register_blueprint(api_v2_new_books)
+    from app.api_v2 import api_v2_books
+    app.register_blueprint(api_v2_books)
 
     from app.api_admin import api_admin
     app.register_blueprint(api_admin)

@@ -1,42 +1,23 @@
-from flask import Blueprint, jsonify, request, render_template, redirect, session, url_for, make_response
+from flask import jsonify, request, url_for, make_response
 
 from app.models.author import Author
 from app.models.category import Category
-from app.models.launch import Launch
 from app.models.books import Book
 from app.models.user import User, Address, Child, Preference
 from app.models.series import Series
-from app.models.order import Order
 from app.models.buckets import *
 from app.models.format import Format
 from app.models.publishers import Publisher
 from app.models.search import Search
 from app import db
 
-from functools import wraps
+from app.api_v2.utils import api_v2, token_required
 
 import os
 from twilio.rest import Client
 import jwt
-import datetime
 
 import razorpay
-
-api_v2 = Blueprint('api_v2', __name__, url_prefix="/api_v2")
-
-def token_required(f):
-   @wraps(f)
-   def decorator(*args, **kwargs):
-       access_token = request.cookies.get('access_token')
-       if not access_token:
-           return jsonify({'message': 'No access token'}), 401
-       try:
-           data = jwt.decode(access_token, os.environ.get('SECRET_KEY'), algorithms=["HS256"])
-           user = User.query.filter_by(id=data['id']).first()
-       except:
-           return jsonify({'message': 'Invalid access token'})
-       return f(user, *args, **kwargs)
-   return decorator
 
 @api_v2.route("/submit-mobile", methods=["POST"])
 def submit_mobile():
