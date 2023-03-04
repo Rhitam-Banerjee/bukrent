@@ -315,12 +315,12 @@ def toggle_retain_book(deliverer):
     order = Order.query.filter_by(user_id=user.id, book_id=book_id).filter(
         cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
     ).first()
-    if not order: 
+    bucket_book = DeliveryBucket.query.filter_by(user_id=user.id, book_id=book_id).first()
+    if not order and not bucket_book: 
         return jsonify({
             "status": "error",
             "message": "Book not in delivery bucket",
         }), 400
-    bucket_book = DeliveryBucket.query.filter_by(user_id=user.id, book_id=book_id).first()
     if not bucket_book: 
         DeliveryBucket.create(user_id, book_id, user.last_delivery_date, 0, True)
     else: 

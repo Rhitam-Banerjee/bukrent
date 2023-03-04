@@ -1017,7 +1017,8 @@ def change_delivery_date(user):
 
         user.change_delivery_date(delivery_date)
         return jsonify({
-            "status": "success"
+            "status": "success",
+            "user": user.to_json()
         }), 201
     except Exception as e:
         return jsonify({
