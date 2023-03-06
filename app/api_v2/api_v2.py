@@ -111,7 +111,7 @@ def login():
                     "status": "success",
                     "user": user.to_json(),
                 }), 200)
-            response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='None')
+            response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='Lax')
             return response
         else:
             return jsonify({
@@ -182,7 +182,7 @@ def signup():
             "redirect": url_for('views.confirm_mobile'),
             "status": "success"
         }), 201)
-        response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='None')
+        response.set_cookie('access_token', access_token, secure=True, httponly=True, samesite='Lax')
 
         return response
     except Exception as e:
@@ -1095,7 +1095,7 @@ def logout(user):
         "message": "Success!",
         "status": "success"
     }), 201)
-    response.set_cookie('access_token', '', secure=True, httponly=True, samesite='None')
+    response.set_cookie('access_token', '', secure=True, httponly=True, samesite='Lax')
     return response
 
 @api_v2.route("/get-most-borrowed")
