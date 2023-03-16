@@ -28,7 +28,7 @@ def create_app(script_info=None):
         "https://brightr.com",
         "https://brightr.club",
         "https://edit.brightr.club",
-        "https://test.brightr.club"
+        "https://test.brightr.club",
     ])
 
     from app.api.api import api

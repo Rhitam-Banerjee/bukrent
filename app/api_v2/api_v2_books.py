@@ -381,7 +381,7 @@ def add_books_from_csv():
         new_book.language = language
 
         for column in columns: 
-            if column.startswith('image') and book[columns[column]].startsiwth('http'): 
+            if column.startswith('image') and book[columns[column]].startswith('http'): 
                 NewBookImage.create(book[columns[column]], new_book.id)
                 
         old_book = Book.query.filter_by(isbn=isbn).first()
