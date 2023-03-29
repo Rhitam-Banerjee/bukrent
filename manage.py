@@ -41,17 +41,17 @@ app.app_context().push()
 def complete_all_orders(): 
     with app.app_context(): 
         print('Completing All Orders')
-        users = User.query.filter(User.next_delivery_date <= date.today() - timedelta(days=2)).all()
+        users = User.query.filter(User.next_delivery_date <= date.today() - timedelta(days=1)).all()
         for user in users: 
             orders = Order.query.filter_by(user_id=user.id).order_by(Order.placed_on.desc()).all()
             has_retained_books = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).count()
             is_completed = False
             for order in orders: 
-                if order.placed_on.date() == user.next_delivery_date and order.is_completed: 
+                if order.placed_on == user.next_delivery_date and order.is_completed: 
                     is_completed = True
                     break
             if is_completed or (has_retained_books and date.today() == user.next_delivery_date): 
-                print(f'Compeleted Order Of {user.first_name} {user.last_name}')
+                print(f'Completed Order Of {user.first_name} {user.last_name}')
                 user.last_delivery_date = user.next_delivery_date
                 user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
                 user.delivery_order = 0
@@ -65,23 +65,34 @@ def shift_deliveries():
             orders = Order.query.filter_by(user_id=user.id).order_by(Order.placed_on.desc()).all()
             is_not_completed = False
             for order in orders: 
-                if order.placed_on.date() == user.next_delivery_date and not order.is_completed: 
+                if order.placed_on == user.next_delivery_date and not order.is_completed: 
                     is_not_completed = True
                     break
             next_delivery_date = user.next_delivery_date
             if is_not_completed: 
-                print(f'Shifting Delivery Date To Tomorrow Of {user.first_name} {user.last_name}')
+                print(f'Shifted Delivery Date Of {user.first_name} {user.last_name}')
                 user.next_delivery_date = date.today()
                 for order in orders: 
-                    if order.placed_on.date() == next_delivery_date: 
+                    if order.placed_on == next_delivery_date: 
                         order.placed_on = date.today()
+        db.session.commit()
+
+def initialize_delivery_date(): 
+    with app.app_context(): 
+        print('Initializing delivery date')
+        users = User.query.filter_by(next_delivery_date=None, payment_status='Paid').all()
+        for user in users: 
+            user.next_delivery_date = date.today() + timedelta(days=3)
+            print(f'Initialized Delivery Date Of {user.first_name} {user.last_name}')
         db.session.commit()
 
 complete_all_orders()
 shift_deliveries()
+initialize_delivery_date()
 scheduler = APScheduler()
-scheduler.add_job(func=complete_all_orders, trigger='interval', id='job-1', seconds=86400)
-scheduler.add_job(func=shift_deliveries, trigger='interval', id='job-2', seconds=10800)
+scheduler.add_job(func=complete_all_orders, trigger='interval', id='job-1', seconds=21600)
+scheduler.add_job(func=shift_deliveries, trigger='interval', id='job-2', seconds=5040)
+scheduler.add_job(func=initialize_delivery_date, trigger='interval', id='job-3', seconds=5040)
 scheduler.start()
 
 cli = FlaskGroup(create_app=create_app)
