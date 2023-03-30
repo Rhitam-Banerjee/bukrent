@@ -3,7 +3,6 @@ from functools import cmp_to_key
 from flask import Blueprint, jsonify, request, make_response
 from sqlalchemy import or_, cast, Date
 
-
 from app.models.deliverer import Deliverer
 from app.models.user import User
 from app.models.buckets import DeliveryBucket
@@ -262,6 +261,9 @@ def confirm_delivery(deliverer, id):
         order.received_by = received_by
         order.notes = notes
         order.is_completed = True
+    if not user.delivery_count: 
+        user.delivery_count = 0
+    user.delivery_count += 1
     db.session.commit()
     return jsonify({"status": "success"})
 

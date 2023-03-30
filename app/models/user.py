@@ -297,6 +297,7 @@ class User(db.Model):
     delivery_time = db.Column(db.String)
     delivery_address = db.Column(db.String)
     delivery_order = db.Column(db.Integer, default=0)
+    delivery_count = db.Column(db.Integer, default=0)
 
     has_child_1 = db.Column(db.Boolean, default=False)
     has_child_2 = db.Column(db.Boolean, default=False)
