@@ -157,7 +157,7 @@ def update_user(admin):
             if not child_obj:
                 user.add_child(child)
 
-    if plan_id:
+    if plan_id and plan_id.isnumeric(): 
         plan_id = int(plan_id)
     if plan_id == 1:
         user.plan_id = os.environ.get('RZP_PLAN_1_ID')
@@ -200,6 +200,11 @@ def update_delivery_details(admin):
         
     delivery_date = datetime.strptime(next_delivery_date, '%Y-%m-%d')
     user = User.query.get(id)
+    if not user:
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID"
+        }), 400
     if not delivery_date or delivery_date.date() < date.today() or (user.last_delivery_date and delivery_date.date() <= user.last_delivery_date):
         return jsonify({"status": "error", "message": "Invalid delivery date"}), 400
     if delivery_order is None or not str(delivery_order).isnumeric() or int(delivery_order) < 1: 
@@ -231,6 +236,33 @@ def update_delivery_details(admin):
 
     db.session.commit()
 
+    return jsonify({
+        "status": "success",
+        "message": "User updated",
+        "user": admin.get_users([user])[0],
+    })
+
+@api_admin.route('/update-user-ops', methods=['POST'])
+@token_required
+@super_admin
+def update_user_ops(admin): 
+    id = request.json.get('id')
+    contact_number = request.json.get('contact_number')
+    delivery_date = request.json.get('delivery_date')
+    if len(str(contact_number)) != 10 or not str(contact_number).isnumeric(): 
+        return jsonify({"status": "error", "message": "Invalid contact number"}), 400
+    user = User.query.get(id)
+    if not user:
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID"
+        }), 400
+    delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d')
+    if not delivery_date or delivery_date.date() < date.today() or (user.last_delivery_date and delivery_date.date() <= user.last_delivery_date):
+        return jsonify({"status": "error", "message": "Invalid delivery date"}), 400
+    user.contact_number = contact_number
+    user.next_delivery_date = delivery_date
+    db.session.commit()
     return jsonify({
         "status": "success",
         "message": "User updated",
