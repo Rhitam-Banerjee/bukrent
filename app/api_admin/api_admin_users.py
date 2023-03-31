@@ -45,7 +45,6 @@ def get_users(admin):
         query = query.filter_by(plan_duration=plan_duration)
     if delivery_date: 
         delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d').date()
-        print(delivery_date)
         query = query.filter_by(next_delivery_date=delivery_date)
     if deliverer_id: 
         query = query.filter_by(deliverer_id=deliverer_id)
@@ -60,10 +59,17 @@ def get_users(admin):
     else:
         query = query.order_by(User.id.desc())
     all_users = query.filter_by(is_deleted=False).limit(end - start).offset(start).all()
+    completed_delivery_count = query.join(Order).filter(
+        User.is_deleted == False, 
+        Order.placed_on == User.next_delivery_date,
+        Order.is_completed == True,
+    ).count()
+    print(completed_delivery_count)
 
     return jsonify({
         "status": "success",
-        "users": admin.get_users(all_users)
+        "users": admin.get_users(all_users),
+        "completed_delivery_count": completed_delivery_count,
     })
 
 @api_admin.route('/get-user/<id>')
@@ -249,8 +255,11 @@ def update_user_ops(admin):
     id = request.json.get('id')
     contact_number = request.json.get('contact_number')
     delivery_date = request.json.get('delivery_date')
-    if len(str(contact_number)) != 10 or not str(contact_number).isnumeric(): 
+    delivery_count = request.json.get('delivery_count')
+    if not contact_number or len(str(contact_number)) != 10 or not str(contact_number).isnumeric(): 
         return jsonify({"status": "error", "message": "Invalid contact number"}), 400
+    if not delivery_count or not str(delivery_count).isnumeric() or int(delivery_count) < 0: 
+        return jsonify({"status": "error", "message": "Invalid delivery count"}), 400
     user = User.query.get(id)
     if not user:
         return jsonify({
@@ -262,6 +271,7 @@ def update_user_ops(admin):
         return jsonify({"status": "error", "message": "Invalid delivery date"}), 400
     user.contact_number = contact_number
     user.next_delivery_date = delivery_date
+    user.delivery_count = delivery_count
     db.session.commit()
     return jsonify({
         "status": "success",

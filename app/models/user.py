@@ -365,6 +365,7 @@ class User(db.Model):
             "delivery_time": self.delivery_time,
             "deliverer": deliverer,
             "delivery_order": self.delivery_order,
+            "delivery_count": self.delivery_count,
         }
 
     @staticmethod
