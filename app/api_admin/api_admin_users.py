@@ -59,8 +59,10 @@ def get_users(admin):
     else:
         query = query.order_by(User.id.desc())
     all_users = query.limit(end - start).offset(start).all()
-
-    completed_delivery_count = query.join(Order).filter(Order.is_completed == True, Order.placed_on == delivery_date).all()
+    
+    completed_delivery_count = []
+    if delivery_date: 
+        completed_delivery_count = query.join(Order).filter(Order.is_completed == True, Order.placed_on == delivery_date).all()
     total_users = query.count()
 
     return jsonify({
