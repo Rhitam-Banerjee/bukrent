@@ -47,7 +47,7 @@ def complete_all_orders():
             has_retained_books = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).count()
             is_completed = False
             for order in orders: 
-                if order.placed_on == user.next_delivery_date and order.is_completed: 
+                if order.placed_on.date() == user.next_delivery_date and order.is_completed: 
                     is_completed = True
                     break
             if is_completed or (has_retained_books and date.today() == user.next_delivery_date): 
@@ -65,7 +65,7 @@ def shift_deliveries():
             orders = Order.query.filter_by(user_id=user.id).order_by(Order.placed_on.desc()).all()
             is_not_completed = False
             for order in orders: 
-                if order.placed_on == user.next_delivery_date and not order.is_completed: 
+                if order.placed_on.date() == user.next_delivery_date and not order.is_completed: 
                     is_not_completed = True
                     break
             next_delivery_date = user.next_delivery_date
@@ -73,7 +73,7 @@ def shift_deliveries():
                 print(f'Shifted Delivery Date Of {user.first_name} {user.last_name}')
                 user.next_delivery_date = date.today()
                 for order in orders: 
-                    if order.placed_on == next_delivery_date: 
+                    if order.placed_on.date() == next_delivery_date: 
                         order.placed_on = date.today()
         db.session.commit()
 
@@ -90,7 +90,7 @@ complete_all_orders()
 shift_deliveries()
 initialize_delivery_date()
 scheduler = APScheduler()
-scheduler.add_job(func=complete_all_orders, trigger='interval', id='job-1', seconds=21600)
+scheduler.add_job(func=complete_all_orders, trigger='interval', id='job-1', seconds=5040)
 scheduler.add_job(func=shift_deliveries, trigger='interval', id='job-2', seconds=5040)
 scheduler.add_job(func=initialize_delivery_date, trigger='interval', id='job-3', seconds=5040)
 scheduler.start()
