@@ -127,37 +127,42 @@ def get_deliveries(deliverer):
         next_delivery_count = total_delivery_query.count()
         next_delivery_refused_count = total_delivery_query.filter_by(is_refused=True).count()
         retain_count = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).count()
-        if next_delivery_count: 
-            next_order = total_delivery_query.first()
-            delivery_address = ""
-            if next_order.delivery_address: 
-                delivery_address = next_order.delivery_address
-            if user.delivery_address: 
-                delivery_address = user.delivery_address
-            if next_order.is_completed: 
-                completed_deliveries_count += 1
-            deliveries.append({
-                "last_delivery_count": last_delivery_count + retain_count,
-                "next_delivery_count": next_delivery_count - next_delivery_refused_count,
-                "delivery_address": delivery_address,
-                "is_completed": next_order.is_completed,
-                "user": {
-                    "id": user_json['id'],
-                    "first_name": user_json['first_name'],
-                    "last_name": user_json['last_name'],
-                    "mobile_number": user_json['mobile_number'],
-                    "address": user_json['address'],
-                    "delivery_time": user_json['delivery_time'],
-                    "books_per_week": user_json['books_per_week'],
-                    "next_delivery_date": user_json['next_delivery_date'],
-                    "delivery_order": user_json['delivery_order'],
-                }
-            })
+        
+        delivery_address = ""
+        is_completed = False
+        next_order = total_delivery_query.first()
+        if next_order and next_order.delivery_address: 
+            delivery_address = next_order.delivery_address
+        if user.delivery_address: 
+            delivery_address = user.delivery_address
+        if next_order and next_order.is_completed: 
+            is_completed = True
+            completed_deliveries_count += 1
+
+        deliveries.append({
+            "last_delivery_count": last_delivery_count + retain_count,
+            "next_delivery_count": next_delivery_count - next_delivery_refused_count,
+            "delivery_address": delivery_address,
+            "is_completed": is_completed,
+            "user": {
+                "id": user_json['id'],
+                "first_name": user_json['first_name'],
+                "last_name": user_json['last_name'],
+                "mobile_number": user_json['mobile_number'],
+                "address": user_json['address'],
+                "delivery_time": user_json['delivery_time'],
+                "books_per_week": user_json['books_per_week'],
+                "next_delivery_date": user_json['next_delivery_date'],
+                "delivery_order": user_json['delivery_order'],
+            }
+        })
 
     if sort: 
         deliveries = sorted(deliveries, key=cmp_to_key(sort_deliveries), reverse=False)
     else: 
         deliveries = sorted(deliveries, key=cmp_to_key(sort_deliveries), reverse=True)
+
+    print(len(deliveries))
 
     return jsonify({
         "status": "success",
@@ -175,17 +180,17 @@ def get_delivery(deliverer, id):
             "message": "Invalid user ID",
         }), 400
     delivery_books, return_books, delivery_address = [], [], ""
+    notes, received_by, is_completed = '', '', False
     if user.next_delivery_date: 
         delivery_books = Order.query.filter_by(user_id=user.id).filter(
             cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
         ).all()
-    if not len(delivery_books): 
-        return jsonify({
-            "status": "error",
-            "message": "No delivery scheduled for the user",
-        }), 400
-    if delivery_books[0].delivery_address: 
-        delivery_address = delivery_books[0].delivery_address
+    if len(delivery_address): 
+        if delivery_books[0].delivery_address: 
+            delivery_address = delivery_books[0].delivery_address
+        notes = delivery_books[0].notes
+        received_by = delivery_books[0].received_by
+        is_completed = delivery_books[0].is_completed
     if user.delivery_address: 
         delivery_address = user.delivery_address
     if user.last_delivery_date: 
@@ -202,9 +207,9 @@ def get_delivery(deliverer, id):
             "suggestions": user.get_suggestions(),
             "delivery_books": [delivery_book.to_json() for delivery_book in delivery_books],
             "return_books": [return_book.to_json() for return_book in return_books],
-            "notes": delivery_books[0].notes,
-            "received_by": delivery_books[0].received_by,
-            "is_completed": delivery_books[0].is_completed,
+            "notes": notes,
+            "received_by": received_by,
+            "is_completed": is_completed,
             "delivery_address": delivery_address,
             "user": {
                 "id": user_json['id'],
