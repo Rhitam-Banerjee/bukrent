@@ -32,7 +32,7 @@ def get_users(admin):
     deliverer_id = request.args.get('deliverer_id')
 
     all_users = []
-    query = User.query
+    query = User.query.filter_by(is_deleted=False)
 
     if payment_status:
         if payment_status == 'Unpaid':
@@ -58,18 +58,15 @@ def get_users(admin):
         query = query.order_by(User.id)
     else:
         query = query.order_by(User.id.desc())
-    all_users = query.filter_by(is_deleted=False).limit(end - start).offset(start).all()
-    completed_delivery_count = query.join(Order).filter(
-        User.is_deleted == False, 
-        Order.placed_on == User.next_delivery_date,
-        Order.is_completed == True,
-    ).count()
-    print(completed_delivery_count)
+    all_users = query.limit(end - start).offset(start).all()
+    total_users = query.count()
+    completed_delivery_count = query.join(Order).filter(Order.is_completed == True).count()
 
     return jsonify({
         "status": "success",
         "users": admin.get_users(all_users),
         "completed_delivery_count": completed_delivery_count,
+        "total_users": total_users,
     })
 
 @api_admin.route('/get-user/<id>')
