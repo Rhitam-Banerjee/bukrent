@@ -257,8 +257,6 @@ def update_user_ops(admin):
     delivery_date = request.json.get('delivery_date')
     delivery_count = request.json.get('delivery_count')
     deliverer_id = request.json.get('deliverer_id')
-    if not contact_number or len(str(contact_number)) != 10 or not str(contact_number).isnumeric(): 
-        return jsonify({"status": "error", "message": "Invalid contact number"}), 400
     if delivery_count is None or not str(delivery_count).isnumeric() or int(delivery_count) < 0: 
         return jsonify({"status": "error", "message": "Invalid delivery count"}), 400
     user = User.query.get(id)
@@ -270,9 +268,10 @@ def update_user_ops(admin):
     delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d')
     if not delivery_date or delivery_date.date() < date.today() or (user.last_delivery_date and delivery_date.date() <= user.last_delivery_date):
         return jsonify({"status": "error", "message": "Invalid delivery date"}), 400
-    user.contact_number = contact_number
     user.next_delivery_date = delivery_date
     user.delivery_count = delivery_count
+    if contact_number and len(str(contact_number)) == 10 and str(contact_number).isnumeric(): 
+        user.contact_number = contact_number
     if not deliverer_id: 
         user.deliverer_id = None
     else: 
