@@ -69,7 +69,7 @@ def shift_deliveries():
                     is_not_completed = True
                     break
             next_delivery_date = user.next_delivery_date
-            if is_not_completed: 
+            if not len(orders) or is_not_completed: 
                 print(f'Shifted Delivery Date Of {user.first_name} {user.last_name}')
                 user.next_delivery_date = date.today()
                 for order in orders: 
