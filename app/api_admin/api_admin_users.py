@@ -15,7 +15,7 @@ from app import db
 from app.api_admin.utils import api_admin, validate_user, token_required, super_admin
 
 import os
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 @api_admin.route('/get-users')
 @token_required
@@ -30,6 +30,7 @@ def get_users(admin):
     plan_duration = request.args.get('duration')
     delivery_date = request.args.get('delivery_date')
     deliverer_id = request.args.get('deliverer_id')
+    plan_expiry_date = request.args.get('plan_expiry_date')
 
     all_users = []
     query = User.query.filter_by(is_deleted=False)
@@ -58,7 +59,17 @@ def get_users(admin):
         query = query.order_by(User.id)
     else:
         query = query.order_by(User.id.desc())
-    all_users = query.limit(end - start).offset(start).all()
+
+    all_users = []
+    if plan_expiry_date: 
+        users = query.all()
+        plan_expiry_date = datetime.strptime(plan_expiry_date, '%Y-%m-%d').date()
+        for user in users: 
+            if user.plan_date + timedelta(days=28*user.plan_duration) == plan_expiry_date: 
+                all_users.append(user)
+        all_users = all_users[start:end]
+    else: 
+        all_users = query.limit(end - start).offset(start).all()
     
     completed_delivery_count = []
     if delivery_date: 

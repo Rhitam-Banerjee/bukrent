@@ -367,6 +367,10 @@ class User(db.Model):
             "delivery_order": self.delivery_order,
             "delivery_count": self.delivery_count,
         }
+    
+    @hybrid_property
+    def plan_expiry_date(self):
+        return self.plan_date + timedelta(days=self.plan_duration * 28)
 
     @staticmethod
     def create(first_name, last_name, mobile_number, password):
