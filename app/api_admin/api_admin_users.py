@@ -65,7 +65,7 @@ def get_users(admin):
         users = query.all()
         plan_expiry_date = datetime.strptime(plan_expiry_date, '%Y-%m-%d').date()
         for user in users: 
-            if user.plan_date + timedelta(days=28*user.plan_duration) == plan_expiry_date: 
+            if user.plan_date and user.plan_duration and user.plan_date + timedelta(days=28*user.plan_duration) == plan_expiry_date: 
                 all_users.append(user)
         all_users = all_users[start:end]
     else: 
