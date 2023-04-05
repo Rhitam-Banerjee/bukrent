@@ -30,6 +30,7 @@ def get_users(admin):
     plan_duration = request.args.get('duration')
     delivery_date = request.args.get('delivery_date')
     deliverer_id = request.args.get('deliverer_id')
+    sort_expiry_date = request.args.get('sort_expiry_date')
     plan_expiry_date = request.args.get('plan_expiry_date')
 
     all_users = []
@@ -51,10 +52,10 @@ def get_users(admin):
         query = query.filter_by(deliverer_id=deliverer_id)
     if search:
         query = query.filter(or_(
-                User.first_name.ilike(f'{search}%'),
-                User.last_name.ilike(f'{search}%'),
-                User.mobile_number.ilike(f'{search}%')
-            ))
+            User.first_name.ilike(f'{search}%'),
+            User.last_name.ilike(f'{search}%'),
+            User.mobile_number.ilike(f'{search}%')
+        ))
     if sort and int(sort) == 1:
         query = query.order_by(User.id)
     else:
@@ -68,6 +69,9 @@ def get_users(admin):
             if user.plan_date and user.plan_duration and user.plan_date + timedelta(days=28*user.plan_duration) == plan_expiry_date: 
                 all_users.append(user)
         all_users = all_users[start:end]
+    elif sort_expiry_date.isnumeric() and bool(int(sort_expiry_date)): 
+        users = query.all()[start:end]
+        all_users = sorted(users, key=lambda user: user.plan_expiry_date)
     else: 
         all_users = query.limit(end - start).offset(start).all()
     
