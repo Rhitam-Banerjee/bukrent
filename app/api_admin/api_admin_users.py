@@ -31,7 +31,7 @@ def get_users(admin):
     delivery_date = request.args.get('delivery_date')
     deliverer_id = request.args.get('deliverer_id')
     sort_expiry_date = request.args.get('sort_expiry_date')
-    plan_expiry_date = request.args.get('plan_expiry_date')
+    sort_plan_date = request.args.get('sort_plan_date')
 
     all_users = []
     query = User.query.filter_by(is_deleted=False)
@@ -62,24 +62,29 @@ def get_users(admin):
         query = query.order_by(User.id.desc())
 
     all_users = []
-    if plan_expiry_date: 
-        users = query.all()
-        plan_expiry_date = datetime.strptime(plan_expiry_date, '%Y-%m-%d').date()
-        for user in users: 
-            if user.plan_date and user.plan_duration and user.plan_date + timedelta(days=28*user.plan_duration) == plan_expiry_date: 
-                all_users.append(user)
-        all_users = all_users[start:end]
-    elif sort_expiry_date and sort_expiry_date.isnumeric() and bool(int(sort_expiry_date)): 
+    if sort_expiry_date and sort_expiry_date.isnumeric():
         users = query.filter_by(payment_status='Paid').all()
-        for user in users: 
-            if user.plan_date and user.plan_duration: 
+        for user in users:
+            if user.plan_date and user.plan_duration:
                 all_users.append(user)
-        all_users = sorted(all_users, key=lambda user: user.plan_expiry_date)[start:end]
-    else: 
+        if bool(int(sort_expiry_date)): 
+            all_users = sorted(all_users, key=lambda user: user.plan_expiry_date)[start:end]
+        else: 
+            all_users = sorted(all_users, key=lambda user: user.plan_expiry_date, reverse=True)[start:end]
+    elif sort_plan_date and sort_plan_date.isnumeric():
+        users = query.filter_by(payment_status='Paid').all()
+        for user in users:
+            if user.plan_date and user.plan_duration:
+                all_users.append(user)
+        if bool(int(sort_plan_date)): 
+            all_users = sorted(all_users, key=lambda user: user.plan_date)[start:end]
+        else: 
+            all_users = sorted(all_users, key=lambda user: user.plan_date, reverse=True)[start:end]
+    else:
         all_users = query.limit(end - start).offset(start).all()
-    
+
     completed_delivery_count = []
-    if delivery_date: 
+    if delivery_date:
         completed_delivery_count = query.join(Order).filter(Order.is_completed == True, Order.placed_on == delivery_date).all()
     total_users = query.count()
 
@@ -89,6 +94,7 @@ def get_users(admin):
         "completed_delivery_count": len(completed_delivery_count),
         "total_users": total_users,
     })
+
 
 @api_admin.route('/get-user/<id>')
 @token_required
