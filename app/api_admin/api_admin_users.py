@@ -69,9 +69,12 @@ def get_users(admin):
             if user.plan_date and user.plan_duration and user.plan_date + timedelta(days=28*user.plan_duration) == plan_expiry_date: 
                 all_users.append(user)
         all_users = all_users[start:end]
-    elif sort_expiry_date.isnumeric() and bool(int(sort_expiry_date)): 
-        users = query.all()[start:end]
-        all_users = sorted(users, key=lambda user: user.plan_expiry_date)
+    elif sort_expiry_date and sort_expiry_date.isnumeric() and bool(int(sort_expiry_date)): 
+        users = query.filter_by(payment_status='Paid').all()
+        for user in users: 
+            if user.plan_date and user.plan_duration: 
+                all_users.append(user)
+        all_users = sorted(all_users, key=lambda user: user.plan_expiry_date)[start:end]
     else: 
         all_users = query.limit(end - start).offset(start).all()
     
