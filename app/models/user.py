@@ -311,6 +311,7 @@ class User(db.Model):
     books_per_week = db.Column(db.Integer)
     payment_status = db.Column(db.String)
     plan_date = db.Column(db.Date, server_default=func.now())
+    plan_expiry_date = db.Column(db.Date)
     plan_duration = db.Column(db.Integer)
     is_subscribed = db.Column(db.Boolean, default=False)
     security_deposit = db.Column(db.Boolean, default=False)
@@ -366,11 +367,8 @@ class User(db.Model):
             "deliverer": deliverer,
             "delivery_order": self.delivery_order,
             "delivery_count": self.delivery_count,
+            "plan_expiry_date": self.plan_expiry_date,
         }
-    
-    @hybrid_property
-    def plan_expiry_date(self):
-        return self.plan_date + timedelta(days=self.plan_duration * 28)
 
     @staticmethod
     def create(first_name, last_name, mobile_number, password):
@@ -818,6 +816,7 @@ class User(db.Model):
         self.is_subscribed = True
         self.payment_status = 'Paid'
         self.plan_date = date.today()
+        self.plan_expiry_date = date.today() + timedelta(days=self.plan_duration * 28)
         db.session.add(self)
         db.session.commit()
 
@@ -828,6 +827,7 @@ class User(db.Model):
         self.is_subscribed = True
         self.payment_status = 'Paid'
         self.plan_date = date.today()
+        self.plan_expiry_date = date.today() + timedelta(days=self.plan_duration * 28)
         db.session.add(self)
         db.session.commit()
 

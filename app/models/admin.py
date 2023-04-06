@@ -77,12 +77,8 @@ class Admin(db.Model):
                     Order.placed_on <= user.last_delivery_date + timedelta(days=1)
                 ).all()
             retained_books = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).all()
-            bucket = user.get_next_bucket()
-            plan_expiry_date = None
-            if user.plan_date and user.plan_duration:
-                plan_expiry_date = user.plan_date + timedelta(days=user.plan_duration * 28)
+            bucket = user.get_next_bucket()            
             all_users.append({
-                "plan_expiry_date": plan_expiry_date,
                 "password": user.password,
                 "wishlist": user.get_wishlist(),
                 "suggestions": user.get_suggestions(),

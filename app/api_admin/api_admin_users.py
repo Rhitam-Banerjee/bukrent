@@ -56,32 +56,22 @@ def get_users(admin):
             User.last_name.ilike(f'{search}%'),
             User.mobile_number.ilike(f'{search}%')
         ))
-    if sort and int(sort) == 1:
+    if sort_expiry_date and sort_expiry_date.isnumeric(): 
+        if bool(int(sort_expiry_date)): 
+            query = query.filter(User.plan_expiry_date != None).order_by(User.plan_expiry_date)
+        else: 
+            query = query.filter(User.plan_expiry_date != None).order_by(User.plan_expiry_date.desc())
+    elif sort_plan_date and sort_plan_date.isnumeric(): 
+        if bool(int(sort_plan_date)): 
+            query = query.filter(User.plan_date != None).order_by(User.plan_date)
+        else: 
+            query = query.filter(User.plan_date != None).order_by(User.plan_date.desc())
+    elif sort and int(sort) == 1:
         query = query.order_by(User.id)
     else:
         query = query.order_by(User.id.desc())
 
-    all_users = []
-    if sort_expiry_date and sort_expiry_date.isnumeric():
-        users = query.filter_by(payment_status='Paid').all()
-        for user in users:
-            if user.plan_date and user.plan_duration:
-                all_users.append(user)
-        if bool(int(sort_expiry_date)): 
-            all_users = sorted(all_users, key=lambda user: user.plan_expiry_date)[start:end]
-        else: 
-            all_users = sorted(all_users, key=lambda user: user.plan_expiry_date, reverse=True)[start:end]
-    elif sort_plan_date and sort_plan_date.isnumeric():
-        users = query.filter_by(payment_status='Paid').all()
-        for user in users:
-            if user.plan_date and user.plan_duration:
-                all_users.append(user)
-        if bool(int(sort_plan_date)): 
-            all_users = sorted(all_users, key=lambda user: user.plan_date)[start:end]
-        else: 
-            all_users = sorted(all_users, key=lambda user: user.plan_date, reverse=True)[start:end]
-    else:
-        all_users = query.limit(end - start).offset(start).all()
+    all_users = query.limit(end - start).offset(start).all()
 
     completed_delivery_count = []
     if delivery_date:
@@ -175,8 +165,11 @@ def update_user(admin):
 
     if plan_date:
         user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
+        if plan_duration: 
+            user.plan_expiry_date = user.plan_date.date() + timedelta(days=plan_duration * 28)
     else: 
         user.plan_date = None
+        user.plan_expiry_date = None
 
     user_children = Child.query.filter_by(user_id=user.id).all()
     for child in user_children: 
@@ -281,21 +274,40 @@ def update_user_ops(admin):
     delivery_date = request.json.get('delivery_date')
     delivery_count = request.json.get('delivery_count')
     deliverer_id = request.json.get('deliverer_id')
-    if delivery_count is None or not str(delivery_count).isnumeric() or int(delivery_count) < 0: 
-        return jsonify({"status": "error", "message": "Invalid delivery count"}), 400
+    plan_date = request.json.get('plan_date')
+    plan_expiry_date = request.json.get('plan_expiry_date')
+    if not id: 
+        return jsonify({"status": "error", "message": "Provide an user ID"}), 400
     user = User.query.get(id)
     if not user:
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d')
-    if not delivery_date or delivery_date.date() < date.today() or (user.last_delivery_date and delivery_date.date() <= user.last_delivery_date):
-        return jsonify({"status": "error", "message": "Invalid delivery date"}), 400
+    if not str(delivery_count).isnumeric() or int(delivery_count) < 0: 
+        return jsonify({"status": "error", "message": "Invalid delivery count"}), 400
+    if delivery_date:
+        delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d')
+        if delivery_date.date() < date.today() or (user.last_delivery_date and delivery_date.date() <= user.last_delivery_date):
+            return jsonify({"status": "error", "message": "Invalid delivery date"}), 400
+    if plan_date: 
+        plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
+        if plan_date.date() >= date.today(): 
+            return jsonify({"status": "error", "message": "Invalid plan date"}), 400
+    if plan_expiry_date: 
+        plan_expiry_date = datetime.strptime(plan_expiry_date, '%Y-%m-%d')
+        if plan_expiry_date.date() < date.today(): 
+            return jsonify({"status": "error", "message": "Invalid plan expiry date"}), 400
+    if contact_number and (len(str(contact_number)) != 10 or not str(contact_number).isnumeric()): 
+        return jsonify({"status": "error", "message": "Invalid contact number"}), 400
     user.next_delivery_date = delivery_date
     user.delivery_count = delivery_count
-    if contact_number and len(str(contact_number)) == 10 and str(contact_number).isnumeric(): 
-        user.contact_number = contact_number
+    user.contact_number = contact_number
+    user.plan_date = plan_date
+    if plan_expiry_date: 
+        user.plan_expiry_date = plan_expiry_date
+    elif user.plan_date and user.plan_duration: 
+        user.plan_expiry_date = user.plan_date + timedelta(days=user.plan_duration * 28)
     if not deliverer_id: 
         user.deliverer_id = None
     else: 
@@ -356,6 +368,8 @@ def add_user(admin):
     user.payment_status = payment_status
     if plan_date:
         user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
+        if user.plan_date and user.plan_duration: 
+            user.plan_expiry_date = user.plan_date + timedelta(days=user.plan_duration * 28)
     if plan_id:
         plan_id = int(plan_id)
     if plan_id == 1:
