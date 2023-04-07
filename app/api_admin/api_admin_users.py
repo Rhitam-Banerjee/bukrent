@@ -180,7 +180,7 @@ def update_user(admin):
             if not child_obj:
                 user.add_child(child)
 
-    if plan_id and plan_id.isnumeric(): 
+    if plan_id and str(plan_id).isnumeric(): 
         plan_id = int(plan_id)
     if plan_id == 1:
         user.plan_id = os.environ.get('RZP_PLAN_1_ID')
