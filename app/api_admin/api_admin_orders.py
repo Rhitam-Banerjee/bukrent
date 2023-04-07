@@ -295,6 +295,11 @@ def confirm_order(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
+    if user.plan_pause_date: 
+        return jsonify({
+            "status": "error",
+            "message": "Plan paused! Cannot place delivery"
+        }), 400
     try: 
         user.confirm_order()
     except Exception as e: 

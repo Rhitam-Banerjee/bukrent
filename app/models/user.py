@@ -312,6 +312,7 @@ class User(db.Model):
     payment_status = db.Column(db.String)
     plan_date = db.Column(db.Date, server_default=func.now())
     plan_expiry_date = db.Column(db.Date)
+    plan_pause_date = db.Column(db.Date)
     plan_duration = db.Column(db.Integer)
     is_subscribed = db.Column(db.Boolean, default=False)
     security_deposit = db.Column(db.Boolean, default=False)
@@ -368,6 +369,7 @@ class User(db.Model):
             "delivery_order": self.delivery_order,
             "delivery_count": self.delivery_count,
             "plan_expiry_date": self.plan_expiry_date,
+            "plan_pause_date": self.plan_pause_date,
         }
 
     @staticmethod

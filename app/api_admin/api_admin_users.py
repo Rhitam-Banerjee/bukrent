@@ -206,7 +206,7 @@ def update_user(admin):
         "status": "success",
         "message": "User updated",
         "user": admin.get_users([user])[0],
-    })
+    }), 201
 
 @api_admin.route('/update-delivery-details', methods=['POST'])
 @token_required
@@ -239,11 +239,12 @@ def update_delivery_details(admin):
     ).filter(User.id != user.id).count(): 
         return jsonify({"status": "error", "message": "Provided delivery order is already marked to other delivery"}), 400
 
-    user.next_delivery_date = delivery_date
+    if not user.plan_pause_date: 
+        user.next_delivery_date = delivery_date
     if not deliverer_id: 
         user.deliverer = None
     else: 
-        if Deliverer.query.get(deliverer_id): 
+        if Deliverer.query.get(deliverer_id) and not user.plan_pause_date: 
             user.deliverer_id = deliverer_id
 
     user.delivery_order = delivery_order
@@ -263,11 +264,10 @@ def update_delivery_details(admin):
         "status": "success",
         "message": "User updated",
         "user": admin.get_users([user])[0],
-    })
+    }), 201
 
 @api_admin.route('/update-user-ops', methods=['POST'])
 @token_required
-@super_admin
 def update_user_ops(admin): 
     id = request.json.get('id')
     contact_number = request.json.get('contact_number')
@@ -277,7 +277,7 @@ def update_user_ops(admin):
     plan_date = request.json.get('plan_date')
     plan_expiry_date = request.json.get('plan_expiry_date')
     if not id: 
-        return jsonify({"status": "error", "message": "Provide an user ID"}), 400
+        return jsonify({"status": "error", "message": "Provide user ID"}), 400
     user = User.query.get(id)
     if not user:
         return jsonify({
@@ -300,10 +300,11 @@ def update_user_ops(admin):
             return jsonify({"status": "error", "message": "Invalid plan expiry date"}), 400
     if contact_number and (len(str(contact_number)) != 10 or not str(contact_number).isnumeric()): 
         return jsonify({"status": "error", "message": "Invalid contact number"}), 400
-    user.next_delivery_date = delivery_date
     user.delivery_count = delivery_count
     user.contact_number = contact_number
     user.plan_date = plan_date
+    if not user.plan_pause_date: 
+        user.next_delivery_date = delivery_date
     if plan_expiry_date: 
         user.plan_expiry_date = plan_expiry_date
     elif user.plan_date and user.plan_duration: 
@@ -311,14 +312,69 @@ def update_user_ops(admin):
     if not deliverer_id: 
         user.deliverer_id = None
     else: 
-        if Deliverer.query.get(deliverer_id): 
+        if Deliverer.query.get(deliverer_id) and not user.plan_pause_date: 
             user.deliverer_id = deliverer_id
     db.session.commit()
     return jsonify({
         "status": "success",
         "message": "User updated",
         "user": admin.get_users([user])[0],
-    })
+    }), 201
+
+@api_admin.route('/pause-plan', methods=['POST'])
+@token_required
+def pause_plan(admin): 
+    id = request.json.get('id')
+    if not id: 
+        return jsonify({"status": "error", "message": "Provide user ID"}), 400
+    user = User.query.get(id)
+    if not user: 
+        return jsonify({"status": "error", "message": "Invalid user ID"}), 400
+    if user.plan_pause_date: 
+        return jsonify({"status": "error", "message": "Plan already paused"}), 400
+    user.plan_pause_date = date.today()
+    user.deliverer_id = None
+    user.next_delivery_date = None
+    db.session.commit()
+    return jsonify({"status": "success", "message": "Plan paused"}), 201
+
+@api_admin.route('/activate-plan', methods=['POST'])
+@token_required
+def activate_plan(admin): 
+    id = request.json.get('id')
+    if not id: 
+        return jsonify({"status": "error", "message": "Provide user ID"}), 400
+    user = User.query.get(id)
+    if not user: 
+        return jsonify({"status": "error", "message": "Invalid user ID"}), 400
+    if not user.plan_pause_date: 
+        return jsonify({"status": "error", "message": "Plan already active"}), 400
+    user.plan_expiry_date = date.today() + timedelta(days=user.plan_duration * 28) - timedelta(days=(user.plan_pause_date - user.plan_date).days)
+    user.plan_pause_date = None
+    user.next_delivery_date = date.today() + timedelta(days=1)
+    db.session.commit()
+    return jsonify({"status": "success", "message": "Plan activated"}), 201
+
+@api_admin.route('/stop-plan', methods=['POST'])
+@token_required
+def stop_plan(admin): 
+    id = request.json.get('id')
+    if not id: 
+        return jsonify({"status": "error", "message": "Provide user ID"}), 400
+    user = User.query.get(id)
+    if not user: 
+        return jsonify({"status": "error", "message": "Invalid user ID"}), 400
+    user.plan_date = None
+    user.plan_expiry_date = None
+    user.plan_pause_date = None
+    user.payment_status = 'Unpaid'
+    user.subscription_id = None
+    user.payment_id = None
+    user.order_id = None
+    user.plan_id = None
+    user.next_delivery_date = None
+    db.session.commit()
+    return jsonify({"status": "success", "message": "Plan activated"}), 201
 
 @api_admin.route('/add-user', methods=['POST'])
 @token_required
