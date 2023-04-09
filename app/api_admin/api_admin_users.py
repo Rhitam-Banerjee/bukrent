@@ -276,6 +276,8 @@ def update_user_ops(admin):
     deliverer_id = request.json.get('deliverer_id')
     plan_date = request.json.get('plan_date')
     plan_expiry_date = request.json.get('plan_expiry_date')
+    payment_type = request.json.get('payment_type')
+    delivery_status = request.json.get('delivery_status')
     if not id: 
         return jsonify({"status": "error", "message": "Provide user ID"}), 400
     user = User.query.get(id)
@@ -300,9 +302,22 @@ def update_user_ops(admin):
             return jsonify({"status": "error", "message": "Invalid plan expiry date"}), 400
     if contact_number and (len(str(contact_number)) != 10 or not str(contact_number).isnumeric()): 
         return jsonify({"status": "error", "message": "Invalid contact number"}), 400
+    if payment_type and payment_type not in ['Autopay', 'Cash', 'Online', 'QR Code']: 
+        return jsonify({"status": "error", "message": "Invalid payment type"}), 400 
+    if delivery_status and delivery_status not in ['Active', 'Retain']: 
+        return jsonify({"status": "error", "message": "Invalid delivery status"}), 400
     user.delivery_count = delivery_count
     user.contact_number = contact_number
     user.plan_date = plan_date
+    user.payment_type = payment_type
+    if delivery_status: 
+        if delivery_status != user.delivery_status: 
+            if delivery_status == 'Retain': 
+                user.delivery_status = 'Retain'
+                user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
+            else: 
+                user.delivery_status = 'Active'
+                user.next_delivery_date = user.next_delivery_date + timedelta(days=-7)
     if not user.plan_pause_date: 
         user.next_delivery_date = delivery_date
     if plan_expiry_date: 

@@ -162,8 +162,6 @@ def get_deliveries(deliverer):
     else: 
         deliveries = sorted(deliveries, key=cmp_to_key(sort_deliveries), reverse=True)
 
-    print(len(deliveries))
-
     return jsonify({
         "status": "success",
         "deliveries": deliveries,
