@@ -40,6 +40,15 @@ app.app_context().push()
 
 def complete_all_orders(): 
     with app.app_context(): 
+        users = User.query.filter_by(payment_status='Paid').all()
+        for user in users: 
+            if user.subscription_id: 
+                user.payment_type = 'Autopay'
+            elif user.payment_id or user.order_id: 
+                user.payment_type = 'Online'
+            else: 
+                user.payment_type = 'Cash'
+            user.delivery_status = 'Active'
         print('Completing All Orders')
         users = User.query.filter(User.next_delivery_date <= date.today() - timedelta(days=1)).all()
         for user in users: 

@@ -347,6 +347,7 @@ class User(db.Model):
         return {
             "id": self.id,
             "guid": self.guid,
+            "created_at": self.created_at,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email": self.email,
