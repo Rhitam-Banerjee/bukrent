@@ -240,7 +240,7 @@ def update_delivery_details(admin):
         return jsonify({"status": "error", "message": "Provided delivery order is already marked to other delivery"}), 400
 
     if not user.plan_pause_date: 
-        user.next_delivery_date = delivery_date
+        user.change_delivery_date(datetime.strftime(delivery_date, '%Y-%m-%d'))
     if not deliverer_id: 
         user.deliverer = None
     else: 
@@ -310,16 +310,21 @@ def update_user_ops(admin):
     user.contact_number = contact_number
     user.plan_date = plan_date
     user.payment_type = payment_type
+    if not user.plan_pause_date: 
+        user.change_delivery_date(datetime.strftime(delivery_date, '%Y-%m-%d'))
     if delivery_status: 
         if delivery_status != user.delivery_status: 
             if delivery_status == 'Retain': 
                 user.delivery_status = 'Retain'
-                user.next_delivery_date = user.next_delivery_date + timedelta(days=7)
+                user.change_delivery_date(datetime.strftime(
+                    user.next_delivery_date + timedelta(days=7), 
+                    '%Y-%m-%d'
+                ))
             else: 
                 user.delivery_status = 'Active'
-                user.next_delivery_date = user.next_delivery_date + timedelta(days=-7)
-    if not user.plan_pause_date: 
-        user.next_delivery_date = delivery_date
+                user.change_delivery_date(datetime.strftime(
+                    user.next_delivery_date + timedelta(days=-7), '%Y-%m-%d'
+                ))
     if plan_expiry_date: 
         user.plan_expiry_date = plan_expiry_date
     elif user.plan_date and user.plan_duration: 
@@ -366,7 +371,7 @@ def activate_plan(admin):
         return jsonify({"status": "error", "message": "Plan already active"}), 400
     user.plan_expiry_date = date.today() + timedelta(days=user.plan_duration * 28) - timedelta(days=(user.plan_pause_date - user.plan_date).days)
     user.plan_pause_date = None
-    user.next_delivery_date = date.today() + timedelta(days=1)
+    user.change_delivery_date(datetime.strftime(date.today() + timedelta(days=1), '%Y-%m-%d'))
     db.session.commit()
     return jsonify({"status": "success", "message": "Plan activated"}), 201
 
