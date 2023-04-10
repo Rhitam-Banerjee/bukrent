@@ -762,7 +762,7 @@ class User(db.Model):
     def change_delivery_date(self, delivery_date):
         delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d')
 
-        if delivery_date < datetime.today() or (self.last_delivery_date and delivery_date.date() <= self.last_delivery_date):
+        if delivery_date.date() < date.today() or (self.last_delivery_date and delivery_date.date() <= self.last_delivery_date):
             raise ValueError("Invalid delivery date")
 
         buckets = DeliveryBucket.query.filter(and_(DeliveryBucket.user_id==self.id, DeliveryBucket.delivery_date==self.next_delivery_date)).all()

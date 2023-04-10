@@ -238,9 +238,9 @@ def update_delivery_details(admin):
         deliverer_id=deliverer_id,
     ).filter(User.id != user.id).count(): 
         return jsonify({"status": "error", "message": "Provided delivery order is already marked to other delivery"}), 400
-
+    
     if not user.plan_pause_date: 
-        user.change_delivery_date(datetime.strftime(delivery_date, '%Y-%m-%d'))
+        user.change_delivery_date(datetime.strftime(delivery_date.date(), '%Y-%m-%d'))
     if not deliverer_id: 
         user.deliverer = None
     else: 
