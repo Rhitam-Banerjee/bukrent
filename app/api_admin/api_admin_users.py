@@ -63,9 +63,9 @@ def get_users(admin):
             query = query.filter(User.plan_expiry_date != None).order_by(User.plan_expiry_date.desc())
     elif sort_plan_date and sort_plan_date.isnumeric(): 
         if bool(int(sort_plan_date)): 
-            query = query.filter(User.plan_date != None).order_by(User.plan_date)
+            query = query.filter(User.created_at != None).order_by(User.created_at)
         else: 
-            query = query.filter(User.plan_date != None).order_by(User.plan_date.desc())
+            query = query.filter(User.created_at != None).order_by(User.created_at.desc())
     elif sort and int(sort) == 1:
         query = query.order_by(User.id)
     else:
@@ -238,9 +238,9 @@ def update_delivery_details(admin):
         deliverer_id=deliverer_id,
     ).filter(User.id != user.id).count(): 
         return jsonify({"status": "error", "message": "Provided delivery order is already marked to other delivery"}), 400
-    
+
     if not user.plan_pause_date: 
-        user.change_delivery_date(datetime.strftime(delivery_date.date(), '%Y-%m-%d'))
+        user.change_delivery_date(datetime.strftime(delivery_date, '%Y-%m-%d'))
     if not deliverer_id: 
         user.deliverer = None
     else: 
@@ -278,6 +278,8 @@ def update_user_ops(admin):
     plan_expiry_date = request.json.get('plan_expiry_date')
     payment_type = request.json.get('payment_type')
     delivery_status = request.json.get('delivery_status')
+    plan_duration = request.json.get('plan_duration')
+    books_per_week = request.json.get('books_per_week')
     if not id: 
         return jsonify({"status": "error", "message": "Provide user ID"}), 400
     user = User.query.get(id)
@@ -294,22 +296,26 @@ def update_user_ops(admin):
             return jsonify({"status": "error", "message": "Invalid delivery date"}), 400
     if plan_date: 
         plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
-        if plan_date.date() >= date.today(): 
+        if plan_date.date() > date.today(): 
             return jsonify({"status": "error", "message": "Invalid plan date"}), 400
     if plan_expiry_date: 
         plan_expiry_date = datetime.strptime(plan_expiry_date, '%Y-%m-%d')
-        if plan_expiry_date.date() < date.today(): 
-            return jsonify({"status": "error", "message": "Invalid plan expiry date"}), 400
     if contact_number and (len(str(contact_number)) != 10 or not str(contact_number).isnumeric()): 
         return jsonify({"status": "error", "message": "Invalid contact number"}), 400
     if payment_type and payment_type not in ['Autopay', 'Cash', 'Online', 'QR Code']: 
         return jsonify({"status": "error", "message": "Invalid payment type"}), 400 
     if delivery_status and delivery_status not in ['Active', 'Retain']: 
         return jsonify({"status": "error", "message": "Invalid delivery status"}), 400
+    if plan_duration and str(plan_duration) not in ['1', '3', '12']: 
+        return jsonify({"status": "error", "message": "Invalid plan duration"}), 400
+    if books_per_week and str(books_per_week) not in ['1', '2', '4']: 
+        return jsonify({"status": "error", "message": "Invalid books per week"}), 400
     user.delivery_count = delivery_count
     user.contact_number = contact_number
     user.plan_date = plan_date
     user.payment_type = payment_type
+    user.plan_duration = plan_duration
+    user.books_per_week = books_per_week
     if not user.plan_pause_date: 
         user.change_delivery_date(datetime.strftime(delivery_date, '%Y-%m-%d'))
     if delivery_status: 
@@ -442,6 +448,10 @@ def add_user(admin):
     user.plan_duration = plan_duration
     user.source = source
     user.payment_status = payment_status
+    if payment_id: 
+        user.payment_type = 'Online'
+    else: 
+        user.payment_type = 'Cash'
     if plan_date:
         user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
         if user.plan_date and user.plan_duration: 
