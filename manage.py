@@ -41,14 +41,6 @@ app.app_context().push()
 def complete_all_orders(): 
     with app.app_context(): 
         users = User.query.filter_by(payment_status='Paid').all()
-        for user in users: 
-            if user.subscription_id: 
-                user.payment_type = 'Autopay'
-            elif user.payment_id or user.order_id: 
-                user.payment_type = 'Online'
-            else: 
-                user.payment_type = 'Cash'
-            user.delivery_status = 'Active'
         print('Completing All Orders')
         users = User.query.filter(User.next_delivery_date <= date.today() - timedelta(days=1)).all()
         for user in users: 
@@ -90,22 +82,43 @@ def shift_deliveries():
                         order.placed_on = date.today()
         db.session.commit()
 
+def renew_plans(): 
+    with app.app_context():  
+        print('Renewing plans')
+        users = User.query.filter(
+            User.plan_expiry_date <= date.today() - timedelta(days=1),
+            User.plan_date != None,
+            User.plan_duration != None,
+        ).filter_by(payment_type='Autopay', plan_pause_date=None, payment_status='Paid').all()
+        print(len(users))
+        for user in users: 
+            plan_expiry_date = user.plan_expiry_date
+            while plan_expiry_date < date.today(): 
+                user.plan_date = user.plan_expiry_date + timedelta(days=1)
+                user.plan_expiry_date = user.plan_date + timedelta(days=user.plan_duration * 28)
+                plan_expiry_date = user.plan_expiry_date
+            print(f'Renewed Plan Of {user.first_name} {user.last_name}')
+        db.session.commit()
+
 def initialize_delivery_date(): 
     with app.app_context(): 
         print('Initializing delivery date')
         users = User.query.filter_by(next_delivery_date=None, payment_status='Paid', plan_pause_date=None).all()
         for user in users: 
+            user.delivery_status = 'Active'
             user.next_delivery_date = date.today() + timedelta(days=3)
             print(f'Initialized Delivery Date Of {user.first_name} {user.last_name}')
         db.session.commit()
 
+renew_plans()
 complete_all_orders()
 shift_deliveries()
 initialize_delivery_date()
 scheduler = APScheduler()
 scheduler.add_job(func=complete_all_orders, trigger='interval', id='job-1', seconds=5040)
 scheduler.add_job(func=shift_deliveries, trigger='interval', id='job-2', seconds=5040)
-scheduler.add_job(func=initialize_delivery_date, trigger='interval', id='job-3', seconds=5040)
+scheduler.add_job(func=renew_plans, trigger='interval', id='job-3', seconds=5040)
+scheduler.add_job(func=initialize_delivery_date, trigger='interval', id='job-4', seconds=5040)
 scheduler.start()
 
 cli = FlaskGroup(create_app=create_app)

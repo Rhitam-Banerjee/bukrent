@@ -165,8 +165,8 @@ def update_user(admin):
 
     if plan_date:
         user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
-        if plan_duration: 
-            user.plan_expiry_date = user.plan_date.date() + timedelta(days=plan_duration * 28)
+        if plan_duration and plan_duration.isnumeric(): 
+            user.plan_expiry_date = user.plan_date.date() + timedelta(days=int(plan_duration) * 28)
     else: 
         user.plan_date = None
         user.plan_expiry_date = None
