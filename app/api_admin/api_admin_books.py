@@ -3,7 +3,7 @@ import io
 from flask import jsonify, request
 import requests
 
-from sqlalchemy import or_
+from sqlalchemy import or_, nullslast
 from sqlalchemy.sql import func
 
 from app.models.books import Book, BookAuthor, BookCategory
@@ -98,9 +98,9 @@ def get_books(admin):
             query = query.filter_by(age_group_6=True)
 
         if sort_wishlist_count: 
-            query = query.order_by(subquery.c.wishlist_count.desc())
+            query = query.order_by(nullslast(subquery.c.wishlist_count.desc()))
         elif sort_suggestion_count: 
-            query = query.order_by(subquery.c.suggestion_count.desc())
+            query = query.order_by(nullslast(subquery.c.suggestion_count.desc()))
 
         books = query.limit(end - start).offset(start).all()
     else: 
