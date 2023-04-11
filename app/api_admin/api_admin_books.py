@@ -4,6 +4,7 @@ from flask import jsonify, request
 import requests
 
 from sqlalchemy import or_
+from sqlalchemy.sql import func
 
 from app.models.books import Book, BookAuthor, BookCategory
 from app.models.author import Author
@@ -11,6 +12,7 @@ from app.models.publishers import Publisher
 from app.models.series import Series
 from app.models.format import Format
 from app.models.category import Category
+from app.models.buckets import Wishlist, Suggestion
 from app import db
 
 import uuid
@@ -32,6 +34,9 @@ def get_books(admin):
     most_borrowed = request.args.get('most_borrowed')
     fetch_user_data = bool(request.args.get('fetch_user_data'))
     available = request.args.get('available')
+    sort_wishlist_count = request.args.get('sort_wishlist_count')
+    sort_suggestion_count = request.args.get('sort_suggestion_count')
+    # sort_previous_count = request.args.get('sort_previous_count')
     authors = request.json.get('authors')
     publishers = request.json.get('publishers')
     series = request.json.get('series')
@@ -47,7 +52,24 @@ def get_books(admin):
     if search or not any((len(authors), len(publishers), len(series), len(types))): 
         if not search: 
             search = ''
-        query = Book.query.filter(or_(
+        subquery = None
+        if sort_wishlist_count: 
+            subquery = db.session.query(
+                Wishlist.book_id,
+                func.count(Wishlist.book_id).label('wishlist_count')
+            ).group_by(Wishlist.book_id).subquery()
+        elif sort_suggestion_count: 
+            subquery = db.session.query(
+                Suggestion.book_id,
+                func.count(Suggestion.book_id).label('suggestion_count')
+            ).group_by(Suggestion.book_id).subquery()
+        if sort_wishlist_count or sort_suggestion_count: 
+            query = db.session.query(Book).outerjoin(
+                subquery, Book.id == subquery.c.book_id
+            )
+        else: 
+            query = Book.query
+        query = query.filter(or_(
             Book.name.ilike(f'{search}%'),
             Book.description.ilike(f'%{search}%'),
             Book.isbn.ilike(f'{search}%')
@@ -74,6 +96,12 @@ def get_books(admin):
             query = query.filter_by(age_group_5=True)
         elif age_group == 6:
             query = query.filter_by(age_group_6=True)
+
+        if sort_wishlist_count: 
+            query = query.order_by(subquery.c.wishlist_count.desc())
+        elif sort_suggestion_count: 
+            query = query.order_by(subquery.c.suggestion_count.desc())
+
         books = query.limit(end - start).offset(start).all()
     else: 
         age_authors = Author.get_authors(age_group, 0, 10000)

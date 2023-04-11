@@ -37,7 +37,11 @@ class Admin(db.Model):
                 for wishlist in wishlists: 
                     user = User.query.get(wishlist.user_id)
                     if user: 
-                        wishlisted_users.append(user.to_json())
+                        wishlisted_users.append({
+                            **user.to_json(), 
+                            "priority_order": wishlist.priority_order,
+                            "total_wishlist_count": Wishlist.query.filter_by(user_id=user.id).count(),
+                        })
                 for dump in dumps: 
                     user = User.query.get(dump.user_id)
                     if user: 
