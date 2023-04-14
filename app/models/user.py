@@ -298,6 +298,7 @@ class User(db.Model):
     delivery_address = db.Column(db.String)
     delivery_order = db.Column(db.Integer, default=0)
     delivery_count = db.Column(db.Integer, default=0)
+    total_delivery_count = db.Column(db.Integer, default=0)
     delivery_status = db.Column(db.String, default='Active')
 
     has_child_1 = db.Column(db.Boolean, default=False)
@@ -371,6 +372,7 @@ class User(db.Model):
             "deliverer": deliverer,
             "delivery_order": self.delivery_order,
             "delivery_count": self.delivery_count,
+            "total_delivery_count": self.total_delivery_count,
             "plan_expiry_date": self.plan_expiry_date,
             "plan_pause_date": self.plan_pause_date,
             "payment_type": self.payment_type,
@@ -825,6 +827,7 @@ class User(db.Model):
         self.plan_date = date.today()
         self.plan_expiry_date = date.today() + timedelta(days=self.plan_duration * 28)
         self.payment_type = 'Online'
+        self.total_delivery_count += self.plan_duration * 4
         db.session.add(self)
         db.session.commit()
 

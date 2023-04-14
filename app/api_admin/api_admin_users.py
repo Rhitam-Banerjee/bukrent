@@ -157,12 +157,6 @@ def update_user(admin):
         user.first_name = ''
         user.last_name = ''
 
-    user.mobile_number = mobile_number
-    user.contact_number = contact_number
-    user.password = password
-    user.plan_duration = plan_duration
-    user.source = source
-
     if plan_date:
         user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
         if plan_duration and str(plan_duration).isnumeric(): 
@@ -170,6 +164,15 @@ def update_user(admin):
     else: 
         user.plan_date = None
         user.plan_expiry_date = None
+
+    user.mobile_number = mobile_number
+    user.contact_number = contact_number
+    user.password = password
+    user.source = source
+    if user.plan_expiry_date and user.plan_expiry_date.date() < date.today() and user.plan_duration: 
+        user.total_delivery_count -= user.plan_duration * 4
+    user.plan_duration = plan_duration
+    user.total_delivery_count += user.plan_duration * 4
 
     user_children = Child.query.filter_by(user_id=user.id).all()
     for child in user_children: 
@@ -273,6 +276,7 @@ def update_user_ops(admin):
     contact_number = request.json.get('contact_number')
     delivery_date = request.json.get('delivery_date')
     delivery_count = request.json.get('delivery_count')
+    total_delivery_count = request.json.get('total_delivery_count')
     deliverer_id = request.json.get('deliverer_id')
     plan_date = request.json.get('plan_date')
     plan_expiry_date = request.json.get('plan_expiry_date')
@@ -290,6 +294,8 @@ def update_user_ops(admin):
         }), 400
     if not str(delivery_count).isnumeric() or int(delivery_count) < 0: 
         return jsonify({"status": "error", "message": "Invalid delivery count"}), 400
+    if not str(total_delivery_count).isnumeric() or int(total_delivery_count) < 0: 
+        return jsonify({"status": "error", "message": "Invalid total delivery count"}), 400
     if delivery_date:
         delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d')
         if delivery_date.date() < date.today() or (user.last_delivery_date and delivery_date.date() <= user.last_delivery_date):
@@ -311,11 +317,21 @@ def update_user_ops(admin):
     if books_per_week and str(books_per_week) not in ['1', '2', '4']: 
         return jsonify({"status": "error", "message": "Invalid books per week"}), 400
     user.delivery_count = delivery_count
+    user.total_delivery_count = total_delivery_count
     user.contact_number = contact_number
     user.plan_date = plan_date
     user.payment_type = payment_type
-    user.plan_duration = plan_duration
     user.books_per_week = books_per_week
+    if plan_expiry_date: 
+        user.plan_expiry_date = plan_expiry_date
+    elif user.plan_date and user.plan_duration: 
+        user.plan_expiry_date = user.plan_date + timedelta(days=user.plan_duration * 28)
+    if not total_delivery_count: 
+        if user.plan_expiry_date and user.plan_expiry_date.date() < date.today() and user.plan_duration: 
+            user.total_delivery_count -= user.plan_duration * 4
+        user.plan_duration = plan_duration
+        user.total_delivery_count += user.plan_duration * 4
+    user.plan_duration = plan_duration
     if not user.plan_pause_date: 
         user.change_delivery_date(datetime.strftime(delivery_date, '%Y-%m-%d'))
     if delivery_status: 
@@ -331,10 +347,7 @@ def update_user_ops(admin):
                 user.change_delivery_date(datetime.strftime(
                     user.next_delivery_date + timedelta(days=-7), '%Y-%m-%d'
                 ))
-    if plan_expiry_date: 
-        user.plan_expiry_date = plan_expiry_date
-    elif user.plan_date and user.plan_duration: 
-        user.plan_expiry_date = user.plan_date + timedelta(days=user.plan_duration * 28)
+    
     if not deliverer_id: 
         user.deliverer_id = None
     else: 
@@ -446,6 +459,7 @@ def add_user(admin):
     user.contact_number = contact_number
     user.payment_id = payment_id
     user.plan_duration = plan_duration
+    user.total_delivery_count = user.plan_duration * 4
     user.source = source
     user.payment_status = payment_status
     if payment_id: 
