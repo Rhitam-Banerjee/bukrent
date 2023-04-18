@@ -84,6 +84,9 @@ def shift_deliveries():
 
 def renew_plans(): 
     with app.app_context():  
+        users = User.query.filter(User.plan_duration != None).filter_by(payment_status='Paid').all()
+        for user in users: 
+            user.total_delivery_count = user.plan_duration * 4
         print('Renewing plans')
         users = User.query.filter(
             User.plan_expiry_date <= date.today() - timedelta(days=1),

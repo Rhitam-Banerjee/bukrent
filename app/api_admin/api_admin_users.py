@@ -169,10 +169,16 @@ def update_user(admin):
     user.contact_number = contact_number
     user.password = password
     user.source = source
-    if user.plan_expiry_date and user.plan_expiry_date.date() < date.today() and user.plan_duration: 
+    if user.plan_expiry_date and user.plan_expiry_date < date.today() and user.plan_duration and user.total_delivery_count: 
         user.total_delivery_count -= user.plan_duration * 4
-    user.plan_duration = plan_duration
-    user.total_delivery_count += user.plan_duration * 4
+    if plan_duration: 
+        user.plan_duration = plan_duration
+    else: 
+        user.plan_duration = None
+    if not user.total_delivery_count: 
+        user.total_delivery_count = 0
+    if user.plan_duration: 
+        user.total_delivery_count += int(user.plan_duration * 4)
 
     user_children = Child.query.filter_by(user_id=user.id).all()
     for child in user_children: 
@@ -194,6 +200,9 @@ def update_user(admin):
     elif plan_id == 4:
         user.plan_id = os.environ.get('RZP_PLAN_3_ID')
         user.books_per_week = 4
+    else: 
+        user.plan_id = ''
+        user.books_per_week = None
 
     if payment_status:
         user.payment_status = payment_status
@@ -327,7 +336,7 @@ def update_user_ops(admin):
     elif user.plan_date and user.plan_duration: 
         user.plan_expiry_date = user.plan_date + timedelta(days=user.plan_duration * 28)
     if not total_delivery_count: 
-        if user.plan_expiry_date and user.plan_expiry_date.date() < date.today() and user.plan_duration: 
+        if user.plan_expiry_date and user.plan_expiry_date < date.today() and user.plan_duration: 
             user.total_delivery_count -= user.plan_duration * 4
         user.plan_duration = plan_duration
         user.total_delivery_count += user.plan_duration * 4
