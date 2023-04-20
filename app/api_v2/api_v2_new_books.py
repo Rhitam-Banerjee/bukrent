@@ -105,10 +105,12 @@ def get_new_books():
         age = int(age)
     start = int(start)
     end = int(end)
-    books_query = db.session.query(NewBook).filter(
+
+    books_query = db.session.query(NewBook).join(NewCategoryBook, NewCategory).filter(
         or_(
             NewBook.name.ilike(f'{search_query}%'),
-            NewBook.isbn.ilike(f'{search_query}%')
+            NewBook.isbn.ilike(f'{search_query}%'),
+            NewCategory.name.ilike(f'{search_query}%'),
         )
     )
     if age is not None: 
@@ -134,6 +136,7 @@ def get_new_books():
             NewBook.id == NewCategoryBook.book_id,
             NewCategoryBook.section_id == section_id
         )
+    books = []
     books = [book.to_json() for book in books_query.order_by(NewBook.book_order).limit(end - start).offset(start).all()]
     return jsonify({"success": True, "books": books})
 

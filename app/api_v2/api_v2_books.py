@@ -106,10 +106,12 @@ def get_new_books():
         age = int(age)
     start = int(start)
     end = int(end)
-    books_query = db.session.query(NewBook).filter(
+    print(search_query)
+    books_query = db.session.query(NewBook).join(NewCategoryBook, NewCategory).filter(
         or_(
             NewBook.name.ilike(f'{search_query}%'),
-            NewBook.isbn.ilike(f'{search_query}%')
+            NewBook.isbn.ilike(f'{search_query}%'),
+            NewCategory.name.ilike(f'{search_query}%'),
         )
     )
     if age is not None: 

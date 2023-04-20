@@ -169,19 +169,19 @@ def update_user(admin):
     user.contact_number = contact_number
     user.password = password
     user.source = source
-    if user.plan_expiry_date and user.plan_expiry_date < date.today() and user.plan_duration and user.total_delivery_count: 
+    if user.plan_expiry_date and user.plan_expiry_date < date.today() and user.plan_duration and user.total_delivery_count:
         user.total_delivery_count -= user.plan_duration * 4
-    if plan_duration: 
+    if plan_duration:
         user.plan_duration = plan_duration
-    else: 
+    else:
         user.plan_duration = None
-    if not user.total_delivery_count: 
+    if not user.total_delivery_count:
         user.total_delivery_count = 0
-    if user.plan_duration: 
+    if user.plan_duration:
         user.total_delivery_count += int(user.plan_duration * 4)
 
     user_children = Child.query.filter_by(user_id=user.id).all()
-    for child in user_children: 
+    for child in user_children:
         child.delete()
     if children and type(children) == type([]):
         for child in children:
@@ -189,7 +189,7 @@ def update_user(admin):
             if not child_obj:
                 user.add_child(child)
 
-    if plan_id and str(plan_id).isnumeric(): 
+    if plan_id and str(plan_id).isnumeric():
         plan_id = int(plan_id)
     if plan_id == 1:
         user.plan_id = os.environ.get('RZP_PLAN_1_ID')
@@ -200,7 +200,7 @@ def update_user(admin):
     elif plan_id == 4:
         user.plan_id = os.environ.get('RZP_PLAN_3_ID')
         user.books_per_week = 4
-    else: 
+    else:
         user.plan_id = ''
         user.books_per_week = None
 
@@ -336,7 +336,7 @@ def update_user_ops(admin):
     elif user.plan_date and user.plan_duration: 
         user.plan_expiry_date = user.plan_date + timedelta(days=user.plan_duration * 28)
     if not total_delivery_count: 
-        if user.plan_expiry_date and user.plan_expiry_date < date.today() and user.plan_duration: 
+        if user.plan_expiry_date and user.plan_expiry_date < date.today() and user.plan_duration:
             user.total_delivery_count -= user.plan_duration * 4
         user.plan_duration = plan_duration
         user.total_delivery_count += user.plan_duration * 4
