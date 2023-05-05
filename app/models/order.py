@@ -57,6 +57,7 @@ class Order(db.Model):
             "is_refused": self.is_refused,
             "is_taken": self.is_taken,
             "is_retained": is_retained,
+            "is_completed": self.is_completed,
             "user_id": self.user_id,
             "book_id": self.book_id,
             "book": self.book.to_json(),
