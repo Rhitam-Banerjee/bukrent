@@ -5,7 +5,7 @@ from sqlalchemy import or_, cast, Date
 
 from app.models.deliverer import Deliverer
 from app.models.user import User
-from app.models.buckets import DeliveryBucket
+from app.models.buckets import Wishlist, Suggestion, DeliveryBucket
 from app.models.order import Order
 from app.models.books import Book
 
@@ -427,6 +427,9 @@ def add_to_delivery(deliverer):
     book.stock_available -= 1
     book.rentals += 1
     Order.create(user_id, book.id, 0, user.next_delivery_date)
+    suggestion = Suggestion.query.filter_by(user_id=user_id, book_id=book.id).first()
+    if suggestion: 
+        suggestion.delete()
     db.session.commit()
     return jsonify({"status": "success"})
 
@@ -464,6 +467,34 @@ def remove_from_delivery(deliverer):
     book.rentals -= 1
     order.delete()
     db.session.commit()
+    return jsonify({"status": "success"})
+
+@api_delivery.route('/add-to-wishlist', methods=['POST'])
+@token_required
+def add_to_wishlist(deliverer): 
+    isbn = request.json.get('isbn')
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if not user: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid user ID",
+        }), 400
+    book = Book.query.filter_by(isbn=isbn).first()
+    if not book: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid ISBN",
+        }), 400
+    if Wishlist.query.filter_by(user_id=user_id, book_id=book.id).count(): 
+        return jsonify({
+            "status": "error",
+            "message": "Book already in wishlist",
+        }), 400
+    user.add_to_wishlist(isbn)
+    suggestion = Suggestion.query.filter_by(user_id=user_id, book_id=book.id).first()
+    if suggestion: 
+        suggestion.delete()
     return jsonify({"status": "success"})
 
 @api_delivery.route('/add-to-previous', methods=['POST'])
