@@ -394,15 +394,11 @@ def toggle_in_warehouse_book(deliverer):
         order = Order.query.filter_by(user_id=user.id, book_id=book.id).filter(
             cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
         ).first()
-        if not order or not order.is_completed: 
-            return jsonify({
-                "status": "error",
-                "message": "Delivery not completed",
-            }), 400
-        if order.is_in_warehouse: 
-            order.is_in_warehouse = False
-        else: 
-            order.is_in_warehouse = True
+        if order: 
+            if order.is_in_warehouse: 
+                order.is_in_warehouse = False
+            else: 
+                order.is_in_warehouse = True
     db.session.commit()
     return jsonify({"status": "success"})
 
