@@ -80,6 +80,7 @@ def shift_deliveries():
                 for order in orders: 
                     if order.placed_on.date() == next_delivery_date: 
                         order.placed_on = date.today()
+                        order.is_taken = False
         db.session.commit()
 
 def renew_plans(): 
