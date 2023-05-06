@@ -362,7 +362,6 @@ def toggle_taken_book(deliverer):
             "status": "error",
             "message": "Book not for delivery",
         }), 400
-    order = None
     for user in users: 
         order = Order.query.filter_by(user_id=user.id, book_id=book.id).filter(
             cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
@@ -372,6 +371,38 @@ def toggle_taken_book(deliverer):
                 order.is_taken = False
             else: 
                 order.is_taken = True
+    db.session.commit()
+    return jsonify({"status": "success"})
+
+@api_delivery.route('/toggle-in-warehouse-book', methods=['POST'])
+@token_required
+def toggle_in_warehouse_book(deliverer): 
+    isbn = request.json.get('isbn')
+    book = Book.query.filter_by(isbn=isbn).first()
+    if not book: 
+        return jsonify({
+            "status": "error",
+            "message": "Invalid book ISBN",
+        }), 400
+    users = User.query.filter_by(deliverer_id=deliverer.id, next_delivery_date=date.today()).all()
+    if not len(users): 
+        return jsonify({
+            "status": "error",
+            "message": "Book not for returning",
+        }), 400
+    for user in users: 
+        order = Order.query.filter_by(user_id=user.id, book_id=book.id).filter(
+            cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
+        ).first()
+        if not order or not order.is_completed: 
+            return jsonify({
+                "status": "error",
+                "message": "Delivery not completed",
+            }), 400
+        if order.is_in_warehouse: 
+            order.is_in_warehouse = False
+        else: 
+            order.is_in_warehouse = True
     db.session.commit()
     return jsonify({"status": "success"})
 

@@ -28,6 +28,7 @@ class Order(db.Model):
     notes = db.Column(db.String)
     is_refused = db.Column(db.Boolean)
     is_taken = db.Column(db.Boolean, default=False)
+    is_in_warehouse = db.Column(db.Boolean, default=False)
 
     @staticmethod
     def create(user_id, book_id, age_group, placed_on):
@@ -55,6 +56,7 @@ class Order(db.Model):
         return {
             "id": self.id,
             "is_refused": self.is_refused,
+            "is_in_warehouse": self.is_in_warehouse,
             "is_taken": self.is_taken,
             "is_retained": is_retained,
             "is_completed": self.is_completed,
