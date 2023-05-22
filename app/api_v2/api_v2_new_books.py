@@ -40,7 +40,7 @@ def get_book_set():
     age = int(age)
     categories_query = NewCategory.query.filter(
         or_(
-            and_(NewCategory.min_age <= age, NewCategory.max_age >= age),
+            # and_(NewCategory.min_age <= age, NewCategory.max_age >= age),
             and_(NewCategory.min_age <= age + 1, NewCategory.max_age >= age + 1)
         )
     ).order_by(NewCategory.category_order)
