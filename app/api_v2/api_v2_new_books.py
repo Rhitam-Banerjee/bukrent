@@ -59,7 +59,10 @@ def get_book_set():
             )
         ).all()
         books = [book[0].to_json() for book in books]
-        random.shuffle(books)
+        if category.name == 'Best Seller - Most Popular': 
+            random.shuffle(books)
+        else: 
+            books = sorted(books, key=lambda book: book['review_count'], reverse=False)
         if len(books): 
             book_set.append({
                 "category": category.name,
