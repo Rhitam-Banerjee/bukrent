@@ -41,7 +41,7 @@ def get_book_set():
     age = int(age)
     categories_query = NewCategory.query.filter(
         or_(
-            and_(NewCategory.min_age <= age, NewCategory.max_age >= age),
+            # and_(NewCategory.min_age <= age, NewCategory.max_age >= age),
             and_(NewCategory.min_age <= age + 1, NewCategory.max_age >= age + 1)
         )
     ).order_by(NewCategory.category_order)
@@ -66,7 +66,7 @@ def get_book_set():
         if category.name == 'Best Seller - Most Popular': 
             random.shuffle(books)
         else: 
-            books = sorted(books, key=lambda book: book['review_count'], reverse=True)
+            books = sorted(books, key=lambda book: int(book['review_count']), reverse=True)
         if len(books): 
             book_set.append({
                 "category": category.name,
