@@ -123,6 +123,10 @@ class NewBookImage(db.Model):
             db.session.add(new_book_image_obj)
             db.session.commit()
 
+    def delete(self): 
+        db.session.delete(self)
+        db.session.commit()
+
     def to_json(self): 
         return self.source
 
