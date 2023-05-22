@@ -61,7 +61,7 @@ def seed_new_books():
             added_book.name = book['book_name']
             added_book.image = book['main_image']
             added_book.rating = book['rating']
-            added_book.review_count = book['review_count']
+            added_book.review_count = int(book['review_count'].replace(',', ''))
             added_book.min_age = book['min_age']
             added_book.max_age = book['max_age']
 

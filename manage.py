@@ -15,7 +15,7 @@ from export import *
 from seed_users import *
 from seed_books import seed_books
 from script_order import *
-from scripts.seed_new_books import seed_new_books
+from scripts.script_new_books_2 import seed_new_books
 from scripts.script_25_aug import *
 from scripts.script_26_aug import *
 from scripts.script_30_aug import *
