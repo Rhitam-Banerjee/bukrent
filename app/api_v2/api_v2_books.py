@@ -94,6 +94,7 @@ def get_new_books():
     category_id = request.args.get('category_id')
     search_query = request.args.get('search_query')
     section_id = request.args.get('section_id')
+    sort_review_count = request.args.get('sort_review_count')
     if age and not str(age).isnumeric() and age != '-1': 
         return jsonify({"success": False, "message": "Provide age group"}), 400
     if category_id and not NewCategory.query.filter_by(id=category_id).count(): 
@@ -112,14 +113,15 @@ def get_new_books():
         age = int(age)
     start = int(start)
     end = int(end)
-    print(search_query)
-    books_query = db.session.query(NewBook).join(NewCategoryBook, NewCategory).filter(
-        or_(
-            NewBook.name.ilike(f'{search_query}%'),
-            NewBook.isbn.ilike(f'{search_query}%'),
-            NewCategory.name.ilike(f'{search_query}%'),
+    books_query = db.session.query(NewBook)
+    if search_query: 
+        books_query = books_query.join(NewCategoryBook, NewCategory).filter(
+            or_(
+                NewBook.name.ilike(f'{search_query}%'),
+                NewBook.isbn.ilike(f'{search_query}%'),
+                NewCategory.name.ilike(f'{search_query}%'),
+            )
         )
-    )
     if age is not None: 
         books_query = books_query.filter(
             or_(
@@ -143,7 +145,13 @@ def get_new_books():
             NewBook.id == NewCategoryBook.book_id,
             NewCategoryBook.section_id == section_id
         )
-    books = [book.to_json() for book in books_query.order_by(NewBook.book_order).limit(end - start).offset(start).all()]
+    if sort_review_count and sort_review_count.isnumeric(): 
+        if bool(int(sort_review_count)): 
+            books_query = books_query.order_by(NewBook.review_count.desc())
+        else: 
+            books_query = books_query.order_by(NewBook.review_count)
+    books = [book.to_json() for book in books_query.limit(end - start).offset(start).all()]
+    print(start, end, len(books))
     return jsonify({"success": True, "books": books})
 
 @api_v2_books.route('/new-book', methods=['POST', 'PUT'])
