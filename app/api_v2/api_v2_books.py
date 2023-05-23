@@ -41,8 +41,8 @@ def get_book_set():
     age = int(age)
     categories_query = NewCategory.query.filter(
         or_(
-            # and_(NewCategory.min_age <= age, NewCategory.max_age >= age),
-            and_(NewCategory.min_age <= age + 1, NewCategory.max_age >= age + 1)
+            and_(NewCategory.min_age <= age, NewCategory.max_age >= age),
+            # and_(NewCategory.min_age <= age + 1, NewCategory.max_age >= age + 1)
         )
     ).order_by(NewCategory.category_order)
     if start is not None and end is not None: 
@@ -52,14 +52,16 @@ def get_book_set():
     shuffled_categories = categories[1:]
     random.shuffle(shuffled_categories)
     categories = [categories[0], *shuffled_categories]
+    print(age + 1)
     for category in categories: 
+        print(category.name, category.min_age, category.max_age)
         books = db.session.query(NewBook, NewCategoryBook).filter(
             NewBook.id == NewCategoryBook.book_id,
             NewCategoryBook.category_id == category.id,
             NewCategoryBook.section_id == section.id,
             or_(
                 and_(NewBook.min_age <= age, NewBook.max_age >= age),
-                and_(NewBook.min_age <= age + 1, NewBook.max_age >= age + 1)
+                # and_(NewBook.min_age <= age + 1, NewBook.max_age >= age + 1)
             )
         ).all()
         books = [book[0].to_json() for book in books]

@@ -47,9 +47,6 @@ def get_book_set():
     if start is not None and end is not None: 
         categories_query = categories_query.limit(end - start).offset(start)
     categories = categories_query.all()
-    shuffled_categories = categories[1:]
-    random.shuffle(shuffled_categories)
-    categories = [categories[0], *shuffled_categories]
     book_set = []
     for category in categories: 
         books = db.session.query(NewBook, NewCategoryBook).filter(
@@ -65,9 +62,7 @@ def get_book_set():
         if category.name == 'Best Seller - Most Popular': 
             random.shuffle(books)
         else: 
-            books = sorted(books, key=lambda book: int(book['review_count'].replace(',', '')), reverse=True)
-        for book in books: 
-            print(book['review_count'], type(book['review_count']))
+            books = sorted(books, key=lambda book: book['review_count'], reverse=False)
         if len(books): 
             book_set.append({
                 "category": category.name,
