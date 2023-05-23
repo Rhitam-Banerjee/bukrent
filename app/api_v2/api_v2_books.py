@@ -52,9 +52,7 @@ def get_book_set():
     shuffled_categories = categories[1:]
     random.shuffle(shuffled_categories)
     categories = [categories[0], *shuffled_categories]
-    print(age + 1)
     for category in categories: 
-        print(category.name, category.min_age, category.max_age)
         books = db.session.query(NewBook, NewCategoryBook).filter(
             NewBook.id == NewCategoryBook.book_id,
             NewCategoryBook.category_id == category.id,
