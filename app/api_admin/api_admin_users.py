@@ -32,6 +32,7 @@ def get_users(admin):
     deliverer_id = request.args.get('deliverer_id')
     sort_expiry_date = request.args.get('sort_expiry_date')
     sort_plan_date = request.args.get('sort_plan_date')
+    sort_registration_date = request.args.get('sort_registration_date')
 
     all_users = []
     query = User.query.filter_by(is_deleted=False)
@@ -66,6 +67,11 @@ def get_users(admin):
             query = query.filter(User.created_at != None).order_by(User.created_at)
         else: 
             query = query.filter(User.created_at != None).order_by(User.created_at.desc())
+    elif sort_registration_date and sort_registration_date.isnumeric(): 
+        if bool(int(sort_registration_date)): 
+            query = query.filter(User.plan_date != None).order_by(User.plan_date)
+        else: 
+            query = query.filter(User.plan_date != None).order_by(User.plan_date.desc())
     elif sort and int(sort) == 1:
         query = query.order_by(User.id)
     else:
