@@ -89,6 +89,9 @@ def seed_new_books():
             if not category: 
                 NewCategory.create(category_name, 10000, book['min_age'], book['max_age'])
                 category = NewCategory.query.filter(NewCategory.name.ilike(f'{category_name}%')).first()
+            else: 
+                category.min_age = book['min_age']
+                category.max_age = book['max_age']
         if category_other_name: 
             category_other = NewCategory.query.filter(NewCategory.name.ilike(f'{category_other_name}%')).first()
             if not category_other: 

@@ -2,7 +2,7 @@ from flask import jsonify, request
 import random
 import json
 
-from sqlalchemy import desc, Integer, and_, or_, cast
+from sqlalchemy import and_, or_
 
 from app import db
 from app.models.new_books import NewBookImage, NewBookSection, NewBook, NewCategory, NewCategoryBook
@@ -41,8 +41,8 @@ def get_book_set():
     age = int(age)
     categories_query = NewCategory.query.filter(
         or_(
-            and_(NewCategory.min_age <= age, NewCategory.max_age >= age),
-            # and_(NewCategory.min_age <= age + 1, NewCategory.max_age >= age + 1)
+            # and_(NewCategory.min_age <= age, NewCategory.max_age >= age),
+            and_(NewCategory.min_age <= age + 1, NewCategory.max_age >= age + 1)
         )
     ).order_by(NewCategory.category_order)
     if start is not None and end is not None: 
@@ -59,14 +59,16 @@ def get_book_set():
             NewCategoryBook.section_id == section.id,
             or_(
                 and_(NewBook.min_age <= age, NewBook.max_age >= age),
-                # and_(NewBook.min_age <= age + 1, NewBook.max_age >= age + 1)
+                and_(NewBook.min_age <= age + 1, NewBook.max_age >= age + 1)
             )
         ).all()
         books = [book[0].to_json() for book in books]
         if category.name == 'Best Seller - Most Popular': 
             random.shuffle(books)
         else: 
-            books = sorted(books, key=lambda book: int(book['review_count']), reverse=True)
+            books = sorted(books, key=lambda book: int(book['review_count'].replace(',', '')), reverse=True)
+        for book in books: 
+            print(book['r'])
         if len(books): 
             book_set.append({
                 "category": category.name,
@@ -94,7 +96,6 @@ def get_new_books():
     category_id = request.args.get('category_id')
     search_query = request.args.get('search_query')
     section_id = request.args.get('section_id')
-    sort_review_count = request.args.get('sort_review_count')
     if age and not str(age).isnumeric() and age != '-1': 
         return jsonify({"success": False, "message": "Provide age group"}), 400
     if category_id and not NewCategory.query.filter_by(id=category_id).count(): 
@@ -113,15 +114,14 @@ def get_new_books():
         age = int(age)
     start = int(start)
     end = int(end)
-    books_query = db.session.query(NewBook)
-    if search_query: 
-        books_query = books_query.join(NewCategoryBook, NewCategory).filter(
-            or_(
-                NewBook.name.ilike(f'{search_query}%'),
-                NewBook.isbn.ilike(f'{search_query}%'),
-                NewCategory.name.ilike(f'{search_query}%'),
-            )
+    print(search_query)
+    books_query = db.session.query(NewBook).join(NewCategoryBook, NewCategory).filter(
+        or_(
+            NewBook.name.ilike(f'{search_query}%'),
+            NewBook.isbn.ilike(f'{search_query}%'),
+            NewCategory.name.ilike(f'{search_query}%'),
         )
+    )
     if age is not None: 
         books_query = books_query.filter(
             or_(
@@ -145,13 +145,7 @@ def get_new_books():
             NewBook.id == NewCategoryBook.book_id,
             NewCategoryBook.section_id == section_id
         )
-    if sort_review_count and sort_review_count.isnumeric(): 
-        if bool(int(sort_review_count)): 
-            books_query = books_query.order_by(desc(cast(NewBook.review_count, Integer)))
-        else: 
-            books_query = books_query.order_by(cast(NewBook.review_count, Integer))
-    books = [book.to_json() for book in books_query.limit(end - start).offset(start).all()]
-    print(start, end, len(books))
+    books = [book.to_json() for book in books_query.order_by(NewBook.book_order).limit(end - start).offset(start).all()]
     return jsonify({"success": True, "books": books})
 
 @api_v2_books.route('/new-book', methods=['POST', 'PUT'])
