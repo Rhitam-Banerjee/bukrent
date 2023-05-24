@@ -2,7 +2,7 @@ from flask import jsonify, request
 import random
 import json
 
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, desc, cast, Integer
 
 from app import db
 from app.models.new_books import NewBookImage, NewBookSection, NewBook, NewCategory, NewCategoryBook
@@ -142,9 +142,9 @@ def get_new_books():
         )
     if sort_review_count and sort_review_count.isnumeric(): 
         if bool(int(sort_review_count)): 
-            books_query = books_query.order_by(NewBook.review_count.desc())
+            books_query = books_query.order_by(desc(cast(NewBook.review_count, Integer)))
         else: 
-            books_query = books_query.order_by(NewBook.review_count)
+            books_query = books_query.order_by(cast(NewBook.review_count, Integer))
     books = [book.to_json() for book in books_query.limit(end - start).offset(start).all()]
     return jsonify({"success": True, "books": books})
 
