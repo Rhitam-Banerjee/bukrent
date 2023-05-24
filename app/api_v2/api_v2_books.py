@@ -2,7 +2,7 @@ from flask import jsonify, request
 import random
 import json
 
-from sqlalchemy import desc, Integer, and_, or_, cast
+from sqlalchemy import and_, or_
 
 from app import db
 from app.models.new_books import NewBookImage, NewBookSection, NewBook, NewCategory, NewCategoryBook
@@ -40,27 +40,24 @@ def get_book_set():
         return jsonify({"success": False, "message": "Invalid section name"})
     age = int(age)
     categories_query = NewCategory.query.filter(
-        or_(
-            and_(NewCategory.min_age <= age, NewCategory.max_age >= age),
-            # and_(NewCategory.min_age <= age + 1, NewCategory.max_age >= age + 1)
-        )
+        NewCategory.min_age <= age, 
+        NewCategory.max_age >= age
     ).order_by(NewCategory.category_order)
     if start is not None and end is not None: 
         categories_query = categories_query.limit(end - start).offset(start)
     categories = categories_query.all()
     book_set = []
-    shuffled_categories = categories[1:]
-    random.shuffle(shuffled_categories)
-    categories = [categories[0], *shuffled_categories]
+    if len(categories) > 1: 
+        shuffled_categories = categories[1:]
+        random.shuffle(shuffled_categories)
+        categories = [categories[0], *shuffled_categories]
     for category in categories: 
         books = db.session.query(NewBook, NewCategoryBook).filter(
             NewBook.id == NewCategoryBook.book_id,
             NewCategoryBook.category_id == category.id,
             NewCategoryBook.section_id == section.id,
-            or_(
-                and_(NewBook.min_age <= age, NewBook.max_age >= age),
-                # and_(NewBook.min_age <= age + 1, NewBook.max_age >= age + 1)
-            )
+            NewBook.min_age <= age, 
+            NewBook.max_age >= age
         ).all()
         books = [book[0].to_json() for book in books]
         if category.name == 'Best Seller - Most Popular': 
@@ -124,10 +121,8 @@ def get_new_books():
         )
     if age is not None: 
         books_query = books_query.filter(
-            or_(
-                and_(NewBook.min_age <= age, NewBook.max_age >= age),
-                and_(NewBook.min_age <= age + 1, NewBook.max_age >= age + 1)
-            )
+            NewBook.min_age <= age, 
+            NewBook.max_age >= age
         )
     if category_id and section_id: 
         books_query = books_query.filter(
@@ -147,11 +142,10 @@ def get_new_books():
         )
     if sort_review_count and sort_review_count.isnumeric(): 
         if bool(int(sort_review_count)): 
-            books_query = books_query.order_by(desc(cast(NewBook.review_count, Integer)))
+            books_query = books_query.order_by(NewBook.review_count.desc())
         else: 
-            books_query = books_query.order_by(cast(NewBook.review_count, Integer))
+            books_query = books_query.order_by(NewBook.review_count)
     books = [book.to_json() for book in books_query.limit(end - start).offset(start).all()]
-    print(start, end, len(books))
     return jsonify({"success": True, "books": books})
 
 @api_v2_books.route('/new-book', methods=['POST', 'PUT'])
