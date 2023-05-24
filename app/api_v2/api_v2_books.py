@@ -2,7 +2,7 @@ from flask import jsonify, request
 import random
 import json
 
-from sqlalchemy import and_, or_, desc, cast, Integer
+from sqlalchemy import Integer, and_, cast, desc, or_
 
 from app import db
 from app.models.new_books import NewBookImage, NewBookSection, NewBook, NewCategory, NewCategoryBook
@@ -42,7 +42,7 @@ def get_book_set():
     categories_query = NewCategory.query.filter(
         NewCategory.min_age <= age, 
         NewCategory.max_age >= age
-    ).order_by(NewCategory.category_order)
+    )
     if start is not None and end is not None: 
         categories_query = categories_query.limit(end - start).offset(start)
     categories = categories_query.all()
@@ -70,6 +70,40 @@ def get_book_set():
                 "books": books
             })
     return jsonify({"success": True, "book_set": book_set})
+
+@api_v2_books.route('/get-must-read-set')
+def get_must_read_set(): 
+    age = request.args.get('age')
+    count = request.args.get('count')
+    category_limit = request.args.get('category_limit')
+    if not str(age).isnumeric(): 
+        return jsonify({"success": False, "message": "Invalid age group"})
+    if not count or not count.isnumeric() or int(count) <= 0: 
+        return jsonify({"success": False, "message": "Invalid count"})
+    if not category_limit or not category_limit.isnumeric() or int(category_limit) <= 0: 
+        return jsonify({"success": False, "message": "Invalid category limit"})
+    age = int(age)
+    count = int(count)
+    category_limit = int(category_limit)
+    categories = NewCategory.query.filter(
+        NewCategory.min_age <= age, 
+        NewCategory.max_age >= age
+    ).all()
+    books = []
+    book_ids = set()
+    for category in categories: 
+        category_books = db.session.query(NewBook).join(NewCategoryBook, NewCategory).filter(
+            NewBook.id == NewCategoryBook.book_id,
+            NewCategoryBook.category_id == category.id,
+            NewBook.min_age <= age, 
+            NewBook.max_age >= age
+        ).order_by(desc(cast(NewBook.review_count, Integer))).distinct(NewBook.name).limit(category_limit).all()
+        for book in category_books: 
+            if book.id not in book_ids: 
+                books.append(book)
+                book_ids.add(book.id)
+    books = sorted(books, key=lambda book: int(book.review_count), reverse=True)
+    return jsonify({"success": True, "books": [book.to_json() for book in books[:count]]})
 
 @api_v2_books.route('/get-category-books')
 def get_category_books(): 
@@ -142,9 +176,9 @@ def get_new_books():
         )
     if sort_review_count and sort_review_count.isnumeric(): 
         if bool(int(sort_review_count)): 
-            books_query = books_query.order_by(desc(cast(NewBook.review_count, Integer)))
+            books_query = books_query.order_by(NewBook.review_count.desc())
         else: 
-            books_query = books_query.order_by(cast(NewBook.review_count, Integer))
+            books_query = books_query.order_by(NewBook.review_count)
     books = [book.to_json() for book in books_query.limit(end - start).offset(start).all()]
     return jsonify({"success": True, "books": books})
 
