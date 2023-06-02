@@ -192,9 +192,10 @@ class NewBook(db.Model):
         try: 
             if not stock_available: 
                 order = Order.query.filter(
-                    cast(Order.placed_on, Date) == cast(date.today() + timedelta(days=-7), Date),
+                    Order.book_id == book.id,
+                    cast(Order.placed_on, Date) >= cast(date.today() + timedelta(days=-7), Date)
                 ).order_by(Order.placed_on).first()
-                if order: 
+                if order:
                     return_date = order.placed_on + timedelta(days=7)
         except Exception as e: 
             print(e)
