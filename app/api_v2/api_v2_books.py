@@ -42,7 +42,7 @@ def get_book_set():
     categories_query = NewCategory.query.filter(
         NewCategory.min_age <= age, 
         NewCategory.max_age >= age
-    )
+    ).order_by(NewCategory.category_order)
     if start is not None and end is not None: 
         categories_query = categories_query.limit(end - start).offset(start)
     categories = categories_query.all()
@@ -97,7 +97,7 @@ def get_must_read_set():
             NewCategoryBook.category_id == category.id,
             NewBook.min_age <= age, 
             NewBook.max_age >= age
-        ).order_by(desc(cast(NewBook.review_count, Integer))).distinct(NewBook.name).limit(category_limit).all()
+        ).order_by(desc(cast(NewBook.review_count, Integer))).limit(category_limit).all()
         for book in category_books: 
             if book.id not in book_ids: 
                 books.append(book)
