@@ -1,5 +1,7 @@
 from app import db
 import uuid
+from app.models.books import Book
+import random
 
 class NewBookSection(db.Model): 
     __tablename__ = 'new_book_sections'
@@ -179,6 +181,10 @@ class NewBook(db.Model):
         db.session.commit()
 
     def to_json(self): 
+        stock_available = 0
+        book = Book.query.filter_by(isbn=self.isbn).first()
+        if book: 
+            stock_available = book.stock_available
         return {
             "id": self.id,
             "guid": self.guid,
@@ -201,4 +207,5 @@ class NewBook(db.Model):
             "language": self.language,
             "categories": [category.to_json() for category in NewCategoryBook.query.filter_by(book_id=self.id).all()],
             "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=self.id).all()],
+            "stock_available": stock_available,
         }

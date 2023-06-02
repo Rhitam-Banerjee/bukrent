@@ -103,7 +103,8 @@ def get_must_read_set():
                 books.append(book)
                 book_ids.add(book.id)
     books = sorted(books, key=lambda book: int(book.review_count), reverse=True)
-    return jsonify({"success": True, "books": [book.to_json() for book in books[:count]]})
+    books = list(filter(lambda book: bool(book['stock_available']), [book.to_json() for book in books]))[:count]
+    return jsonify({"success": True, "books": books})
 
 @api_v2_books.route('/get-category-books')
 def get_category_books(): 
