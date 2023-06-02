@@ -308,6 +308,27 @@ def new_book():
 
         return jsonify({"success": True, "book": new_book.to_json()})
 
+@api_v2_books.route('/update-book-quantity', methods=['POST'])
+def update_book_quantity(): 
+    id = request.json.get('id')
+    stock_available = request.json.get('stock_available')
+    rentals = request.json.get('rentals')
+    if not str(stock_available).isnumeric() or not str(rentals).isnumeric() or int(stock_available) < 0 or int(rentals) < 0: 
+        return jsonify({"success": False, "message": "Invalid book quantity"}), 400
+    new_book = NewBook.query.filter_by(id=id).first()
+    if not new_book: 
+        return jsonify({"success": False, "message": "Invalid book ID"}), 404
+    book = Book.query.filter_by(isbn=new_book.isbn).first()
+    if not book: 
+        return jsonify({"success": False, "message": "Invalid book ID"}), 404
+    
+    book.stock_available = stock_available
+    book.rentals = rentals
+    
+    db.session.commit()
+
+    return jsonify({"success": True, "book": new_book.to_json()})
+
 @api_v2_books.route('/delete-new-book', methods=['POST'])
 def delete_new_book(): 
     id = request.json.get('id')

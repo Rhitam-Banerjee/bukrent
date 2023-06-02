@@ -1,6 +1,6 @@
 from datetime import date, timedelta
-
 from sqlalchemy import Date, cast
+from app.models.buckets import Dump, Wishlist
 from app import db
 import uuid
 from app.models.order import Order
@@ -189,16 +189,15 @@ class NewBook(db.Model):
         if book: 
             stock_available = book.stock_available
             rentals = book.rentals
-        try: 
-            if not stock_available: 
-                order = Order.query.filter(
-                    Order.book_id == book.id,
-                    cast(Order.placed_on, Date) >= cast(date.today() + timedelta(days=-7), Date)
-                ).order_by(Order.placed_on).first()
-                if order:
-                    return_date = order.placed_on + timedelta(days=7)
-        except Exception as e: 
-            print(e)
+        if not stock_available: 
+            order = Order.query.filter(
+                Order.book_id == book.id,
+                cast(Order.placed_on, Date) >= cast(date.today() + timedelta(days=-7), Date)
+            ).order_by(Order.placed_on).first()
+            if order:
+                return_date = order.placed_on + timedelta(days=7)
+        wishlist_count = Wishlist.query.filter_by(book_id=book.id).count()
+        previous_count = Dump.query.filter_by(book_id=book.id, read_before=True).count() + Order.query.filter_by(book_id=book.id).count()
         return {
             "id": self.id,
             "guid": self.guid,
@@ -224,4 +223,6 @@ class NewBook(db.Model):
             "stock_available": stock_available,
             "rentals": rentals,
             "return_date": return_date,
+            "wishlist_count": wishlist_count,
+            "previous_count": previous_count,
         }
