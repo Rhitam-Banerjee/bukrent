@@ -1,7 +1,10 @@
+from datetime import date, timedelta
+
+from sqlalchemy import Date, cast
 from app import db
 import uuid
+from app.models.order import Order
 from app.models.books import Book
-import random
 
 class NewBookSection(db.Model): 
     __tablename__ = 'new_book_sections'
@@ -181,10 +184,20 @@ class NewBook(db.Model):
         db.session.commit()
 
     def to_json(self): 
-        stock_available = 0
+        stock_available, rentals, return_date = 0, 0, None
         book = Book.query.filter_by(isbn=self.isbn).first()
         if book: 
             stock_available = book.stock_available
+            rentals = book.rentals
+        try: 
+            if not stock_available: 
+                order = Order.query.filter(
+                    cast(Order.placed_on, Date) == cast(date.today() + timedelta(days=-7), Date),
+                ).order_by(Order.placed_on).first()
+                if order: 
+                    return_date = order.placed_on + timedelta(days=7)
+        except Exception as e: 
+            print(e)
         return {
             "id": self.id,
             "guid": self.guid,
@@ -208,4 +221,6 @@ class NewBook(db.Model):
             "categories": [category.to_json() for category in NewCategoryBook.query.filter_by(book_id=self.id).all()],
             "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=self.id).all()],
             "stock_available": stock_available,
+            "rentals": rentals,
+            "return_date": return_date,
         }
