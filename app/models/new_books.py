@@ -187,20 +187,11 @@ class NewBook(db.Model):
         db.session.commit()
 
     def to_json(self): 
-        stock_available, rentals, return_date = 0, 0, None
+        stock_available, rentals = 0, 0
         book = Book.query.filter_by(isbn=self.isbn).first()
         if book: 
             stock_available = book.stock_available
             rentals = book.rentals
-        if not stock_available: 
-            order = Order.query.filter(
-                Order.book_id == book.id,
-                cast(Order.placed_on, Date) >= cast(date.today() + timedelta(days=-7), Date)
-            ).order_by(Order.placed_on).first()
-            if order:
-                return_date = order.placed_on + timedelta(days=7)
-        wishlist_count = Wishlist.query.filter_by(book_id=book.id).count()
-        previous_count = Dump.query.filter_by(book_id=book.id, read_before=True).count() + Order.query.filter_by(book_id=book.id).count()
         return {
             "id": self.id,
             "guid": self.guid,
@@ -221,11 +212,9 @@ class NewBook(db.Model):
             "publisher": self.publisher,
             "publication_date": self.publication_date,
             "language": self.language,
+            "description": self.description,
             "categories": [category.to_json() for category in NewCategoryBook.query.filter_by(book_id=self.id).all()],
             "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=self.id).all()],
             "stock_available": stock_available,
             "rentals": rentals,
-            "return_date": return_date,
-            "wishlist_count": wishlist_count,
-            "previous_count": previous_count,
         }

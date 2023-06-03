@@ -1,11 +1,14 @@
+from datetime import date, timedelta
 from flask import jsonify, request
 import random
 import json
 
-from sqlalchemy import Integer, and_, cast, desc, or_
+from sqlalchemy import Date, Integer, and_, cast, desc, or_
 
 from app import db
 from app.models.new_books import NewBookImage, NewBookSection, NewBook, NewCategory, NewCategoryBook
+from app.models.order import Order
+from app.models.buckets import Wishlist, Dump
 from app.models.books import Book
 
 from app.api_admin.utils import upload_to_aws
@@ -96,14 +99,16 @@ def get_must_read_set():
             NewBook.id == NewCategoryBook.book_id,
             NewCategoryBook.category_id == category.id,
             NewBook.min_age <= age, 
-            NewBook.max_age >= age
+            NewBook.max_age >= age,
+        ).join(Book, NewBook.isbn == Book.isbn).filter(
+            Book.stock_available > 0,
         ).order_by(desc(cast(NewBook.review_count, Integer))).limit(category_limit).all()
         for book in category_books: 
             if book.id not in book_ids: 
                 books.append(book)
                 book_ids.add(book.id)
-    books = sorted(books, key=lambda book: int(book.review_count), reverse=True)
-    books = list(filter(lambda book: bool(book['stock_available']), [book.to_json() for book in books]))[:count]
+    books = sorted(books, key=lambda book: int(book.review_count), reverse=True)[:count]
+    books = [book.to_json() for book in books]
     return jsonify({"success": True, "books": books})
 
 @api_v2_books.route('/get-category-books')
@@ -180,7 +185,24 @@ def get_new_books():
             books_query = books_query.order_by(NewBook.review_count.desc())
         else: 
             books_query = books_query.order_by(NewBook.review_count)
-    books = [book.to_json() for book in books_query.limit(end - start).offset(start).all()]
+    books = []
+    for book in books_query.limit(end - start).offset(start).all(): 
+        old_book = Book.query.filter_by(isbn=book.isbn).first()
+        if not old_book.stock_available: 
+            order = Order.query.filter(
+                Order.book_id == old_book.id,
+                cast(Order.placed_on, Date) >= cast(date.today() + timedelta(days=-7), Date)
+            ).order_by(Order.placed_on).first()
+            if order:
+                return_date = order.placed_on + timedelta(days=7)
+        wishlist_count = Wishlist.query.filter_by(book_id=old_book.id).count()
+        previous_count = Dump.query.filter_by(book_id=old_book.id, read_before=True).count() + Order.query.filter_by(book_id=old_book.id).count()
+        books.append({
+            **book.to_json(),   
+            "return_date": return_date,
+            "wishlist_count": wishlist_count,
+            "previous_count": previous_count
+        })
     return jsonify({"success": True, "books": books})
 
 @api_v2_books.route('/new-book', methods=['POST', 'PUT'])
