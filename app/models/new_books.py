@@ -157,6 +157,9 @@ class NewBook(db.Model):
     publisher = db.Column(db.String)
     publication_date = db.Column(db.Date)
     language = db.Column(db.String)
+    description = db.Column(db.String)
+    book_type = db.Column(db.String)
+    authors = db.Column(db.String)
 
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
