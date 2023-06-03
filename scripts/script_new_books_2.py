@@ -55,7 +55,7 @@ def seed_new_books():
             # added_book.name = book['book_name']
             # added_book.image = book['main_image']
             # added_book.rating = book['rating']
-            # added_book.review_count = int(book['review_count'].replace(',', ''))
+            added_book.review_count = int(book['review_count'].replace(',', ''))
             # added_book.min_age = book['min_age']
             # added_book.max_age = book['max_age']
 
@@ -96,7 +96,7 @@ def seed_new_books():
             # old_book.name = book['book_name']
             # old_book.image = book['main_image']
             # old_book.rating = book['rating']
-            # old_book.review_count = book['review_count']
+            old_book.review_count = int(book['review_count'].replace(',', ''))
             print(f'Skipped old book: {added_book.name} - {i + 1} / {len(books)}')
         else: 
             Book.create(
