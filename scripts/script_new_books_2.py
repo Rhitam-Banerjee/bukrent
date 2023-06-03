@@ -56,10 +56,14 @@ def seed_new_books():
             # added_book.image = book['main_image']
             # added_book.rating = book['rating']
             added_book.review_count = int(book['review_count'].replace(',', ''))
-            # added_book.min_age = book['min_age']
-            # added_book.max_age = book['max_age']
+            added_book.min_age = book['min_age']
+            added_book.max_age = book['max_age']
 
-            # db.session.commit()
+            category = NewCategory.query.filter_by(name=book['category_name']).first()
+            if category: 
+                category.min_age = book['min_age']
+                category.max_age = book['max_age']
+
             print(f'Skipped book: {added_book.name} - {i + 1} / {len(books)}')
         else: 
             NewBook.create(
