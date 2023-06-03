@@ -208,8 +208,8 @@ def get_delivery(deliverer, id):
         return_books = Order.query.filter_by(user_id=user.id).filter(
             cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
         ).all()
-    retained_books = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).all()
-    return_books = [*return_books, *retained_books]
+    # retained_books = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).all()
+    # return_books = [*return_books, *retained_books]
     user_json = user.to_json()
     return jsonify({
         "status": "success",

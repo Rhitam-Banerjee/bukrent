@@ -853,7 +853,8 @@ class User(db.Model):
                     "name": suggestion.book.name,
                     "guid": suggestion.book.guid,
                     "isbn": suggestion.book.isbn,
-                    "image": suggestion.book.image
+                    "image": suggestion.book.image,
+                    "stock_available": suggestion.book.stock_available,
                     # "age_group": suggestion.age_group
                 }
 
@@ -871,7 +872,8 @@ class User(db.Model):
                     "name": dump.book.name,
                     "guid": dump.book.guid,
                     "isbn": dump.book.isbn,
-                    "image": dump.book.image
+                    "image": dump.book.image,
+                    "stock_available": dump.book.stock_available,
                 }
 
                 book_list.append(temp_dict)
@@ -886,7 +888,8 @@ class User(db.Model):
                 "name": read_book.book.name,
                 "guid": read_book.book.guid,
                 "isbn": read_book.book.isbn,
-                "image": read_book.book.image
+                "image": read_book.book.image,
+                "stock_available": read_book.book.stock_available,
             }
 
             book_list.append(temp_dict)
@@ -929,7 +932,7 @@ class User(db.Model):
                 "guid": wishlist.book.guid,
                 "isbn": wishlist.book.isbn,
                 # "age_group": wishlist.age_group,
-                "available": True if wishlist.book.stock_available > 0 else False,
+                "stock_available": wishlist.book.stock_available,
                 "image": wishlist.book.image
             }
 
