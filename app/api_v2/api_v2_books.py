@@ -187,6 +187,7 @@ def get_new_books():
             books_query = books_query.order_by(NewBook.review_count)
     books = []
     for book in books_query.limit(end - start).offset(start).all(): 
+        return_date = None
         old_book = Book.query.filter_by(isbn=book.isbn).first()
         if not old_book.stock_available: 
             order = Order.query.filter(
