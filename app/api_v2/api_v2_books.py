@@ -148,8 +148,7 @@ def get_new_books():
         age = None
     elif age: 
         age = int(age)
-    start = int(start)
-    end = int(end)
+    start, end = int(start), int(end)
     books_query = db.session.query(NewBook)
     if search_query: 
         books_query = books_query.join(NewCategoryBook, NewCategory).filter(
@@ -205,6 +204,43 @@ def get_new_books():
             "previous_count": previous_count
         })
     return jsonify({"success": True, "books": books})
+
+@api_v2_books.route('/search-new-books')
+def search_new_books(): 
+    search_query = request.args.get('search_query')
+    start = request.args.get('start')
+    end = request.args.get('end')
+    if not search_query or not search_query.strip(): 
+        return jsonify({"success": False, "message": "Enter a search query"}), 400
+    if len(search_query) < 3: 
+        return jsonify({"success": False, "message": "Search query should be atleast 3 characters long"}), 400
+    if not start or not start.isnumeric(): 
+        start = 0
+    if not end or not end.isnumeric(): 
+        end = 100
+    start, end = int(start), int(end)
+    books = NewBook.query.join(NewCategoryBook, NewCategory).filter(
+        NewCategory.name != 'Best Seller - Most Popular',
+        or_(
+            NewBook.name.ilike(f'% {search_query} %'),
+            NewBook.isbn.ilike(f'% {search_query} %'),
+            NewBook.authors.ilike(f'% {search_query} %'),
+            NewBook.book_type.ilike(f'% {search_query} %'),
+            NewBook.publisher.ilike(f'% {search_query} %'),
+            NewBook.description.ilike(f'% {search_query} %'),
+            NewCategory.name.ilike(f'% {search_query} %'),
+        )
+    ).limit(end - start).offset(start).all()
+    category_to_books = dict()
+    for book in books: 
+        categories = NewCategory.query.join(NewCategoryBook).filter(NewCategoryBook.book_id == book.id).all()
+        for category in categories: 
+            if category.name not in category_to_books: 
+                category_to_books[category.name] = {"category": category.name, "books": []}
+            category_to_books[category.name]["books"].append(book.to_json())
+    book_set = [category_to_books[category] for category in category_to_books]
+    book_set = sorted(book_set, key=lambda books: len(books["books"]), reverse=True)
+    return jsonify({"success": True, "book_set": book_set})
 
 @api_v2_books.route('/new-book', methods=['POST', 'PUT'])
 def new_book(): 
