@@ -223,12 +223,12 @@ def search_new_books():
         NewCategory.name != 'Best Seller - Most Popular',
         or_(
             NewBook.name.ilike(f'% {search_query} %'),
-            NewBook.isbn.ilike(f'% {search_query} %'),
-            NewBook.authors.ilike(f'% {search_query} %'),
-            NewBook.book_type.ilike(f'% {search_query} %'),
-            NewBook.publisher.ilike(f'% {search_query} %'),
+            NewBook.isbn.ilike(f'%{search_query}%'),
+            NewBook.authors.ilike(f'%{search_query}%'),
+            NewBook.book_type.ilike(f'%{search_query}%'),
+            NewBook.publisher.ilike(f'%{search_query}%'),
             NewBook.description.ilike(f'% {search_query} %'),
-            NewCategory.name.ilike(f'% {search_query} %'),
+            NewCategory.name.ilike(f'%{search_query}%'),
         )
     ).limit(end - start).offset(start).all()
     category_to_books = dict()
