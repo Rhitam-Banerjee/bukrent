@@ -236,7 +236,12 @@ def search_new_books():
         categories = NewCategory.query.join(NewCategoryBook).filter(NewCategoryBook.book_id == book.id).all()
         for category in categories: 
             if category.name not in category_to_books: 
-                category_to_books[category.name] = {"category": category.name, "books": []}
+                category_to_books[category.name] = {
+                    "category": category.name, 
+                    "books": [],
+                    "min_age": category.min_age,
+                    "max_age": category.max_age,
+                }
             category_to_books[category.name]["books"].append(book.to_json())
     book_set = [category_to_books[category] for category in category_to_books]
     book_set = sorted(book_set, key=lambda books: len(books["books"]), reverse=True)
