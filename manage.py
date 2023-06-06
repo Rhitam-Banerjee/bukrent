@@ -17,6 +17,7 @@ from seed_books import seed_books
 from script_order import *
 from scripts.script_new_books_2 import seed_new_books
 from scripts.script_new_books_description import seed_new_books_description
+from scripts.script_new_book_sections import seed_new_book_sections
 from scripts.script_new_books_details import seed_new_books_details
 from scripts.script_25_aug import *
 from scripts.script_26_aug import *
@@ -165,6 +166,10 @@ def seed_new_books_description_data():
 @cli.command()
 def seed_new_books_details_data(): 
     seed_new_books_details()
+
+@cli.command()
+def seed_new_book_sections_data(): 
+    seed_new_book_sections()
 
 @cli.command()
 def seed_multiple_images_data(): 
