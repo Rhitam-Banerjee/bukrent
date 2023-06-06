@@ -24,11 +24,16 @@ def create_app(script_info=None):
         "https://delivery.bukrent.com",
         "https://edit.bukrent.com",
         "https://ops.bukrent.com",
+        
         "https://brightr.vercel.app",
         "https://brightr.com",
         "https://brightr.club",
         "https://edit.brightr.club",
         "https://test.brightr.club",
+        "https://admin.brightr.club",
+        "https://delivery.brightr.club",
+        "https://editold.brightr.club",
+        "https://ops.brightr.club",
     ])
 
     from app.api.api import api
