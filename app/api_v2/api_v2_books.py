@@ -74,8 +74,8 @@ def get_book_set():
             })
     return jsonify({"success": True, "book_set": book_set})
 
-@api_v2_books.route('/get-must-read-set')
-def get_must_read_set(): 
+@api_v2_books.route('/get-most-popular-set')
+def get_most_popular_set(): 
     age = request.args.get('age')
     count = request.args.get('count')
     category_limit = request.args.get('category_limit')
@@ -110,6 +110,75 @@ def get_must_read_set():
     books = sorted(books, key=lambda book: int(book.review_count), reverse=True)[:count]
     books = [book.to_json() for book in books]
     return jsonify({"success": True, "books": books})
+
+@api_v2_books.route('/get-must-read-set')
+def get_must_read_set(): 
+    age = request.args.get('age')
+    category_count = request.args.get('category_count')
+    book_count = request.args.get('book_count')
+    section_name = request.args.get('section_name')
+    show_unavailable = request.args.get('show_unavailable')
+    randomize_categories = request.args.get('randomize_categories')
+    randomize_books = request.args.get('randomize_books')
+    if not str(age).isnumeric(): 
+        return jsonify({"success": False, "message": "Invalid age group"}), 400
+    if not category_count or not book_count: 
+        return jsonify({"success": False, "message": "Provide category and book count"}), 400
+    if not category_count.isnumeric() or int(category_count) <= 0: 
+        return jsonify({"success": False, "message": "Invalid category count"}), 400
+    if not book_count.isnumeric() or int(book_count) <= 0: 
+        return jsonify({"success": False, "message": "Invalid book count"}), 400
+    section = NewBookSection.query.filter_by(name=section_name).first()
+    if not section: 
+        return jsonify({"success": False, "message": "Invalid section name"}), 400
+    age = int(age)
+    category_count = int(category_count)
+    book_count = int(book_count)
+    categories = NewCategory.query.join(NewCategoryBook).filter(NewCategoryBook.section_id == section.id).all()
+    book_set = []
+    if len(categories) == 1 and categories[0].name == section.name: 
+        books = NewBook.query.join(NewCategoryBook).filter(
+            NewBook.id == NewCategoryBook.book_id,
+            NewCategoryBook.section_id == section.id,
+            NewCategoryBook.category_id == categories[0].id,
+            NewBook.min_age <= age, 
+            NewBook.max_age >= age
+        ).join(Book, NewBook.isbn == Book.isbn).filter(
+            Book.stock_available == bool(show_unavailable),
+        ).order_by(desc(cast(NewBook.review_count, Integer))).all()
+        category_to_books = dict()
+        for book in books: 
+            book_json = book.to_json()
+            for category in book_json["categories"]: 
+                if category["section"]["id"] != 1 or category["category"]["max_age"] == 100: 
+                    continue
+                if category["category"]["name"] not in category_to_books: 
+                    category_to_books[category["category"]["name"]] = {"category": category["category"]["name"], "books": []}
+                if len(category_to_books[category["category"]["name"]]["books"]) < book_count: 
+                    category_to_books[category["category"]["name"]]["books"].append(book)
+        for category in category_to_books: 
+            if randomize_books: 
+                random.shuffle(category_to_books[category]["books"])
+            book_set.append(category_to_books[category])
+    else: 
+        for category in categories: 
+            books = NewBook.query.join(NewCategoryBook, NewCategory).filter(
+                NewBook.id == NewCategoryBook.book_id,
+                NewCategoryBook.category_id == category.id,
+                NewBook.min_age <= age, 
+                NewBook.max_age >= age
+            ).join(Book, NewBook.isbn == Book.isbn).filter(
+                Book.stock_available == bool(show_unavailable),
+            ).order_by(desc(cast(NewBook.review_count, Integer))).limit(book_count).all()
+            if randomize_books: 
+                random.shuffle(books)
+            book_set.append({"category": category.name, "books": books})
+    book_set = sorted(book_set, key=lambda category: sum([int(book.review_count) for book in category["books"]]), reverse=True)[:category_count]
+    if randomize_categories: 
+        random.shuffle(book_set)
+    for i in range(category_count): 
+        book_set[i]["books"] = [book.to_json() for book in book_set[i]["books"]]
+    return jsonify({"success": True, "book_set": book_set})
 
 @api_v2_books.route('/get-category-books')
 def get_category_books(): 

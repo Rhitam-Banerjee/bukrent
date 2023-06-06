@@ -11,7 +11,7 @@ def seed_new_books_details():
     ############################# Books
 
     books = []
-    with open("./scripts/data/new_books_details_3_june.csv", mode="r", encoding='utf8') as file:
+    with open("./scripts/data/new_books_main_6_june.csv", mode="r", encoding='utf8') as file:
         csv_file = csv.reader(file)
         for line in csv_file:
             books.append(line)
@@ -46,6 +46,9 @@ def seed_new_books_details():
         book = books[i]
         book = {
             'isbn': books[i][0],
+            'name': books[i][2],
+            'rating': books[i][3],
+            'review_count': books[i][4],
             'book_type': books[i][5],
             'for_age': books[i][6],
             'grade_level': books[i][7],
@@ -60,6 +63,7 @@ def seed_new_books_details():
             'author_1': books[i][16],
             'author_2': books[i][17],
             'author_3': books[i][18],
+            'main_image': books[i][19],
             'image_1': books[i][20],
             'image_2': books[i][21],
         }
@@ -70,32 +74,47 @@ def seed_new_books_details():
             else: 
                 book[key] = book[key].strip()
 
-        ''' Adding book details '''
+        ''' Adding book '''
 
         added_book = NewBook.query.filter_by(isbn=book['isbn']).first()
         if added_book: 
-            # if book['book_type']: 
-            #     added_book.book_type = book['book_type']
-            # if book['for_age']: 
-            #     added_book.for_age = book['for_age']
-            # if book['grade_level']: 
-            #     added_book.grade_level = book['grade_level']
-            # if book['lexile_measure']: 
-            #     added_book.lexile_measure = book['lexile_measure']
-            # if book['pages']: 
-            #     added_book.pages = book['pages']
-            # if book['language']: 
-            #     added_book.language = book['language']
-            # if book['dimensions']: 
-            #     added_book.dimensions = book['dimensions']
-            # if book['publisher']: 
-            #     added_book.publisher = book['publisher']
-            # if book['publication_date']: 
-            #     added_book.publication_date = datetime.strptime(book['publication_date'], '%B %d, %Y')
-            # if book['isbn10']: 
-            #     added_book.isbn10 = book['isbn10']
-            # if book['isbn13']: 
-            #     added_book.isbn13 = book['isbn13']
+            print(f'Skipped book : {i + 1} / {len(books)}')
+        else: 
+            NewBook.create(
+                book['name'], 
+                book['main_image'], 
+                book['isbn'], 
+                book['rating'], 
+                int(str(book['review_count']).replace(',', '')), 
+                1, 
+                book['min_age'], 
+                book['max_age'],
+            )
+
+            added_book = NewBook.query.filter_by(isbn=book['isbn']).first()
+
+            if book['book_type']: 
+                added_book.book_type = book['book_type']
+            if book['for_age']: 
+                added_book.for_age = book['for_age']
+            if book['grade_level']: 
+                added_book.grade_level = book['grade_level']
+            if book['lexile_measure']: 
+                added_book.lexile_measure = book['lexile_measure']
+            if book['pages']: 
+                added_book.pages = book['pages']
+            if book['language']: 
+                added_book.language = book['language']
+            if book['dimensions']: 
+                added_book.dimensions = book['dimensions']
+            if book['publisher']: 
+                added_book.publisher = book['publisher']
+            if book['publication_date']: 
+                added_book.publication_date = datetime.strptime(book['publication_date'], '%B %d, %Y')
+            if book['isbn10']: 
+                added_book.isbn10 = book['isbn10']
+            if book['isbn13']: 
+                added_book.isbn13 = book['isbn13']
             
             authors = ''
             if book['author_1']: 
@@ -109,21 +128,43 @@ def seed_new_books_details():
             if authors: 
                 added_book.authors = authors
 
-            # added_images = NewBookImage.query.filter_by(book_id=added_book.id).all()
-            # for image in added_images: 
-            #     image.delete()
+            added_images = NewBookImage.query.filter_by(book_id=added_book.id).all()
+            for image in added_images: 
+                image.delete()
 
-            # if book['image_1']: 
-            #     NewBookImage.create(book['image_1'], added_book.id)
-            # if book['image_2']: 
-            #     NewBookImage.create(book['image_2'], added_book.id)
+            if book['image_1']: 
+                NewBookImage.create(book['image_1'], added_book.id)
+            if book['image_2']: 
+                NewBookImage.create(book['image_2'], added_book.id)
 
-            db.session.commit()
 
-            print(f'Added book details: {added_book.name} - {i + 1} / {len(books)}')
+            print(f'Added book : {i + 1} / {len(books)}')
+
+        ''' X '''
+
+        ''' Adding old book '''
+
+        old_book = Book.query.filter_by(isbn=book['isbn']).first()
+        if old_book: 
+            print(f'Skipped old book : {i + 1} / {len(books)}')
         else: 
-            print(f'Skipped book details: {i + 1} / {len(books)}')
-
+            Book.create(
+                book['book_name'], 
+                book['main_image'], 
+                book['isbn'], 
+                book['rating'],
+                int(str(book['review_count']).replace(',', '')),
+                '', 
+                'English', 
+                None, 
+                '', 
+                1, 
+                None, 
+                None, 
+                None, 
+                None
+            )
+        
         ''' X '''
 
     db.session.commit()
