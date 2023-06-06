@@ -137,15 +137,16 @@ def get_must_read_set():
     categories = NewCategory.query.join(NewCategoryBook).filter(NewCategoryBook.section_id == section.id).all()
     book_set = []
     if len(categories) == 1 and categories[0].name == section.name: 
-        books = NewBook.query.join(NewCategoryBook).filter(
+        books_query = NewBook.query.join(NewCategoryBook).filter(
             NewBook.id == NewCategoryBook.book_id,
             NewCategoryBook.section_id == section.id,
             NewCategoryBook.category_id == categories[0].id,
             NewBook.min_age <= age, 
             NewBook.max_age >= age
-        ).join(Book, NewBook.isbn == Book.isbn).filter(
-            Book.stock_available == bool(show_unavailable),
-        ).order_by(desc(cast(NewBook.review_count, Integer))).all()
+        )
+        if not show_unavailable: 
+            books_query = books_query.join(Book, NewBook.isbn == Book.isbn).filter(Book.stock_available < 1)
+        books = books_query.order_by(desc(cast(NewBook.review_count, Integer))).all()
         category_to_books = dict()
         for book in books: 
             book_json = book.to_json()
@@ -162,14 +163,15 @@ def get_must_read_set():
             book_set.append(category_to_books[category])
     else: 
         for category in categories: 
-            books = NewBook.query.join(NewCategoryBook, NewCategory).filter(
+            books_query = NewBook.query.join(NewCategoryBook, NewCategory).filter(
                 NewBook.id == NewCategoryBook.book_id,
                 NewCategoryBook.category_id == category.id,
                 NewBook.min_age <= age, 
                 NewBook.max_age >= age
-            ).join(Book, NewBook.isbn == Book.isbn).filter(
-                Book.stock_available == bool(show_unavailable),
-            ).order_by(desc(cast(NewBook.review_count, Integer))).limit(book_count).all()
+            )
+            if not show_unavailable: 
+                books_query = books_query.join(Book, NewBook.isbn == Book.isbn).filter(Book.stock_available < 1)
+            books = books_query.order_by(desc(cast(NewBook.review_count, Integer))).limit(book_count).all()
             if randomize_books: 
                 random.shuffle(books)
             book_set.append({"category": category.name, "books": books})
