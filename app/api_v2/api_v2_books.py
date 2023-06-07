@@ -145,8 +145,7 @@ def get_must_read_set():
             NewBook.max_age >= age
         )
         if not show_unavailable: 
-            books_query = books_query.join(Book, NewBook.isbn == Book.isbn).filter(Book.stock_available < 1)
-
+            books_query = books_query.join(Book, NewBook.isbn == Book.isbn).filter(Book.stock_available >= 1)
         books = books_query.order_by(desc(cast(NewBook.review_count, Integer))).all()
         category_to_books = dict()
         for book in books: 
@@ -173,7 +172,7 @@ def get_must_read_set():
                 NewBook.max_age >= age
             )
             if not show_unavailable: 
-                books_query = books_query.join(Book, NewBook.isbn == Book.isbn).filter(Book.stock_available < 1)
+                books_query = books_query.join(Book, NewBook.isbn == Book.isbn).filter(Book.stock_available >= 1)
             books = books_query.order_by(desc(cast(NewBook.review_count, Integer))).limit(book_count).all()
             if randomize_books: 
                 random.shuffle(books)

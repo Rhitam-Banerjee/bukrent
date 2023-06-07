@@ -25,10 +25,8 @@ def get_categories():
     if age is not None and age.isnumeric(): 
         age = int(age)
         categories_query = categories_query.filter(
-            or_(
-                and_(NewCategory.min_age <= age, NewCategory.max_age >= age),
-                and_(NewCategory.min_age <= age + 1, NewCategory.max_age >= age + 1)
-            )
+            NewCategory.min_age <= age, 
+            NewCategory.max_age >= age
         )
     categories = [category.to_json() for category in categories_query.order_by(NewCategory.category_order).limit(end - start).offset(start).all()]
     return jsonify({"success": True, "categories": categories})
