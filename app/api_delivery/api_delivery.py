@@ -208,8 +208,16 @@ def get_delivery(deliverer, id):
         return_books = Order.query.filter_by(user_id=user.id).filter(
             cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
         ).all()
-    # retained_books = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).all()
-    # return_books = [*return_books, *retained_books]
+    retained_books = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).all()
+    return_books = [*return_books, *retained_books]
+    return_book_isbns = dict()
+    for return_book in return_books: 
+        return_book = return_book.to_json()
+        if return_book['book']['isbn'] not in return_book_isbns: 
+            return_book_isbns[return_book['book']['isbn']] = return_book
+    return_books = []
+    for isbn in return_book_isbns: 
+        return_books.append(return_book_isbns[isbn])
     user_json = user.to_json()
     return jsonify({
         "status": "success",
@@ -217,7 +225,7 @@ def get_delivery(deliverer, id):
             "wishlist": user.get_wishlist(),
             "suggestions": user.get_suggestions(),
             "delivery_books": [delivery_book.to_json() for delivery_book in delivery_books],
-            "return_books": [return_book.to_json() for return_book in return_books],
+            "return_books": return_books,
             "notes": notes,
             "received_by": received_by,
             "is_completed": is_completed,
