@@ -80,6 +80,9 @@ def seed_new_books_details():
         if added_book: 
             print(f'Skipped book : {i + 1} / {len(books)}')
         else: 
+            if not book['review_count']: 
+                book['review_count'] = 0
+
             NewBook.create(
                 book['name'], 
                 book['main_image'], 
@@ -87,8 +90,8 @@ def seed_new_books_details():
                 book['rating'], 
                 int(str(book['review_count']).replace(',', '')), 
                 1, 
-                book['min_age'], 
-                book['max_age'],
+                0, 
+                1,
             )
 
             added_book = NewBook.query.filter_by(isbn=book['isbn']).first()
@@ -149,7 +152,7 @@ def seed_new_books_details():
             print(f'Skipped old book : {i + 1} / {len(books)}')
         else: 
             Book.create(
-                book['book_name'], 
+                book['name'], 
                 book['main_image'], 
                 book['isbn'], 
                 book['rating'],

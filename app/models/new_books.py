@@ -164,7 +164,9 @@ class NewBook(db.Model):
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
     @staticmethod
-    def create(name, image, isbn, rating, review_count, book_order, min_age, max_age):
+    def create(name, image, isbn, rating, review_count, book_order, min_age, max_age): 
+        if NewBook.query.filter_by(isbn=isbn).count(): 
+            return
         book_dict = dict(
             guid = str(uuid.uuid4()),
             name = name,

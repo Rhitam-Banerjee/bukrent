@@ -62,14 +62,16 @@ def seed_new_book_sections():
         ''' Adding new sections '''
 
         added_book = NewBook.query.filter_by(isbn=book['isbn']).first()
-        if added_book: 
-            if book['most_popular']: 
-                NewCategoryBook.create(
-                    most_popular_series_category.id, 
-                    added_book.id, 
-                    most_popular_series.id,
-                )
-                print(f'Added to most popular : {i + 1} / {len(books)}')
+        if added_book and not book['category_name']: 
+            added_book.min_age = book['min_age']
+            added_book.max_age = book['max_age']
+            # if book['most_popular']: 
+            #     NewCategoryBook.create(
+            #         most_popular_series_category.id, 
+            #         added_book.id, 
+            #         most_popular_series.id,
+            #     )
+            #     print(f'Added to most popular : {i + 1} / {len(books)}')
             if book['best_seller']: 
                 category = NewCategory.query.filter_by(name=book['best_seller']).first()
                 if not category: 

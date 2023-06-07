@@ -93,6 +93,8 @@ class Book(db.Model):
 
     @staticmethod
     def create(name, image, isbn, rating, review_count, book_format, language, price, description, stock_available, series_id, bestseller_json, borrowed_json, suggestion_json):
+        if Book.query.filter_by(isbn=isbn).count(): 
+            return
         book_dict = dict(
             guid = str(uuid.uuid4()),
             name = name,
