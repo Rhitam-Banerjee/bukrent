@@ -53,7 +53,7 @@ def seed_new_books_details():
             'for_age': books[i][6],
             'grade_level': books[i][7],
             'lexile_measure': books[i][8],
-            'pages': books[i][9],
+            'pages': books[i][9].replace('pages', '').replace('page', ''),
             'language': books[i][10],
             'dimensions': books[i][11],
             'publisher': books[i][12],

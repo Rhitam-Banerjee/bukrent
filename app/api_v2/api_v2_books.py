@@ -157,9 +157,9 @@ def get_must_read_set():
             ).all()
             for category in categories: 
                 if category.name not in category_to_books: 
-                    category_to_books[category["category"]["name"]] = {"category": category["category"]["name"], "books": []}
-                if len(category_to_books[category["category"]["name"]]["books"]) < book_count: 
-                    category_to_books[category["category"]["name"]]["books"].append(book)
+                    category_to_books[category.name] = {"category": category.name, "books": []}
+                if len(category_to_books[category.name]["books"]) < book_count: 
+                    category_to_books[category.name]["books"].append(book)
         for category in category_to_books: 
             if randomize_books: 
                 random.shuffle(category_to_books[category]["books"])
