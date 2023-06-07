@@ -146,14 +146,17 @@ def get_must_read_set():
         )
         if not show_unavailable: 
             books_query = books_query.join(Book, NewBook.isbn == Book.isbn).filter(Book.stock_available < 1)
+
         books = books_query.order_by(desc(cast(NewBook.review_count, Integer))).all()
         category_to_books = dict()
         for book in books: 
-            book_json = book.to_json()
-            for category in book_json["categories"]: 
-                if category["section"]["id"] != 1 or category["category"]["max_age"] == 100: 
-                    continue
-                if category["category"]["name"] not in category_to_books: 
+            categories = NewCategory.query.join(NewCategoryBook).filter(
+                NewCategoryBook.section_id == 1,
+                NewCategoryBook.book_id == book.id,
+                NewCategory.max_age != 100,
+            ).all()
+            for category in categories: 
+                if category.name not in category_to_books: 
                     category_to_books[category["category"]["name"]] = {"category": category["category"]["name"], "books": []}
                 if len(category_to_books[category["category"]["name"]]["books"]) < book_count: 
                     category_to_books[category["category"]["name"]]["books"].append(book)
@@ -291,7 +294,9 @@ def search_new_books():
         end = 100
     start, end = int(start), int(end)
     books = NewBook.query.join(NewCategoryBook, NewCategory).filter(
+        NewCategoryBook.category_id == NewCategory.id,
         NewCategory.name != 'Best Seller - Most Popular',
+        NewCategoryBook.section_id == 1,
         or_(
             NewBook.name.ilike(f'% {search_query} %'),
             NewBook.isbn.ilike(f'%{search_query}%'),
@@ -304,7 +309,11 @@ def search_new_books():
     ).limit(end - start).offset(start).all()
     category_to_books = dict()
     for book in books: 
-        categories = NewCategory.query.join(NewCategoryBook).filter(NewCategoryBook.book_id == book.id).all()
+        categories = NewCategory.query.join(NewCategoryBook).filter(
+            NewCategoryBook.section_id == 1,
+            NewCategoryBook.book_id == book.id,
+            NewCategory.max_age != 100,
+        ).all()
         for category in categories: 
             if category.name not in category_to_books: 
                 category_to_books[category.name] = {
