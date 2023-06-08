@@ -28,7 +28,8 @@ def get_categories():
             NewCategory.min_age <= age, 
             NewCategory.max_age >= age
         )
-    categories = [category.to_json() for category in categories_query.order_by(NewCategory.category_order).limit(end - start).offset(start).all()]
+    categories = [category.to_json() for category in categories_query.order_by(NewCategory.name).limit(end - start).offset(start).all()]
+    print(len(categories))
     return jsonify({"success": True, "categories": categories})
 
 @api_v2_books.route('/add-category', methods=['POST'])
