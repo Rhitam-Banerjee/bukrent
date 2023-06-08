@@ -173,7 +173,21 @@ def get_must_read_set():
             )
             if not show_unavailable: 
                 books_query = books_query.join(Book, NewBook.isbn == Book.isbn).filter(Book.stock_available >= 1)
-            books = books_query.order_by(desc(cast(NewBook.review_count, Integer))).limit(book_count).all()
+            books_all = books_query.order_by(desc(cast(NewBook.review_count, Integer))).all()
+            books = []
+            category_ids = set()
+            for book in books_all: 
+                book_categories = NewCategoryBook.query.filter_by(book_id=book.id, section_id=1).all()
+                category_exists = False
+                for book_category in book_categories: 
+                    if book_category.category_id in category_ids: 
+                        category_exists = True
+                        break
+                    category_ids.add(book_category.category_id)
+                if not category_exists: 
+                    books.append(book)
+                if len(books) == book_count: 
+                    break
             if randomize_books: 
                 random.shuffle(books)
             book_set.append({"category": category.name, "books": books})
