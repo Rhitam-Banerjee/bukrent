@@ -827,6 +827,7 @@ class User(db.Model):
         self.plan_date = date.today()
         self.plan_expiry_date = date.today() + timedelta(days=self.plan_duration * 28)
         self.payment_type = 'Online'
+        self.is_deleted = False
         self.total_delivery_count += self.plan_duration * 4
         db.session.add(self)
         db.session.commit()
@@ -839,6 +840,7 @@ class User(db.Model):
         self.payment_status = 'Paid'
         self.plan_date = date.today()
         self.plan_expiry_date = date.today() + timedelta(days=self.plan_duration * 28)
+        self.is_deleted = False
         self.payment_type = 'Autopay'
         db.session.add(self)
         db.session.commit()
