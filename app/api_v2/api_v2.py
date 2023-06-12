@@ -36,12 +36,18 @@ def submit_mobile():
 
     user = User.query.filter_by(mobile_number=mobile_number).first()
 
-    if user and user.password and user.payment_status == 'Paid' and user.first_name and len(user.address) and len(user.child):
-        return jsonify({
-            "redirect": url_for('views.login'),
-            "status": "success",
-            "user": user.to_json(),
-        }), 200
+    if user: 
+        if user.is_deleted: 
+            return jsonify({
+                "message": "Account with given mobile number was archived",
+                "status": "error"
+            }), 400
+        if user.password and user.payment_status == 'Paid' and user.first_name and len(user.address) and len(user.child):
+            return jsonify({
+                "redirect": url_for('views.login'),
+                "status": "success",
+                "user": user.to_json(),
+            }), 200
     if not user: 
         User.create('', '', mobile_number, '')
         user = User.query.filter_by(mobile_number=mobile_number).first()
@@ -77,7 +83,12 @@ def login():
 
     user = User.query.filter_by(mobile_number=mobile_number).first()
 
-    if user:
+    if user: 
+        if user.is_deleted: 
+            return jsonify({
+                "message": "Account with given mobile number was archived",
+                "status": "error"
+            }), 400
         if user.password == password:
             access_token = jwt.encode({'id' : user.id}, os.environ.get('SECRET_KEY'), "HS256")
             response = None
@@ -168,6 +179,7 @@ def signup():
             user.last_name = ''.join(name.split()[1:])
         user.password = '12345'
         user.contact_number = contact_number
+        user.is_deleted = False
 
         Address.create({"area": address, "pin_code": pin_code}, user.id)
 

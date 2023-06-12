@@ -17,6 +17,7 @@ def create_app(script_info=None):
 
     CORS(app, supports_credentials=True, origins=[
         'http://localhost:3000',
+        'http://localhost:3001',
         "https://bukrent.com",
         "https://www.bukrent.com",
         "https://payment.bukrent.com",
