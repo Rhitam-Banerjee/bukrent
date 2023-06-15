@@ -17,7 +17,8 @@ from datetime import date
 views = Blueprint('views', __name__, url_prefix="/")
 
 @views.route("/")
-def home():
+def home(): 
+    return redirect('https://brightr.club', code=302)
     return render_template(
         "home/home.html"
     )
