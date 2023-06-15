@@ -289,7 +289,7 @@ def choose_plan_duration():
 
     if not mobile_number:
         return jsonify({"message": "No mobile number" }), 400
-    if int(plan_duration) not in [1, 3, 12]:
+    if int(plan_duration) not in [3, 6, 12]:
         return jsonify({"message": "Invalid plan duration" }), 400
 
     user = User.query.filter_by(mobile_number=mobile_number).first()
@@ -364,7 +364,7 @@ def generate_order_id():
     user = User.query.filter_by(mobile_number=mobile_number).first()
     client = razorpay.Client(auth=(os.environ.get("RZP_KEY_ID"), os.environ.get("RZP_KEY_SECRET")))
 
-    if card not in [1, 3, 12]:
+    if card not in [3, 6, 12]:
         return jsonify({
             "message": "Invalid card",
             "status": "error"
@@ -374,26 +374,26 @@ def generate_order_id():
 
     amount = 0
     if user.plan_id == os.environ.get("RZP_PLAN_1_ID"): 
-        if card == 1: 
-            amount = 449
-        elif card == 3: 
+        if card == 3: 
             amount = 1199
+        elif card == 6: 
+            amount = 2199
         elif card == 12: 
-            amount = 4299
+            amount = 4199
         plan_desc = "Get 1 Book Per Week"
     elif user.plan_id == os.environ.get("RZP_PLAN_2_ID"): 
-        if card == 1: 
-            amount = 649
-        elif card == 3: 
+        if card == 3: 
             amount = 1799
+        elif card == 6: 
+            amount = 3399
         elif card == 12: 
             amount = 6399
         plan_desc = "Get 2 Books Per Week"
     elif user.plan_id == os.environ.get("RZP_PLAN_3_ID"):
-        if card == 1: 
-            amount = 849
-        elif card == 3: 
+        if card == 3: 
             amount = 2399
+        elif card == 6: 
+            amount = 4499
         elif card == 12: 
             amount = 8599
         plan_desc = "Get 4 Books Per Week"
