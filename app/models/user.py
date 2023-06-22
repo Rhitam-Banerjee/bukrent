@@ -522,10 +522,10 @@ class User(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def add_to_wishlist(self, isbn):
+    def add_to_wishlist(self, guid):
         from app.models.books import Book
 
-        book = Book.query.filter_by(isbn=isbn).first()
+        book = Book.query.filter_by(guid=guid).first()
 
         existing = Wishlist.query.filter(
             and_(Wishlist.user_id == self.id, Wishlist.book_id == book.id)).first()
@@ -780,10 +780,10 @@ class User(db.Model):
         except Exception as e:
             raise ValueError(str(e))
 
-    def bucket_remove(self, isbn):
+    def bucket_remove(self, guid):
         from app.models.books import Book
 
-        book = Book.query.filter_by(isbn=isbn).first()
+        book = Book.query.filter_by(guid=guid).first()
         bucket = DeliveryBucket.query.filter(and_(
             DeliveryBucket.user_id == self.id, DeliveryBucket.book_id == book.id)).first()
 

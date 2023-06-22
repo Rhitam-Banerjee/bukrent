@@ -87,7 +87,7 @@ def add_books_user(admin):
 @token_required
 @super_admin
 def add_to_wishlist(admin):
-    isbn = request.json.get('isbn')
+    guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
     if not user:
@@ -95,7 +95,7 @@ def add_to_wishlist(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.add_to_wishlist(isbn)
+    user.add_to_wishlist(guid)
     return jsonify({
         "status": "success",
         "user": admin.get_users([user])[0]
@@ -106,7 +106,7 @@ def add_to_wishlist(admin):
 @token_required
 @super_admin
 def remove_from_wishlist(admin):
-    isbn = request.json.get('isbn')
+    guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
     if not user:
@@ -114,8 +114,8 @@ def remove_from_wishlist(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.wishlist_remove(isbn)
-    book = Book.query.filter_by(isbn=isbn).first()
+    user.wishlist_remove(guid)
+    book = Book.query.filter_by(guid=guid).first()
     return jsonify({
         "status": "success",
         "user": admin.get_users([user])[0],
@@ -167,7 +167,7 @@ def remove_from_previous(admin):
 @token_required
 @super_admin
 def remove_from_bucket(admin):
-    isbn = request.json.get('isbn')
+    book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
     if not user:
@@ -175,7 +175,7 @@ def remove_from_bucket(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.bucket_remove(isbn)
+    user.bucket_remove(book_guid)
     return jsonify({
         "status": "success",
         "user": admin.get_users([user])[0]
