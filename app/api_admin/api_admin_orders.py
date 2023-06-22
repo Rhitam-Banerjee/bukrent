@@ -186,7 +186,7 @@ def remove_from_bucket(admin):
 @token_required
 @super_admin
 def remove_from_delivery(admin):
-    isbn = request.json.get('isbn')
+    guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
     if not user:
@@ -194,7 +194,7 @@ def remove_from_delivery(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    book = Book.query.filter_by(isbn=isbn).first()
+    book = Book.query.filter_by(guid=guid).first()
     if not book:
         return jsonify({
             "status": "error",
