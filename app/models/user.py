@@ -522,10 +522,10 @@ class User(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def add_to_wishlist(self, guid):
+    def add_to_wishlist(self, isbn):
         from app.models.books import Book
-
-        book = Book.query.filter_by(guid=guid).first()
+        print(isbn)
+        book = Book.query.filter_by(isbn=isbn).first()
 
         existing = Wishlist.query.filter(
             and_(Wishlist.user_id == self.id, Wishlist.book_id == book.id)).first()

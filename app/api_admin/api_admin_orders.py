@@ -89,13 +89,15 @@ def add_books_user(admin):
 def add_to_wishlist(admin):
     guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
+    isbn = request.json.get('isbn')
     user = User.query.get(user_id)
     if not user:
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.add_to_wishlist(guid)
+    print("api_admin_order", isbn)
+    user.add_to_wishlist(isbn)
     return jsonify({
         "status": "success",
         "user": admin.get_users([user])[0]
