@@ -8,6 +8,7 @@ from flask_cors import CORS
 db = SQLAlchemy()
 migrate = Migrate()
 
+
 def create_app(script_info=None):
     app = Flask(__name__)
     app_settings = os.getenv('APP_SETTINGS')
@@ -18,6 +19,7 @@ def create_app(script_info=None):
     CORS(app, supports_credentials=True, origins=[
         'http://localhost:3000',
         'http://localhost:3001',
+        'http://localhost:3006',
         "https://bukrent.com",
         "https://www.bukrent.com",
         "https://payment.bukrent.com",
@@ -25,7 +27,7 @@ def create_app(script_info=None):
         "https://delivery.bukrent.com",
         "https://edit.bukrent.com",
         "https://ops.bukrent.com",
-        
+
         "https://brightr.vercel.app",
         "https://brightr.com",
         "https://brightr.club",
