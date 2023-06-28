@@ -91,12 +91,16 @@ def add_to_wishlist(admin):
     user_id = request.json.get('user_id')
     isbn = request.json.get('isbn')
     user = User.query.get(user_id)
+    isbn = request.json.get("isbn")
     if not user:
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
         }), 400
+<<<<<<< HEAD
     print("api_admin_order", isbn)
+=======
+>>>>>>> e86c86541ca859c561170c98eac3f921b182e5bc
     user.add_to_wishlist(isbn)
     return jsonify({
         "status": "success",
@@ -129,15 +133,16 @@ def remove_from_wishlist(admin):
 @token_required
 @super_admin
 def remove_from_suggestions(admin):
-    isbn = request.json.get('isbn')
     user_id = request.json.get('user_id')
+    book_guid = request.json.get("book_guid")
+    isbn = request.json.get("isbn")
     user = User.query.get(user_id)
     if not user:
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.suggestion_to_dump(isbn)
+    user.suggestion_to_dump(book_guid, isbn)
     book = Book.query.filter_by(isbn=isbn).first()
     return jsonify({
         "status": "success",
@@ -171,13 +176,14 @@ def remove_from_previous(admin):
 def remove_from_bucket(admin):
     book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
+    isbn = request.json.get('isbn')
     user = User.query.get(user_id)
     if not user:
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.bucket_remove(book_guid)
+    user.bucket_remove(isbn)
     return jsonify({
         "status": "success",
         "user": admin.get_users([user])[0]
@@ -222,16 +228,21 @@ def remove_from_delivery(admin):
 @token_required
 @super_admin
 def add_users_book(admin):
+
     book_isbns = request.json.get('isbn')
     mobile_number_list = request.json.get('mobile_number_list')
     book_type = request.json.get('type')
 
-    if not all((book_isbns, mobile_number_list)) or type(mobile_number_list) != type([]):
+    def user_error(message, code=400):
         return jsonify({
             "status": "error",
-            "message": "Provide book ID and a list of mobile numbers"
-        }), 400
-    if type(book_isbns) != type([]):
+            "message": message
+        }), code
+    if book_type not in ('suggestions', 'wishlist', 'previous'):
+        return user_error("Provide a valid book type")
+    if not isinstance(mobile_number_list, list) or not mobile_number_list or not book_isbns:
+        return user_error("Provide book ID and a list of mobile numbers")
+    if not isinstance(book_isbns, list):
         book_isbns = [book_isbns]
 
     users_found, users_not_found = [], []
@@ -240,21 +251,22 @@ def add_users_book(admin):
         if not user:
             users_not_found.append(mobile_number)
         else:
-            children = Child.query.filter_by(user_id=user.id).all()
-            users_found.append(mobile_number)
-            for isbn in book_isbns:
-                book = Book.query.filter_by(isbn=isbn).first()
-                if not book:
-                    continue
-                if book_type == 'suggestions':
-                    for child in children:
-                        Suggestion.create(user.id, book.id, child.age_group)
-                elif book_type == 'wishlist':
-                    user.add_to_wishlist(book.isbn)
-                elif book_type == 'previous':
-                    Order.create(user.id, book.id, 0,
-                                 datetime.now() - timedelta(days=90))
+            users_found.append(user)
+    if not users_found:
+        return user_error("None of the phone numbers provided are valid")
 
+    for book in Book.query.filter(Book.isbn.in_(book_isbns)).all():
+        for user in users_found:
+            if book_type == 'suggestions':
+                for child in Child.query.filter_by(user_id=user.id).all():
+
+                    Suggestion.create(user.id, book.id)
+            elif book_type == 'wishlist':
+                user.add_to_wishlist(book.isbn)
+            elif book_type == 'previous':
+                Order.create(user.id, book.id, 0,
+                             datetime.now() - timedelta(days=90))
+    users_found = [user.mobile_number for user in users_found]
     return jsonify({
         "status": "success",
         "users_found": users_found,

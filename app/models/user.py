@@ -5,14 +5,15 @@ from app.models.buckets import *
 from app.models.order import Order
 from app.models.books import Book
 from app.models.deliverer import Deliverer
-
+from app.models.new_books import NewCategoryBook, NewBook, NewCategory
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 from sqlalchemy import Date, and_, cast
-
+import random
 from datetime import date, timedelta, datetime
 
 import os
+import json
 
 
 class CategoryPreferences(db.Model):
@@ -457,6 +458,7 @@ class User(db.Model):
     def add_child(self, child_json):
         Child.create(child_json, self.id)
 
+    '''
     def add_age_groups(self, age_groups):
         from app.models.books import Book
 
@@ -497,6 +499,7 @@ class User(db.Model):
             for suggestion in final_suggestions:
                 Suggestion.create(
                     self.id, suggestion["book"].id, suggestion["age_group"])
+    '''
 
     def update_details(self, email, password):
         self.email = email
@@ -524,7 +527,10 @@ class User(db.Model):
 
     def add_to_wishlist(self, isbn):
         from app.models.books import Book
+<<<<<<< HEAD
         print(isbn)
+=======
+>>>>>>> e86c86541ca859c561170c98eac3f921b182e5bc
         book = Book.query.filter_by(isbn=isbn).first()
 
         existing = Wishlist.query.filter(
@@ -534,7 +540,6 @@ class User(db.Model):
 
     def suggestion_to_wishlist(self, isbn):
         from app.models.books import Book
-
         book = Book.query.filter_by(isbn=isbn).first()
         suggestion = Suggestion.query.filter(
             and_(Suggestion.user_id == self.id, Suggestion.book_id == book.id)).first()
@@ -559,12 +564,13 @@ class User(db.Model):
         # if len(buckets) < self.books_per_week:
         #     DeliveryBucket.create(self.id, book.id, self.next_delivery_date, age_group)
 
-    def suggestion_to_dump(self, isbn):
+    def suggestion_to_dump(self, book_guid, isbn):
         from app.models.books import Book
 
         book = Book.query.filter_by(isbn=isbn).first()
         suggestion = Suggestion.query.filter(
-            and_(Suggestion.user_id == self.id, Suggestion.book_id == book.id)).first()
+            Suggestion.user_id == self.id, Suggestion.book_id == book.id).first()
+        # print(suggestion)
         suggestion.delete()
 
         Dump.create(self.id, book.id)
@@ -780,10 +786,10 @@ class User(db.Model):
         except Exception as e:
             raise ValueError(str(e))
 
-    def bucket_remove(self, guid):
+    def bucket_remove(self, isbn):
         from app.models.books import Book
-
-        book = Book.query.filter_by(guid=guid).first()
+        
+        book = Book.query.filter_by(isbn=isbn).first()
         bucket = DeliveryBucket.query.filter(and_(
             DeliveryBucket.user_id == self.id, DeliveryBucket.book_id == book.id)).first()
 
@@ -902,8 +908,8 @@ class User(db.Model):
 
     def get_suggestions(self):
         suggestions = self.suggestions
-
         book_list = []
+
         for suggestion in suggestions:
             if suggestion.book.stock_available > 0:
                 temp_dict = {

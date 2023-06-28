@@ -28,6 +28,7 @@ from datetime import datetime, date, timedelta
 
 api_admin = Blueprint('api_admin', __name__, url_prefix="/api_admin")
 
+
 @api_admin.route('/login', methods=['POST'])
 def login():
     username = request.json.get('username')
@@ -43,13 +44,16 @@ def login():
             "status": "error",
             "message": "Incorrect password"
         }), 400
-    access_token_admin = jwt.encode({'id' : admin.id}, os.environ.get('SECRET_KEY'), "HS256")
+    access_token_admin = jwt.encode(
+        {'id': admin.id}, os.environ.get('SECRET_KEY'), "HS256")
     response = make_response(jsonify({
         "status": "success",
         "admin": admin.to_json(),
     }), 200)
-    response.set_cookie('access_token_admin', access_token_admin, secure=True, httponly=True, samesite='None')
+    response.set_cookie('access_token_admin', access_token_admin,
+                        secure=True, httponly=True, samesite='None')
     return response
+
 
 @api_admin.route('/refresh')
 @token_required
@@ -59,14 +63,17 @@ def refresh(admin):
         "admin": admin.to_json(),
     })
 
+
 @api_admin.route('/logout', methods=['POST'])
 @token_required
 def logout(admin):
     response = make_response(jsonify({
         "status": "success",
     }))
-    response.set_cookie('access_token_admin', '', secure=True, httponly=True, samesite='None')
+    response.set_cookie('access_token_admin', '',
+                        secure=True, httponly=True, samesite='None')
     return response
+
 
 @api_admin.route('/get-users')
 @token_required
@@ -84,7 +91,8 @@ def get_users(admin):
 
     if payment_status:
         if payment_status == 'Unpaid':
-            query = query.filter(or_(User.payment_status == 'Unpaid', User.payment_status == None, User.payment_status == ''))
+            query = query.filter(or_(User.payment_status == 'Unpaid',
+                                 User.payment_status == None, User.payment_status == ''))
         else:
             query = query.filter_by(payment_status=payment_status)
     if plan:
@@ -93,20 +101,22 @@ def get_users(admin):
         query = query.filter_by(plan_duration=plan_duration)
     if search:
         query = query.filter(or_(
-                User.first_name.ilike(f'{search}%'),
-                User.last_name.ilike(f'{search}%'),
-                User.mobile_number.ilike(f'{search}%')
-            ))
+            User.first_name.ilike(f'{search}%'),
+            User.last_name.ilike(f'{search}%'),
+            User.mobile_number.ilike(f'{search}%')
+        ))
     if sort and int(sort) == 1:
         query = query.order_by(User.id)
     else:
         query = query.order_by(User.id.desc())
-    all_users = query.filter_by(is_deleted=False).limit(end - start).offset(start).all()
+    all_users = query.filter_by(is_deleted=False).limit(
+        end - start).offset(start).all()
 
     return jsonify({
         "status": "success",
         "users": admin.get_users(all_users)
     })
+
 
 @api_admin.route('/get-archived-users')
 @token_required
@@ -116,6 +126,7 @@ def get_archived_users(admin):
         "status": "success",
         "users": [user.to_json() for user in users]
     })
+
 
 @api_admin.route('/update-user', methods=['POST'])
 @token_required
@@ -135,7 +146,7 @@ def update_user(admin):
     password = request.json.get('password')
     children = request.json.get('children')
 
-    if not mobile_number: 
+    if not mobile_number:
         return jsonify({
             "status": "error",
             "message": "Mobile number is necessary"
@@ -158,7 +169,7 @@ def update_user(admin):
         user.first_name = name.split()[0]
         if len(name.split()) > 1:
             user.last_name = ' '.join(name.split()[1:])
-    else: 
+    else:
         user.first_name = ''
         user.last_name = ''
 
@@ -170,11 +181,11 @@ def update_user(admin):
 
     if plan_date:
         user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
-    else: 
+    else:
         user.plan_date = None
 
     user_children = Child.query.filter_by(user_id=user.id).all()
-    for child in user_children: 
+    for child in user_children:
         child.delete()
     if children and type(children) == type([]):
         for child in children:
@@ -200,7 +211,8 @@ def update_user(admin):
     for user_address in user.address:
         user_address.delete()
     if address and pin_code:
-        address = Address.create({"area": address, "pin_code": pin_code}, user.id)
+        address = Address.create(
+            {"area": address, "pin_code": pin_code}, user.id)
 
     db.session.commit()
 
@@ -209,6 +221,7 @@ def update_user(admin):
         "message": "User updated",
         "user": admin.get_users([user])[0],
     })
+
 
 @api_admin.route('/add-user', methods=['POST'])
 @token_required
@@ -270,16 +283,17 @@ def add_user(admin):
         user.books_per_week = 4
 
     if address and pin_code:
-        address = Address.create({"area": address, "pin_code": pin_code}, user.id)
+        address = Address.create(
+            {"area": address, "pin_code": pin_code}, user.id)
 
     if children and type(children) == type([]) and len(children):
         for child in children:
             user.add_child(child)
         #age_groups = []
-        #for child in children:
+        # for child in children:
         #    age_groups.append(child.get("age_group"))
         #age_groups = list(set(age_groups))
-        #user.add_age_groups(age_groups)
+        # user.add_age_groups(age_groups)
 
     bucket_size = 1
     if plan_id == os.environ.get('RZP_PLAN_2_ID'):
@@ -310,6 +324,7 @@ def add_user(admin):
         "user": admin.get_users([user])[0],
     })
 
+
 @api_admin.route('/delete-user', methods=['POST'])
 @token_required
 def delete_user(admin):
@@ -330,6 +345,7 @@ def delete_user(admin):
         "status": "success",
         "message": "User deleted"
     })
+
 
 @api_admin.route('/restore-user', methods=['POST'])
 @token_required
@@ -352,6 +368,7 @@ def restore_user(admin):
         "message": "User restored"
     })
 
+
 @api_admin.route('/get-books', methods=['POST'])
 @token_required
 def get_books(admin):
@@ -363,17 +380,17 @@ def get_books(admin):
     publishers = request.json.get('publishers')
     series = request.json.get('series')
     types = request.json.get('types')
-    
+
     books = {}
 
-    if search or not any((len(authors), len(publishers), len(series), len(types))): 
-        if not search: 
+    if search or not any((len(authors), len(publishers), len(series), len(types))):
+        if not search:
             search = ''
         query = Book.query.filter(or_(
             Book.name.ilike(f'{search}%'),
             Book.description.ilike(f'%{search}%'),
             Book.isbn.ilike(f'{search}%')))
-        if age_group == 1: 
+        if age_group == 1:
             query = query.filter_by(age_group_1=True)
         elif age_group == 2:
             query = query.filter_by(age_group_2=True)
@@ -386,31 +403,31 @@ def get_books(admin):
         elif age_group == 6:
             query = query.filter_by(age_group_6=True)
         books = query.limit(end - start).offset(start).all()
-    else: 
+    else:
         age_authors = Author.get_authors(age_group, 0, 10000)
         age_publishers = Publisher.get_publishers(age_group, 0, 10000)
         age_series = Series.get_series(age_group, 0, 10000)
         age_types = Format.get_types(age_group, 0, 10000)
-        
-        for author in authors: 
+
+        for author in authors:
             author_obj = Author.query.filter_by(guid=author).first()
-            if author_obj.to_json() in age_authors: 
-                for book in author_obj.books: 
+            if author_obj.to_json() in age_authors:
+                for book in author_obj.books:
                     books[book.isbn] = book
-        for publisher in publishers: 
+        for publisher in publishers:
             publisher_obj = Publisher.query.filter_by(guid=publisher).first()
-            if publisher_obj.to_json() in age_publishers: 
-                for book in publisher_obj.books: 
+            if publisher_obj.to_json() in age_publishers:
+                for book in publisher_obj.books:
                     books[book.isbn] = book
-        for serie in series: 
+        for serie in series:
             serie_obj = Series.query.filter_by(guid=serie).first()
-            if serie_obj.to_json() in age_series: 
-                for book in serie_obj.books: 
+            if serie_obj.to_json() in age_series:
+                for book in serie_obj.books:
                     books[book.isbn] = book
-        for format in types: 
+        for format in types:
             format_obj = Format.query.filter_by(guid=format).first()
-            if format_obj.to_json() in age_types: 
-                for book in format_obj.books: 
+            if format_obj.to_json() in age_types:
+                for book in format_obj.books:
                     books[book.isbn] = book
 
         books = list(books.values())[start:end]
@@ -419,6 +436,7 @@ def get_books(admin):
         "status": "success",
         "books": admin.get_books(books)
     })
+
 
 @api_admin.route('/add-book', methods=['POST'])
 @token_required
@@ -463,11 +481,13 @@ def add_book(admin):
         book_json = book.to_json()
         for author in book_json['authors']:
             author_obj = Author.query.filter_by(name=author).first()
-            book_author = BookAuthor.query.filter_by(book_id=book.id, author_id=author_obj.id).first()
+            book_author = BookAuthor.query.filter_by(
+                book_id=book.id, author_id=author_obj.id).first()
             db.session.delete(book_author)
         for tag in book_json['categories']:
             tag = Category.query.filter_by(name=tag).first()
-            book_category = BookCategory.query.filter_by(book_id=book.id, category_id=tag.id).first()
+            book_category = BookCategory.query.filter_by(
+                book_id=book.id, category_id=tag.id).first()
             db.session.delete(book_category)
 
     if image:
@@ -489,7 +509,8 @@ def add_book(admin):
         authors = json.loads(authors)
         for author in authors:
             if author:
-                author_obj = Author.query.filter(Author.name.ilike(author)).first()
+                author_obj = Author.query.filter(
+                    Author.name.ilike(author)).first()
                 if not author_obj:
                     author_obj = Author()
                     author_obj.name = author
@@ -504,22 +525,22 @@ def add_book(admin):
                 book_author.book_id = book.id
                 book_author.author_id = author_obj.id
                 db.session.add(book_author)
-    
-    if age_groups: 
+
+    if age_groups:
         age_groups = json.loads(age_groups)
-        if type(age_groups) == type([]): 
-            for i in range(len(age_groups)): 
-                if i == 0: 
+        if type(age_groups) == type([]):
+            for i in range(len(age_groups)):
+                if i == 0:
                     book.age_group_1 = bool(age_groups[i])
-                elif i == 1: 
+                elif i == 1:
                     book.age_group_2 = bool(age_groups[i])
-                elif i == 2: 
+                elif i == 2:
                     book.age_group_3 = bool(age_groups[i])
-                elif i == 3: 
+                elif i == 3:
                     book.age_group_4 = bool(age_groups[i])
-                elif i == 4: 
+                elif i == 4:
                     book.age_group_5 = bool(age_groups[i])
-                elif i == 5: 
+                elif i == 5:
                     book.age_group_6 = bool(age_groups[i])
     if tags:
         tags = json.loads(tags)
@@ -542,18 +563,20 @@ def add_book(admin):
         "book": admin.get_books([book])[0]
     })
 
+
 @api_admin.route('/delete-book', methods=['POST'])
 @token_required
-def delete_book(admin): 
+def delete_book(admin):
     guid = request.json.get('guid')
     book = Book.query.filter_by(guid=guid).first()
-    if not book: 
+    if not book:
         return jsonify({
             "status": "error",
             "message": "Invalid book ID"
         }), 400
     book.delete()
     return jsonify({"status": "success"})
+
 
 @api_admin.route('/get-filters')
 @token_required
@@ -579,40 +602,44 @@ def get_filters(admin):
         "tags": [tag.to_json() for tag in tags]
     })
 
+
 @api_admin.route('/add-books-user', methods=['POST'])
 @token_required
-def add_books_user(admin): 
+def add_books_user(admin):
     user_id = request.json.get('user_id')
     isbn_list = request.json.get('isbn_list')
+
     books_type = request.json.get('type')
 
-    if not all((user_id, isbn_list)) or type(isbn_list) != type([]): 
+    if not all((user_id, isbn_list)) or type(isbn_list) != type([]):
         return jsonify({
             "status": "error",
             "message": "Provide user ID and a list of ISBNs"
         }), 400
     user = User.query.get(user_id)
-    if not user: 
+    if not user:
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    
+
     books_found, books_not_found = [], []
     children = Child.query.filter_by(user_id=user_id).all()
-    for isbn in isbn_list: 
+    for isbn in isbn_list:
+
         book = Book.query.filter_by(isbn=isbn).first()
-        if not book: 
+        if not book:
             books_not_found.append(isbn)
-        else: 
+        else:
             books_found.append(isbn)
-            if books_type == 'suggestions': 
-                for child in children: 
+            if books_type == 'suggestions':
+                for child in children:
                     Suggestion.create(user.id, book.id, child.age_group)
-            elif books_type == 'wishlist': 
+            elif books_type == 'wishlist':
                 user.add_to_wishlist(book.guid)
-            elif books_type == 'previous': 
-                Order.create(user.id, book.id, 0, datetime.now() - timedelta(days = 90))
+            elif books_type == 'previous':
+                Order.create(user.id, book.id, 0,
+                             datetime.now() - timedelta(days=90))
 
     return jsonify({
         "status": "success",
@@ -621,13 +648,14 @@ def add_books_user(admin):
         "user": admin.get_users([user])[0]
     })
 
+
 @api_admin.route('/add-to-wishlist', methods=['POST'])
 @token_required
-def add_to_wishlist(admin): 
+def add_to_wishlist(admin):
     book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
-    if not user: 
+    if not user:
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
@@ -638,13 +666,14 @@ def add_to_wishlist(admin):
         "user": admin.get_users([user])[0]
     })
 
+
 @api_admin.route('/remove-from-wishlist', methods=['POST'])
 @token_required
-def remove_from_wishlist(admin): 
+def remove_from_wishlist(admin):
     book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
-    if not user: 
+    if not user:
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
@@ -657,18 +686,21 @@ def remove_from_wishlist(admin):
         "book": admin.get_books([book])[0],
     })
 
+
 @api_admin.route('/remove-from-suggestions', methods=['POST'])
 @token_required
-def remove_from_suggestions(admin): 
+def remove_from_suggestions(admin):
     book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
+    isbn = request.json.get("isbn")
     user = User.query.get(user_id)
-    if not user: 
+    if not user:
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.suggestion_to_dump(book_guid)
+
+    user.suggestion_to_dump(guid=book_guid, isbn=isbn)
     book = Book.query.filter_by(guid=book_guid).first()
     return jsonify({
         "status": "success",
@@ -676,13 +708,14 @@ def remove_from_suggestions(admin):
         "book": admin.get_books([book])[0],
     })
 
+
 @api_admin.route('/remove-from-previous', methods=['POST'])
 @token_required
-def remove_from_previous(admin): 
+def remove_from_previous(admin):
     book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
-    if not user: 
+    if not user:
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
@@ -696,38 +729,40 @@ def remove_from_previous(admin):
 
 @api_admin.route('/add-users-book', methods=['POST'])
 @token_required
-def add_users_book(admin): 
+def add_users_book(admin):
     book_guid = request.json.get('book_guid')
     id_list = request.json.get('id_list')
+
     book_type = request.json.get('type')
 
-    if not all((book_guid, id_list)) or type(id_list) != type([]): 
+    if not all((book_guid, id_list)) or type(id_list) != type([]):
         return jsonify({
             "status": "error",
             "message": "Provide book ID and a list of IDs"
         }), 400
     book = Book.query.filter_by(guid=book_guid).first()
-    if not book: 
+    if not book:
         return jsonify({
             "status": "error",
             "message": "Invalid book ID"
         }), 400
-    
+
     users_found, users_not_found = [], []
-    for id in id_list: 
+    for id in id_list:
         user = User.query.get(id)
-        if not user: 
+        if not user:
             users_not_found.append(id)
-        else: 
+        else:
             children = Child.query.filter_by(user_id=user.id).all()
             users_found.append(id)
-            if book_type == 'suggestions': 
-                for child in children: 
+            if book_type == 'suggestions':
+                for child in children:
                     Suggestion.create(user.id, book.id, child.age_group)
-            elif book_type == 'wishlist': 
+            elif book_type == 'wishlist':
                 user.add_to_wishlist(book.guid)
-            elif book_type == 'previous': 
-                Order.create(user.id, book.id, 0, datetime.now() - timedelta(days = 90))
+            elif book_type == 'previous':
+                Order.create(user.id, book.id, 0,
+                             datetime.now() - timedelta(days=90))
 
     return jsonify({
         "status": "success",
@@ -736,9 +771,10 @@ def add_users_book(admin):
         "book": admin.get_books([book])[0]
     })
 
+
 @api_admin.route('/get-orders')
 @token_required
-def get_orders(admin): 
+def get_orders(admin):
     return jsonify({
         "orders": admin.get_orders(),
     })

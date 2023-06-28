@@ -14,8 +14,8 @@ class Dump(db.Model):
     @staticmethod
     def create(user_id, book_id):
         dump_dict = dict(
-            user_id = user_id,
-            book_id = book_id
+            user_id=user_id,
+            book_id=book_id
         )
         dump_obj = Dump(**dump_dict)
         db.session.add(dump_obj)
@@ -25,6 +25,7 @@ class Dump(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
 
 class DeliveryBucket(db.Model):
     __tablename__ = "delivery_bucket"
@@ -40,19 +41,20 @@ class DeliveryBucket(db.Model):
     @staticmethod
     def create(user_id, book_id, delivery_date, age_group, is_retained=False):
         bucket_dict = dict(
-            user_id = user_id,
-            book_id = book_id,
-            delivery_date = delivery_date,
-            age_group = age_group,
-            is_retained = is_retained
+            user_id=user_id,
+            book_id=book_id,
+            delivery_date=delivery_date,
+            age_group=age_group,
+            is_retained=is_retained
         )
 
-        buckets = DeliveryBucket.query.filter_by(delivery_date=delivery_date).order_by(DeliveryBucket.priority_order.desc()).first()
+        buckets = DeliveryBucket.query.filter_by(delivery_date=delivery_date).order_by(
+            DeliveryBucket.priority_order.desc()).first()
         if buckets:
             bucket_dict["priority_order"] = buckets.priority_order + 1
         else:
             bucket_dict["priority_order"] = 1
-            
+
         bucket_obj = DeliveryBucket(**bucket_dict)
         db.session.add(bucket_obj)
         db.session.commit()
@@ -62,7 +64,7 @@ class DeliveryBucket(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def to_json(self): 
+    def to_json(self):
         return {
             "id": self.id,
             "user_id": self.user_id,
@@ -71,6 +73,7 @@ class DeliveryBucket(db.Model):
             "delivery_date": self.delivery_date,
             "is_retained": self.is_retained
         }
+
 
 class Wishlist(db.Model):
     __tablename__ = "wishlist"
@@ -84,12 +87,13 @@ class Wishlist(db.Model):
     @staticmethod
     def create(user_id, book_id, age_group):
         wishlist_dict = dict(
-            user_id = user_id,
-            book_id = book_id,
-            age_group = age_group
+            user_id=user_id,
+            book_id=book_id,
+            age_group=age_group
         )
 
-        wishlists = Wishlist.query.filter_by(user_id=user_id).order_by(Wishlist.priority_order.desc()).first()
+        wishlists = Wishlist.query.filter_by(user_id=user_id).order_by(
+            Wishlist.priority_order.desc()).first()
         if wishlists:
             wishlist_dict["priority_order"] = wishlists.priority_order + 1
         else:
@@ -104,23 +108,31 @@ class Wishlist(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+
 class Suggestion(db.Model):
     __tablename__ = "suggestion"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
+    book_id = db.Column(db.String, db.ForeignKey('books.id'))
     book = db.relationship("Book")
-    age_group = db.Column(db.Integer)
+
+    __table_args__ = (db.UniqueConstraint(
+        'user_id', 'book_id'),)
 
     @staticmethod
-    def create(user_id, book_id, age_group):
-        suggestion_dict = dict(
-            user_id = user_id,
-            book_id = book_id,
-            age_group = age_group
-        )
+    def create(user_id, book_id):
+        suggestion_obj = Suggestion.query.filter_by(
+            user_id=user_id, book_id=book_id).first()
+        if suggestion_obj:
+            suggestion_obj.user_id = user_id
+            suggestion_obj.book_id = book_id
+        else:
+            suggestion_dict = dict(
+                user_id=user_id,
+                book_id=book_id,
+            )
 
-        suggestion_obj = Suggestion(**suggestion_dict)
+            suggestion_obj = Suggestion(**suggestion_dict)
         db.session.add(suggestion_obj)
         db.session.commit()
         return suggestion_obj
