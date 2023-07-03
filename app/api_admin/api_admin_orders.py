@@ -49,7 +49,7 @@ def add_books_user(admin):
             books_found.append(isbn)
             if books_type == 'suggestions':
                 for child in children:
-                    Suggestion.create(user.id, book.id, child.age_group)
+                    Suggestion.create(user.id, book.id)
             elif books_type == 'wishlist':
                 user.add_to_wishlist(book.isbn)
             elif books_type == 'previous':
@@ -97,10 +97,6 @@ def add_to_wishlist(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-<<<<<<< HEAD
-    print("api_admin_order", isbn)
-=======
->>>>>>> e86c86541ca859c561170c98eac3f921b182e5bc
     user.add_to_wishlist(isbn)
     return jsonify({
         "status": "success",
@@ -280,20 +276,20 @@ def add_users_book(admin):
 @super_admin
 def add_to_bucket(admin):
     user_id = request.json.get('user_id')
-    book_guid = request.json.get('book_guid')
+    isbn = request.json.get('isbn')
     user = User.query.get(user_id)
     if not user:
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    book = Book.query.filter_by(guid=book_guid).first()
+    book = Book.query.filter_by(isbn=isbn).first()
     if not book:
         return jsonify({
             "status": "error",
             "message": "Invalid book ID"
         }), 400
-    user.wishlist_remove(book_guid)
+    user.wishlist_remove(isbn)
     DeliveryBucket.create(user_id, book.id, user.next_delivery_date, 0)
     return jsonify({
         "status": "success",

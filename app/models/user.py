@@ -527,10 +527,7 @@ class User(db.Model):
 
     def add_to_wishlist(self, isbn):
         from app.models.books import Book
-<<<<<<< HEAD
         print(isbn)
-=======
->>>>>>> e86c86541ca859c561170c98eac3f921b182e5bc
         book = Book.query.filter_by(isbn=isbn).first()
 
         existing = Wishlist.query.filter(
@@ -671,10 +668,10 @@ class User(db.Model):
         db.session.add(first_item)
         db.session.commit()
 
-    def wishlist_remove(self, guid):
+    def wishlist_remove(self, isbn):
         from app.models.books import Book
 
-        book = Book.query.filter_by(guid=guid).first()
+        book = Book.query.filter_by(isbn=isbn).first()
         wishlist = Wishlist.query.filter_by(
             user_id=self.id, book_id=book.id).first()
 
