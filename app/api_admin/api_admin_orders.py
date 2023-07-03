@@ -20,13 +20,13 @@ def add_books_user(admin):
     user_id = request.json.get('user_id')
     isbn_list = request.json.get('isbn_list')
     books_type = request.json.get('type')
-
-    if not all((user_id, isbn_list)) or type(isbn_list) != type([]):
+    if not all((user_id, isbn_list)) or not isinstance(isbn_list, list):
         return jsonify({
             "status": "error",
             "message": "Provide user ID and a list of ISBNs"
         }), 400
     user = User.query.get(user_id)
+
     if not user:
         return jsonify({
             "status": "error",
@@ -49,8 +49,9 @@ def add_books_user(admin):
             books_found.append(isbn)
             if books_type == 'suggestions':
                 for child in children:
-                    Suggestion.create(user.id, book.id, child.age_group)
+                    Suggestion.create(user.id, book.id)
             elif books_type == 'wishlist':
+
                 user.add_to_wishlist(book.isbn)
             elif books_type == 'previous':
                 Order.create(user.id, book.id, 0,
@@ -87,7 +88,6 @@ def add_books_user(admin):
 @token_required
 @super_admin
 def add_to_wishlist(admin):
-    guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
     isbn = request.json.get("isbn")
@@ -107,7 +107,7 @@ def add_to_wishlist(admin):
 @token_required
 @super_admin
 def remove_from_wishlist(admin):
-    guid = request.json.get('book_guid')
+    isbn = request.json.get('isbn')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)
     if not user:
@@ -115,8 +115,8 @@ def remove_from_wishlist(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    user.wishlist_remove(guid)
-    book = Book.query.filter_by(guid=guid).first()
+    user.wishlist_remove(isbn)
+    book = Book.query.filter_by(isbn=isbn).first()
     return jsonify({
         "status": "success",
         "user": admin.get_users([user])[0],
@@ -169,7 +169,6 @@ def remove_from_previous(admin):
 @token_required
 @super_admin
 def remove_from_bucket(admin):
-    book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
     isbn = request.json.get('isbn')
     user = User.query.get(user_id)
@@ -223,8 +222,7 @@ def remove_from_delivery(admin):
 @token_required
 @super_admin
 def add_users_book(admin):
-
-    book_isbns = request.json.get('isbn')
+    isbn_books = request.json.get('isbn')
     mobile_number_list = request.json.get('mobile_number_list')
     book_type = request.json.get('type')
 
@@ -233,12 +231,13 @@ def add_users_book(admin):
             "status": "error",
             "message": message
         }), code
+
     if book_type not in ('suggestions', 'wishlist', 'previous'):
         return user_error("Provide a valid book type")
-    if not isinstance(mobile_number_list, list) or not mobile_number_list or not book_isbns:
+    if not isinstance(mobile_number_list, list) or not mobile_number_list or not isbn_books:
         return user_error("Provide book ID and a list of mobile numbers")
-    if not isinstance(book_isbns, list):
-        book_isbns = [book_isbns]
+    if not isinstance(isbn_books, list):
+        isbn_books = [isbn_books]
 
     users_found, users_not_found = [], []
     for mobile_number in mobile_number_list:
@@ -250,11 +249,10 @@ def add_users_book(admin):
     if not users_found:
         return user_error("None of the phone numbers provided are valid")
 
-    for book in Book.query.filter(Book.isbn.in_(book_isbns)).all():
+    for book in Book.query.filter(Book.isbn.in_(isbn_books)).all():
         for user in users_found:
             if book_type == 'suggestions':
                 for child in Child.query.filter_by(user_id=user.id).all():
-
                     Suggestion.create(user.id, book.id)
             elif book_type == 'wishlist':
                 user.add_to_wishlist(book.isbn)
@@ -275,20 +273,20 @@ def add_users_book(admin):
 @super_admin
 def add_to_bucket(admin):
     user_id = request.json.get('user_id')
-    book_guid = request.json.get('book_guid')
+    isbn = request.json.get('isbn')
     user = User.query.get(user_id)
     if not user:
         return jsonify({
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    book = Book.query.filter_by(guid=book_guid).first()
+    book = Book.query.filter_by(isbn=isbn).first()
     if not book:
         return jsonify({
             "status": "error",
             "message": "Invalid book ID"
         }), 400
-    user.wishlist_remove(book_guid)
+    user.wishlist_remove(isbn)
     DeliveryBucket.create(user_id, book.id, user.next_delivery_date, 0)
     return jsonify({
         "status": "success",

@@ -7,11 +7,13 @@ from app.models.details import Detail
 from app.models.buckets import DeliveryBucket, Wishlist, Suggestion, Dump
 from app.models.order import Order
 
+
 class BookCategory(db.Model):
     __tablename__ = 'book_categories'
     id = db.Column(db.Integer, primary_key=True, index=True)
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+
 
 class BookFormat(db.Model):
     __tablename__ = 'book_formats'
@@ -19,17 +21,20 @@ class BookFormat(db.Model):
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
     format_id = db.Column(db.Integer, db.ForeignKey('formats.id'))
 
+
 class BookAuthor(db.Model):
     __tablename__ = 'book_authors'
     id = db.Column(db.Integer, primary_key=True, index=True)
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
     author_id = db.Column(db.Integer, db.ForeignKey('authors.id'))
 
+
 class BookPublisher(db.Model):
     __tablename__ = 'book_publishers'
     id = db.Column(db.Integer, primary_key=True, index=True)
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
     publisher_id = db.Column(db.Integer, db.ForeignKey('publishers.id'))
+
 
 class Book(db.Model):
     __tablename__ = "books"
@@ -92,22 +97,23 @@ class Book(db.Model):
     publishers = db.relationship('Publisher', secondary=BookPublisher.__table__)
 
     @staticmethod
-    def create(name, image, isbn, rating, review_count, book_format, language, price, description, stock_available, series_id, bestseller_json, borrowed_json, suggestion_json):
-        if Book.query.filter_by(isbn=isbn).count(): 
+    def create(name, image, isbn, rating, review_count, book_format, language, price, description, stock_available,
+               series_id, bestseller_json, borrowed_json, suggestion_json):
+        if Book.query.filter_by(isbn=isbn).count():
             return
         book_dict = dict(
-            guid = str(uuid.uuid4()),
-            name = name,
-            image = image,
-            isbn = isbn,
-            rating = rating,
-            review_count = review_count,
-            book_format = book_format,
-            language = language,
-            price = price,
-            description = description,
-            stock_available = stock_available,
-            rentals = 0
+            guid=str(uuid.uuid4()),
+            name=name,
+            image=image,
+            isbn=isbn,
+            rating=rating,
+            review_count=review_count,
+            book_format=book_format,
+            language=language,
+            price=price,
+            description=description,
+            stock_available=stock_available,
+            rentals=0
         )
 
         if bestseller_json:
@@ -148,62 +154,74 @@ class Book(db.Model):
             authors = BookAuthor.query.filter_by(book_id=self.id).all()
             for author in authors:
                 db.session.delete(author)
-        except: pass
+        except:
+            pass
         try:
             categories = BookCategory.query.filter_by(book_id=self.id).all()
             for category in categories:
                 db.session.delete(category)
-        except: pass
+        except:
+            pass
         try:
             publishers = BookPublisher.query.filter_by(book_id=self.id).all()
             for publisher in publishers:
                 db.session.delete(publisher)
-        except: pass
+        except:
+            pass
         try:
             formats = BookFormat.query.filter_by(book_id=self.id).all()
             for format in formats:
                 db.session.delete(format)
-        except: pass
+        except:
+            pass
         try:
             annotations = Annotation.query.filter_by(book_id=self.id).all()
-            for annotation in annotations: 
+            for annotation in annotations:
                 db.session.delete(annotation)
-        except: pass
+        except:
+            pass
         try:
             reviews = Review.query.filter_by(book_id=self.id).all()
-            for review in reviews: 
+            for review in reviews:
                 db.session.delete(review)
-        except: pass
+        except:
+            pass
         try:
             bucket = DeliveryBucket.query.filter_by(book_id=self.id).all()
             for book in bucket:
                 book.delete()
-        except: pass
+        except:
+            pass
         try:
             details = Detail.query.filter_by(book_id=self.id).all()
-            for detail in details: 
+            for detail in details:
                 db.session.delete(detail)
-        except: pass
+        except:
+            pass
         try:
             dumps = Dump.query.filter_by(book_id=self.id).all()
-            for book in dumps: 
+            for book in dumps:
                 db.session.delete(book)
-        except: pass
+        except:
+            pass
         try:
             suggestions = Suggestion.query.filter_by(book_id=self.id).all()
-            for book in suggestions: 
+            for book in suggestions:
                 db.session.delete(book)
-        except: pass
+        except:
+            pass
         try:
             wishlists = Wishlist.query.filter_by(book_id=self.id).all()
-            for book in wishlists: 
+            for book in wishlists:
                 db.session.delete(book)
-        except: pass
+        except:
+            pass
         try:
             orders = Order.query.filter_by(book_id=self.id).all()
-            for book in orders: 
+            for book in orders:
                 db.session.delete(book)
-        except: pass
+        except:
+            pass
         db.session.delete(self)
         db.session.commit()
 
@@ -211,18 +229,24 @@ class Book(db.Model):
     def get_most_borrowed(age_group, start, end):
         if age_group:
             if age_group == 1:
-                books = Book.query.filter_by(age_group_1=True, most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
+                books = Book.query.filter_by(age_group_1=True, most_borrowed=True).order_by(
+                    Book.most_borrowed_rank).all()[start:end]
             elif age_group == 2:
-                books = Book.query.filter_by(age_group_2=True, most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
+                books = Book.query.filter_by(age_group_2=True, most_borrowed=True).order_by(
+                    Book.most_borrowed_rank).all()[start:end]
             elif age_group == 3:
-                books = Book.query.filter_by(age_group_3=True, most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
+                books = Book.query.filter_by(age_group_3=True, most_borrowed=True).order_by(
+                    Book.most_borrowed_rank).all()[start:end]
             elif age_group == 4:
-                books = Book.query.filter_by(age_group_4=True, most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
+                books = Book.query.filter_by(age_group_4=True, most_borrowed=True).order_by(
+                    Book.most_borrowed_rank).all()[start:end]
             elif age_group == 5:
-                books = Book.query.filter_by(age_group_5=True, most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
+                books = Book.query.filter_by(age_group_5=True, most_borrowed=True).order_by(
+                    Book.most_borrowed_rank).all()[start:end]
             elif age_group == 6:
-                books = Book.query.filter_by(age_group_6=True, most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
-            else: 
+                books = Book.query.filter_by(age_group_6=True, most_borrowed=True).order_by(
+                    Book.most_borrowed_rank).all()[start:end]
+            else:
                 books = Book.query.filter_by(most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
         else:
             books = Book.query.filter_by(most_borrowed=True).order_by(Book.most_borrowed_rank).all()[start:end]
@@ -237,18 +261,24 @@ class Book(db.Model):
     def get_bestsellers(age_group, start, end):
         if age_group:
             if age_group == 1:
-                books = Book.query.filter_by(age_group_1=True, amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
+                books = Book.query.filter_by(age_group_1=True, amazon_bestseller=True).order_by(
+                    Book.amazon_bestseller).all()[start:end]
             elif age_group == 2:
-                books = Book.query.filter_by(age_group_2=True, amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
+                books = Book.query.filter_by(age_group_2=True, amazon_bestseller=True).order_by(
+                    Book.amazon_bestseller).all()[start:end]
             elif age_group == 3:
-                books = Book.query.filter_by(age_group_3=True, amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
+                books = Book.query.filter_by(age_group_3=True, amazon_bestseller=True).order_by(
+                    Book.amazon_bestseller).all()[start:end]
             elif age_group == 4:
-                books = Book.query.filter_by(age_group_4=True, amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
+                books = Book.query.filter_by(age_group_4=True, amazon_bestseller=True).order_by(
+                    Book.amazon_bestseller).all()[start:end]
             elif age_group == 5:
-                books = Book.query.filter_by(age_group_5=True, amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
+                books = Book.query.filter_by(age_group_5=True, amazon_bestseller=True).order_by(
+                    Book.amazon_bestseller).all()[start:end]
             elif age_group == 6:
-                books = Book.query.filter_by(age_group_6=True, amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
-            else: 
+                books = Book.query.filter_by(age_group_6=True, amazon_bestseller=True).order_by(
+                    Book.amazon_bestseller).all()[start:end]
+            else:
                 books = Book.query.filter_by(amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
         else:
             books = Book.query.filter_by(amazon_bestseller=True).order_by(Book.amazon_bestseller).all()[start:end]
@@ -322,7 +352,8 @@ class Book(db.Model):
     @staticmethod
     def get_similar_books(age_group):
         if age_group != "None":
-            detail_objs = Detail.query.filter_by(age_group=age_group).order_by(Detail.bestseller_rank.asc()).limit(10).all()
+            detail_objs = Detail.query.filter_by(age_group=age_group).order_by(Detail.bestseller_rank.asc()).limit(
+                10).all()
             books = [Book.query.filter_by(id=obj.book_id).first() for obj in detail_objs]
         else:
             detail_objs = Detail.query.order_by(Detail.bestseller_rank.asc()).limit(10).all()

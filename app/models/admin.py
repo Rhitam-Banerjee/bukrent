@@ -7,6 +7,7 @@ from app.models.buckets import DeliveryBucket, Suggestion, Wishlist, Dump
 from app.models.order import Order
 from app.models.category import Category
 
+
 class Admin(db.Model):
     __tablename__ = "admins"
     id = db.Column(db.Integer, primary_key=True)
@@ -14,7 +15,7 @@ class Admin(db.Model):
     is_super_admin = db.Column(db.Boolean, default=False)
     password = db.Column(db.String, nullable=False)
 
-    def get_books(self, books, fetch_user_data=False): 
+    def get_books(self, books, fetch_user_data=False):
         final_books = []
         for book in books:
             tags = []
@@ -23,32 +24,36 @@ class Admin(db.Model):
                 tag_obj = Category.query.filter_by(name=tag).first()
                 tags.append({"guid": tag_obj.guid, "name": tag_obj.name})
             book_json['tags'] = tags
-            if fetch_user_data: 
+            if fetch_user_data:
                 fields = ['user_id']
-                suggestions = Suggestion.query.filter_by(book_id=book.id).options(load_only(*fields)).all()
-                wishlists = Wishlist.query.filter_by(book_id=book.id).options(load_only(*fields)).all()
-                dumps = Dump.query.filter_by(book_id=book.id, read_before=True).options(load_only(*fields)).all()
-                orders = Order.query.filter_by(book_id=book.id).options(load_only(*fields)).all()
+                suggestions = Suggestion.query.filter_by(
+                    book_id=book.id).options(load_only(*fields)).all()
+                wishlists = Wishlist.query.filter_by(
+                    book_id=book.id).options(load_only(*fields)).all()
+                dumps = Dump.query.filter_by(
+                    book_id=book.id, read_before=True).options(load_only(*fields)).all()
+                orders = Order.query.filter_by(
+                    book_id=book.id).options(load_only(*fields)).all()
                 suggested_users, wishlisted_users, previous_users = [], [], []
-                for suggestion in suggestions: 
+                for suggestion in suggestions:
                     user = User.query.get(suggestion.user_id)
-                    if user: 
+                    if user:
                         suggested_users.append(user.to_json())
-                for wishlist in wishlists: 
+                for wishlist in wishlists:
                     user = User.query.get(wishlist.user_id)
-                    if user: 
+                    if user:
                         wishlisted_users.append({
-                            **user.to_json(), 
+                            **user.to_json(),
                             "priority_order": wishlist.priority_order,
                             "total_wishlist_count": Wishlist.query.filter_by(user_id=user.id).count(),
                         })
-                for dump in dumps: 
+                for dump in dumps:
                     user = User.query.get(dump.user_id)
-                    if user: 
+                    if user:
                         previous_users.append(user.to_json())
-                for order in orders: 
+                for order in orders:
                     user = User.query.get(order.user_id)
-                    if user: 
+                    if user:
                         previous_users.append(user.to_json())
                 book_json['suggested_users'] = suggested_users
                 book_json['wishlisted_users'] = wishlisted_users
@@ -56,32 +61,37 @@ class Admin(db.Model):
             final_books.append(book_json)
         return final_books
 
-    def get_users(self, users): 
+    def get_users(self, users):
         all_users = []
-        for user in users: 
+        for user in users:
             user_id = ''
-            if type(user) == type({}): 
+            if type(user) == type({}):
                 user_id = user['id']
                 user = User.query.get(user_id)
             current_books, delivery_books, delivery_address, notes, is_completed = [], [], "", "", False
-            if user.next_delivery_date: 
+            if user.next_delivery_date:
                 delivery_books = Order.query.filter_by(user_id=user.id).filter(
-                    Order.placed_on >= user.next_delivery_date - timedelta(days=1),
-                    Order.placed_on <= user.next_delivery_date + timedelta(days=1)
+                    Order.placed_on >= user.next_delivery_date -
+                    timedelta(days=1),
+                    Order.placed_on <= user.next_delivery_date +
+                    timedelta(days=1)
                 ).all()
-                if len(delivery_books): 
+                if len(delivery_books):
                     delivery_address = delivery_books[0].delivery_address
                     notes = delivery_books[0].notes
                     is_completed = delivery_books[0].is_completed
-                if user.delivery_address: 
+                if user.delivery_address:
                     delivery_address = user.delivery_address
-            if user.last_delivery_date: 
+            if user.last_delivery_date:
                 current_books = Order.query.filter_by(user_id=user.id).filter(
-                    Order.placed_on >= user.last_delivery_date - timedelta(days=1),
-                    Order.placed_on <= user.last_delivery_date + timedelta(days=1)
+                    Order.placed_on >= user.last_delivery_date -
+                    timedelta(days=1),
+                    Order.placed_on <= user.last_delivery_date +
+                    timedelta(days=1)
                 ).all()
-            retained_books = DeliveryBucket.query.filter_by(user_id=user.id, is_retained=True).all()
-            bucket = user.get_next_bucket()            
+            retained_books = DeliveryBucket.query.filter_by(
+                user_id=user.id, is_retained=True).all()
+            bucket = user.get_next_bucket()
             all_users.append({
                 "password": user.password,
                 "wishlist": user.get_wishlist(),
@@ -99,21 +109,23 @@ class Admin(db.Model):
             })
         return all_users
 
-    def get_orders(self): 
+    def get_orders(self):
         users = User.query.filter(User.next_delivery_date != None).all()
         orders = []
-        for user in users: 
+        for user in users:
             current_books, delivery_books = [], []
-            if user.next_delivery_date: 
+            if user.next_delivery_date:
                 delivery_books = Order.query.filter_by(user_id=user.id).filter(
-                    cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
+                    cast(Order.placed_on, Date) == cast(
+                        user.next_delivery_date, Date),
                 ).all()
-            if user.last_delivery_date: 
+            if user.last_delivery_date:
                 current_books = Order.query.filter_by(user_id=user.id).filter(
-                    cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
+                    cast(Order.placed_on, Date) == cast(
+                        user.last_delivery_date, Date),
                 ).all()
             bucket = user.get_next_bucket()
-            if len(bucket) or len(delivery_books): 
+            if len(bucket) or len(delivery_books):
                 orders.append({
                     "user": user.to_json(),
                     "current_books": [order.to_json() for order in current_books],
@@ -121,6 +133,19 @@ class Admin(db.Model):
                     "bucket": bucket
                 })
         return orders
+
+    @staticmethod
+    def create(username, is_super_admin, password):
+        admin_dict = dict(
+            username=username,
+            is_super_admin=is_super_admin,
+            password=password
+        )
+        admin_obj = Admin(**admin_dict)
+        db.session.add(admin_obj)
+        db.session.commit()
+
+        return admin_obj
 
     def to_json(self):
         return {

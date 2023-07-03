@@ -1,6 +1,7 @@
 from app import db
 import uuid
 
+
 class Dump(db.Model):
     __tablename__ = "dump"
     id = db.Column(db.Integer, primary_key=True)
