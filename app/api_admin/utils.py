@@ -1,8 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.models.books import Book
-from app.models.user import User
 from app.models.admin import Admin
-
 from functools import wraps
 
 import os
@@ -14,27 +12,37 @@ from botocore.exceptions import NoCredentialsError
 
 api_admin = Blueprint('api_admin', __name__, url_prefix="/api_admin")
 
-def token_required(f):
-   @wraps(f)
-   def decorator(*args, **kwargs):
-       access_token_admin = request.cookies.get('access_token_admin')
-       if not access_token_admin:
-           return jsonify({'message': 'No access token'}), 401
-       try:
-           data = jwt.decode(access_token_admin, os.environ.get('SECRET_KEY'), algorithms=["HS256"])
-           admin = Admin.query.filter_by(id=data['id']).first()
-       except:
-           return jsonify({'message': 'Invalid access token'}), 401
-       return f(admin, *args, **kwargs)
-   return decorator
 
-def super_admin(f): 
+def token_required(f):
     @wraps(f)
-    def decorator(admin, *args, **kwargs): 
-        if not admin.is_super_admin: 
+    def decorator(*args, **kwargs):
+        # admin = Admin.query.first()
+        # return f(admin, *args, **kwargs)
+
+        access_token_admin = request.cookies.get('access_token_admin')
+        if not access_token_admin:
+            return jsonify({'message': 'No access token'}), 401
+        try:
+            data = jwt.decode(access_token_admin, os.environ.get(
+                'SECRET_KEY') or "SECRET", algorithms=["HS256"])
+            admin = Admin.query.filter_by(id=data['id']).first()
+        except:
+            return jsonify({'message': 'Invalid access token'}), 401
+        return f(admin, *args, **kwargs)
+
+    return decorator
+
+
+def super_admin(f):
+    @wraps(f)
+    def decorator(admin, *args, **kwargs):
+        # return f(admin, *args, **kwargs)
+        if not admin.is_super_admin:
             return jsonify({'message': 'Unauthorized'}), 401
         return f(admin, *args, **kwargs)
+
     return decorator
+
 
 def validate_user(f):
     @wraps(f)
@@ -90,6 +98,7 @@ def validate_user(f):
                 "message": str(e)
             }), 400
         return f(*args, **kwargs)
+
     return decorator
 
 
@@ -98,7 +107,8 @@ def upload_to_aws(file, s3_file, filename):
     AWS_SECRET_KEY = os.environ.get('AWS_SECRET_KEY')
 
     bucket = 'bukrent-production'
-    s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
+    s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY,
+                      aws_secret_access_key=AWS_SECRET_KEY)
 
     try:
         print(s3.upload_fileobj(file, bucket, filename))

@@ -1,19 +1,13 @@
-from app import db
-import uuid
-
 from app.models.buckets import *
 from app.models.order import Order
 from app.models.books import Book
 from app.models.deliverer import Deliverer
-from app.models.new_books import NewCategoryBook, NewBook, NewCategory
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 from sqlalchemy import Date, and_, cast
-import random
 from datetime import date, timedelta, datetime
 
 import os
-import json
 
 
 class CategoryPreferences(db.Model):
@@ -298,7 +292,7 @@ class Address(db.Model):
 class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    guid = db.Column(db.String, nullable=False, unique=True)
+    guid = db.Column(db.String, nullable=True, unique=True)
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
     mobile_number = db.Column(db.String, unique=True)
@@ -403,7 +397,6 @@ class User(db.Model):
     @staticmethod
     def create(first_name, last_name, mobile_number, password):
         user_dict = dict(
-            guid=str(uuid.uuid4()),
             first_name=first_name,
             last_name=last_name,
             mobile_number=mobile_number,
@@ -785,7 +778,7 @@ class User(db.Model):
 
     def bucket_remove(self, isbn):
         from app.models.books import Book
-        
+
         book = Book.query.filter_by(isbn=isbn).first()
         bucket = DeliveryBucket.query.filter(and_(
             DeliveryBucket.user_id == self.id, DeliveryBucket.book_id == book.id)).first()
@@ -907,7 +900,7 @@ class User(db.Model):
         suggestions = self.suggestions
         book_list = []
 
-        for suggestion in suggestions:
+        for suggestion in suggestions[:10]:
             if suggestion.book.stock_available > 0:
                 temp_dict = {
                     "name": suggestion.book.name,

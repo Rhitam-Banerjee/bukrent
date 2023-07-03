@@ -4,6 +4,7 @@ import uuid
 from app.models.books import BookCategory
 from app.models.user import CategoryPreferences
 
+
 class Category(db.Model):
     __tablename__ = "categories"
     id = db.Column(db.Integer, primary_key=True)
