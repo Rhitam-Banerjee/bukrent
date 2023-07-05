@@ -16,8 +16,6 @@ from app.api_v2.utils import api_v2_books
 
 import os
 import csv
-import requests
-import io
 
 
 @api_v2_books.route('/get-book-set')
@@ -389,7 +387,6 @@ def new_book():
     if request.method == 'POST':
         if NewBook.query.filter_by(isbn=isbn).count():
             return jsonify({"success": False, "message": "Book with given ISBN already exists"}), 400
-
         book_image = image
         if not image or not image.startswith('http'):
             extension = image_file.filename.split(".")[-1]

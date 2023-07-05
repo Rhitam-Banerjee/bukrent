@@ -31,6 +31,7 @@ api_admin = Blueprint('api_admin', __name__, url_prefix="/api_admin")
 
 @api_admin.route('/login', methods=['POST'])
 def login():
+
     username = request.json.get('username')
     password = request.json.get('password')
     admin = Admin.query.filter_by(username=username).first()
@@ -652,6 +653,7 @@ def add_books_user(admin):
 @api_admin.route('/add-to-wishlist', methods=['POST'])
 @token_required
 def add_to_wishlist(admin):
+
     book_guid = request.json.get('book_guid')
     user_id = request.json.get('user_id')
     user = User.query.get(user_id)

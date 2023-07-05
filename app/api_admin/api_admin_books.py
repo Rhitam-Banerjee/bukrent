@@ -3,7 +3,7 @@ import io
 from flask import jsonify, request
 import requests
 
-from sqlalchemy import or_, nullslast
+from sqlalchemy import or_, nullslast, desc
 from sqlalchemy.sql import func
 
 from app.models.books import Book, BookAuthor, BookCategory
@@ -22,6 +22,7 @@ import csv
 from app.api_admin.utils import api_admin, token_required, upload_to_aws
 
 import os
+
 
 @api_admin.route('/get-books', methods=['POST'])
 @token_required
@@ -42,48 +43,39 @@ def get_books(admin):
     series = request.json.get('series')
     types = request.json.get('types')
 
-    if amazon_bestseller and str(amazon_bestseller).isnumeric(): 
+    if amazon_bestseller and str(amazon_bestseller).isnumeric():
         amazon_bestseller = int(amazon_bestseller)
-    if most_borrowed and str(most_borrowed).isnumeric(): 
+    if most_borrowed and str(most_borrowed).isnumeric():
         most_borrowed = int(most_borrowed)
-    books = {}
 
-    if search or not any((len(authors), len(publishers), len(series), len(types))): 
+    books = {}
+    if search or not any((len(authors), len(publishers), len(series), len(types))):
         if not search:
             search = ''
-        subquery = None
         if sort_wishlist_count:
-            subquery = db.session.query(
-                Wishlist.book_id,
-                func.count(Wishlist.book_id).label('wishlist_count')
-            ).group_by(Wishlist.book_id).subquery()
-        elif sort_suggestion_count:
-            subquery = db.session.query(
-                Suggestion.book_id,
-                func.count(Suggestion.book_id).label('suggestion_count')
-            ).group_by(Suggestion.book_id).subquery()
-        if sort_wishlist_count or sort_suggestion_count:
-            query = db.session.query(Book).outerjoin(
-                subquery, Book.id == subquery.c.book_id
-            )
-        else: 
+            query = Book.query.filter(or_(
+                Book.name.ilike(f'{search}%'),
+                Book.description.ilike(f'%{search}%'),
+                Book.isbn.ilike(f'{search}%')
+            )).order_by(desc(func.count(Book.wishlist))).outerjoin(Book.wishlist).group_by(Book.id)
+        else:
             query = Book.query
         query = query.filter(or_(
             Book.name.ilike(f'{search}%'),
             Book.description.ilike(f'%{search}%'),
             Book.isbn.ilike(f'{search}%')
         ))
-        if most_borrowed: 
+        if most_borrowed:
             query = query.filter_by(most_borrowed=True)
-        if amazon_bestseller: 
+        if amazon_bestseller:
             query = query.filter_by(amazon_bestseller=True)
-        if available and str(available).strip('-').isnumeric() and int(available) != 0: 
+        if available and str(available).strip('-').isnumeric() and int(available) != 0:
             available = int(available)
-            if available == -1: 
+            if available == -1:
                 query = query.filter_by(stock_available=0)
-            else: 
+            else:
                 query = query.filter(Book.stock_available > 0)
-        if age_group == 1: 
+        if age_group == 1:
             query = query.filter_by(age_group_1=True)
         elif age_group == 2:
             query = query.filter_by(age_group_2=True)
@@ -96,44 +88,42 @@ def get_books(admin):
         elif age_group == 6:
             query = query.filter_by(age_group_6=True)
 
-        if sort_wishlist_count: 
-            query = query.order_by(nullslast(subquery.c.wishlist_count.desc()))
-        elif sort_suggestion_count: 
-            query = query.order_by(nullslast(subquery.c.suggestion_count.desc()))
-
         books = query.limit(end - start).offset(start).all()
-    else: 
+    else:
+
         age_authors = Author.get_authors(age_group, 0, 10000)
         age_publishers = Publisher.get_publishers(age_group, 0, 10000)
         age_series = Series.get_series(age_group, 0, 10000)
         age_types = Format.get_types(age_group, 0, 10000)
-        
-        for author in authors: 
+
+        for author in authors:
             author_obj = Author.query.filter_by(guid=author).first()
-            if author_obj and author_obj.to_json() in age_authors: 
-                for book in author_obj.books: 
+            if author_obj and author_obj.to_json() in age_authors:
+                for book in author_obj.books:
                     books[book.isbn] = book
-        for publisher in publishers: 
+        for publisher in publishers:
             publisher_obj = Publisher.query.filter_by(guid=publisher).first()
-            if publisher_obj and publisher_obj.to_json() in age_publishers: 
-                for book in publisher_obj.books: 
+            if publisher_obj and publisher_obj.to_json() in age_publishers:
+                for book in publisher_obj.books:
                     books[book.isbn] = book
-        for serie in series: 
+        for serie in series:
             serie_obj = Series.query.filter_by(guid=serie).first()
-            if serie_obj and serie_obj.to_json() in age_series: 
-                for book in serie_obj.books: 
+            if serie_obj and serie_obj.to_json() in age_series:
+                for book in serie_obj.books:
                     books[book.isbn] = book
-        for format in types: 
+        for format in types:
             format_obj = Format.query.filter_by(guid=format).first()
-            if format_obj and format_obj.to_json() in age_types: 
-                for book in format_obj.books: 
+            if format_obj and format_obj.to_json() in age_types:
+                for book in format_obj.books:
                     books[book.isbn] = book
 
         books = list(books.values())[start:end]
+
     return jsonify({
         "status": "success",
         "books": admin.get_books(books, fetch_user_data=fetch_user_data)
     })
+
 
 @api_admin.route('/add-book', methods=['POST'])
 @token_required
@@ -408,20 +398,20 @@ def add_books_from_csv(admin):
             except Exception as e: 
                 print(e)
         Book.create(
-            name, #name
-            image, #image 
-            isbn, #isbn
-            rating, #rating
-            '', #review_count
-            book_format, #book_format
-            language, #language
-            price, #price
-            description, #description
-            stock_available, #stock_available
-            None, #series_id
-            None, #bestseller_json
-            None, #borrowed_json
-            None, #suggestion_json
+            name,
+            image,
+            isbn,
+            rating,
+            '',
+            book_format,
+            language,
+            price,
+            description,
+            stock_available,
+            None,
+            None,
+            None,
+            None,
         )
         book = Book.query.filter_by(isbn=isbn).first()
         if 'age_group_1' in columns: 

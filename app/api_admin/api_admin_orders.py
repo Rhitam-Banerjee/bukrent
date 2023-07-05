@@ -89,7 +89,6 @@ def add_books_user(admin):
 @super_admin
 def add_to_wishlist(admin):
     user_id = request.json.get('user_id')
-    isbn = request.json.get('isbn')
     user = User.query.get(user_id)
     isbn = request.json.get("isbn")
     if not user:
@@ -265,7 +264,6 @@ def add_users_book(admin):
         "status": "success",
         "users_found": users_found,
         "users_not_found": users_not_found,
-        "book": admin.get_books([book])[0]
     })
 
 

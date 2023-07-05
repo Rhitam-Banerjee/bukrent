@@ -6,7 +6,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 from sqlalchemy import Date, and_, cast
 from datetime import date, timedelta, datetime
-import uuid
+
 import os
 
 
@@ -292,7 +292,7 @@ class Address(db.Model):
 class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    guid = db.Column(db.String, nullable=True, unique=True)
+    guid = db.Column(db.String, nullable=False, unique=True)
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
     mobile_number = db.Column(db.String, unique=True)
@@ -521,7 +521,6 @@ class User(db.Model):
 
     def add_to_wishlist(self, isbn):
         from app.models.books import Book
-        print(isbn)
         book = Book.query.filter_by(isbn=isbn).first()
 
         existing = Wishlist.query.filter(
