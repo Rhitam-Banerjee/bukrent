@@ -89,7 +89,7 @@ class Book(db.Model):
     details = db.relationship(Detail, lazy=True, uselist=False)
     annotation = db.relationship(Annotation, lazy=True, uselist=False)
     reviews = db.relationship(Review, lazy=True)
-
+    wishlist = db.relationship(Wishlist, lazy=True)
     series_id = db.Column(db.Integer, db.ForeignKey('series.id'))
 
     categories = db.relationship('Category', secondary=BookCategory.__table__)

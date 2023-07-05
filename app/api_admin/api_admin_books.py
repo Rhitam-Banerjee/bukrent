@@ -46,24 +46,23 @@ def get_books(admin):
         amazon_bestseller = int(amazon_bestseller)
     if most_borrowed and str(most_borrowed).isnumeric(): 
         most_borrowed = int(most_borrowed)
-    
     books = {}
 
     if search or not any((len(authors), len(publishers), len(series), len(types))): 
-        if not search: 
+        if not search:
             search = ''
         subquery = None
-        if sort_wishlist_count: 
+        if sort_wishlist_count:
             subquery = db.session.query(
                 Wishlist.book_id,
                 func.count(Wishlist.book_id).label('wishlist_count')
             ).group_by(Wishlist.book_id).subquery()
-        elif sort_suggestion_count: 
+        elif sort_suggestion_count:
             subquery = db.session.query(
                 Suggestion.book_id,
                 func.count(Suggestion.book_id).label('suggestion_count')
             ).group_by(Suggestion.book_id).subquery()
-        if sort_wishlist_count or sort_suggestion_count: 
+        if sort_wishlist_count or sort_suggestion_count:
             query = db.session.query(Book).outerjoin(
                 subquery, Book.id == subquery.c.book_id
             )
@@ -131,7 +130,6 @@ def get_books(admin):
                     books[book.isbn] = book
 
         books = list(books.values())[start:end]
-
     return jsonify({
         "status": "success",
         "books": admin.get_books(books, fetch_user_data=fetch_user_data)
