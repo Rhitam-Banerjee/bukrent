@@ -6,7 +6,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 from sqlalchemy import Date, and_, cast
 from datetime import date, timedelta, datetime
-
+import uuid
 import os
 
 
@@ -397,6 +397,7 @@ class User(db.Model):
     @staticmethod
     def create(first_name, last_name, mobile_number, password):
         user_dict = dict(
+            guid=str(uuid.uuid4()),
             first_name=first_name,
             last_name=last_name,
             mobile_number=mobile_number,
