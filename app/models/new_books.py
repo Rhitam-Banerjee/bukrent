@@ -1,9 +1,5 @@
-from datetime import date, timedelta
-from sqlalchemy import Date, cast
-from app.models.buckets import Dump, Wishlist
 from app import db
 import uuid
-from app.models.order import Order
 from app.models.books import Book
 
 class NewBookSection(db.Model): 
@@ -17,8 +13,8 @@ class NewBookSection(db.Model):
         if NewBookSection.query.filter_by(name=name).count(): 
             return
         book_section_dict = dict(
-            guid = str(uuid.uuid4()),
-            name = name
+            guid=str(uuid.uuid4()),
+            name=name
         )
         new_book_section_obj = NewBookSection(**book_section_dict)
         db.session.add(new_book_section_obj)
@@ -45,9 +41,9 @@ class NewCategoryBook(db.Model):
             return
         try: 
             category_book_dict = dict(
-                guid = str(uuid.uuid4()),
-                category_id = category_id,
-                book_id = book_id,
+                guid=str(uuid.uuid4()),
+                category_id=category_id,
+                book_id=book_id,
                 section_id=section_id
             )
             new_category_book_obj = NewCategoryBook(**category_book_dict)
