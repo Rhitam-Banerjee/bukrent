@@ -1,5 +1,4 @@
 from app import db
-import uuid
 
 
 class Dump(db.Model):

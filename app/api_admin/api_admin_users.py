@@ -375,6 +375,7 @@ def update_user_ops(admin):
         "user": admin.get_users([user])[0],
     }), 201
 
+
 @api_admin.route('/pause-plan', methods=['POST'])
 @token_required
 def pause_plan(admin): 

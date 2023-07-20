@@ -11,7 +11,8 @@ migrate = Migrate()
 
 def create_app(script_info=None):
     app = Flask(__name__)
-    # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dev.db'
+    # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/linuxuser/Python/web/flask/bukrent/bukrent-development/app/dev.db'
+
 
     app_settings = os.getenv('APP_SETTINGS')
     app.config.from_object(app_settings)

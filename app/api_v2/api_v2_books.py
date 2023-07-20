@@ -239,7 +239,7 @@ def get_new_books():
         age = int(age)
     start, end = int(start), int(end)
     books_query = db.session.query(NewBook)
-    if search_query: 
+    if search_query:
         books_query = books_query.join(NewCategoryBook, NewCategory).filter(
             or_(
                 NewBook.name.ilike(f'{search_query}%'),
@@ -247,6 +247,7 @@ def get_new_books():
                 NewCategory.name.ilike(f'{search_query}%'),
             )
         )
+
     if age is not None: 
         books_query = books_query.filter(
             NewBook.min_age <= age, 
@@ -491,6 +492,7 @@ def update_book_quantity():
 
     return jsonify({"success": True, "book": new_book.to_json()})
 
+
 @api_v2_books.route('/delete-new-book', methods=['POST'])
 def delete_new_book(): 
     id = request.json.get('id')
@@ -560,7 +562,6 @@ def add_books_from_csv():
         book_attr = {key: value for key, value in book.items() if key in book_columns}
         new_book_attr = {key: value for key, value in book.items() if key in new_book_columns}
         fetch_book = NewBook.query.filter_by(isbn=isbn).first()
-
         if fetch_book:
             update_new_book = update(NewBook).where(NewBook.isbn == isbn).values(**new_book_attr)
             db.engine.execute(update_new_book)
@@ -568,8 +569,12 @@ def add_books_from_csv():
             db.engine.execute(update_book)
             added_isbns.append(isbn)
             db.session.commit()
-            # print("ADDED")
+            print("ADDED")
         else:
             not_added_isbns.append(isbn)
+    try:
+        os.remove(filename)
+    except Exception as e:
+        print(e)
 
     return jsonify({"status": "success", "added_isbns": added_isbns, "not_added_isbns": not_added_isbns})

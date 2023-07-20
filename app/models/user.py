@@ -1,3 +1,5 @@
+import uuid
+
 from app.models.buckets import *
 from app.models.order import Order
 from app.models.books import Book
@@ -899,7 +901,6 @@ class User(db.Model):
     def get_suggestions(self):
         suggestions = self.suggestions
         book_list = []
-
         for suggestion in suggestions[:10]:
             if suggestion.book.stock_available > 0:
                 temp_dict = {
