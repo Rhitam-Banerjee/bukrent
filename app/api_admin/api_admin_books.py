@@ -57,10 +57,10 @@ def get_books(admin):
                 Book.name.ilike(f'{search}%'),
                 Book.description.ilike(f'%{search}%'),
                 Book.isbn.ilike(f'{search}%')
-            )).order_by(desc(func.count(Book.wishlist))).outerjoin(Book.wishlist).group_by(Book.id)
+            )).order_by(desc(func.count(Book.wishlist)), Book.id).outerjoin(Book.wishlist).group_by(Book.id)
         else:
             query = Book.query
-        query = query.filter(or_(
+            query = query.filter(or_(
             Book.name.ilike(f'{search}%'),
             Book.description.ilike(f'%{search}%'),
             Book.isbn.ilike(f'{search}%')
