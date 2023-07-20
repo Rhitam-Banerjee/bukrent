@@ -52,8 +52,8 @@ def get_books(admin):
     if search or not any((len(authors), len(publishers), len(series), len(types))):
         if not search:
             search = ''
-        if sort_wishlist_count:
-            query = Book.query.filter(or_(
+        query = Book.query
+        query = query.filter(or_(
                 Book.name.ilike(f'{search}%'),
                 Book.description.ilike(f'%{search}%'),
                 Book.isbn.ilike(f'{search}%')
@@ -65,6 +65,9 @@ def get_books(admin):
             Book.description.ilike(f'%{search}%'),
             Book.isbn.ilike(f'{search}%')
         ))
+            ))
+        if sort_wishlist_count:
+            query = query.order_by(desc(func.count(Book.wishlist), Book.id)).outerjoin(Book.wishlist).group_by(Book.id)
         if most_borrowed:
             query = query.filter_by(most_borrowed=True)
         if amazon_bestseller:
@@ -87,7 +90,6 @@ def get_books(admin):
             query = query.filter_by(age_group_5=True)
         elif age_group == 6:
             query = query.filter_by(age_group_6=True)
-
         books = query.limit(end - start).offset(start).all()
     else:
 

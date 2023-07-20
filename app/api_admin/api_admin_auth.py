@@ -49,3 +49,6 @@ def logout(admin):
     }))
     response.set_cookie('access_token_admin', '', secure=True, httponly=True, samesite='None')
     return response
+
+
+
