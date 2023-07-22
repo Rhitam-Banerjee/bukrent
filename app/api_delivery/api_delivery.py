@@ -224,13 +224,9 @@ def get_delivery(deliverer, id):
     if user.delivery_address:
         delivery_address = user.delivery_address
     if user.last_delivery_date:
-        return_books = Order.query.filter(
-            and_(
-                Order.user_id == user.id,
-                Order.is_refused == 0,
-                cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date)
-            )
-        ).all()
+        return_books = Order.query.filter_by(
+            user_id = user.id
+        ).filter(cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date)).all()
     retained_books = DeliveryBucket.query.filter_by(
         user_id=user.id, is_retained=True).all()
     return_books = [*return_books, *retained_books]
