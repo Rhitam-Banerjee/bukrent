@@ -1,7 +1,8 @@
 from datetime import date, datetime, timedelta
 from functools import cmp_to_key
 from flask import Blueprint, jsonify, request, make_response
-from sqlalchemy import or_, cast, Date
+from sqlalchemy import or_, cast, Date, and_
+
 
 from app.models.deliverer import Deliverer
 from app.models.user import User
@@ -223,8 +224,12 @@ def get_delivery(deliverer, id):
     if user.delivery_address:
         delivery_address = user.delivery_address
     if user.last_delivery_date:
-        return_books = Order.query.filter_by(user_id=user.id).filter(
-            cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date),
+        return_books = Order.query.filter(
+            and_(
+                Order.user_id == user.id,
+                Order.is_refused == 0,
+                cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date)
+            )
         ).all()
     retained_books = DeliveryBucket.query.filter_by(
         user_id=user.id, is_retained=True).all()
