@@ -65,6 +65,10 @@ def get_books(admin):
             Book.description.ilike(f'%{search}%'),
             Book.isbn.ilike(f'{search}%')
         ))
+<<<<<<< HEAD
+=======
+            ))
+>>>>>>> 94d557e1d54e44f5ed3b62ae262feb47f88ad84c
         if sort_wishlist_count:
             query = query.order_by(desc(func.count(Book.wishlist), Book.id)).outerjoin(Book.wishlist).group_by(Book.id)
         if most_borrowed:
