@@ -227,7 +227,7 @@ def get_delivery(deliverer, id):
             and_(
                 Order.user_id == user.id,
                 (Order.is_refused.is_(False)) | (Order.is_refused.is_(None)),
-                cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date)
+                cast(Order.placed_on, Date) == cast(user.last_delivery_date, Date)
             )
         ).all()
     retained_books = DeliveryBucket.query.filter_by(
