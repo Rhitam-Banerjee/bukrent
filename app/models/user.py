@@ -967,8 +967,6 @@ class User(db.Model):
         for book in read_books:
             if book:
                 books.append(book)
-
-        books.sort(key=lambda x: x.get("placed_on"), reverse=True)
         return books
 
     def get_current_books(self):
