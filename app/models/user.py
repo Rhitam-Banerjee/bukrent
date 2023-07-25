@@ -7,7 +7,7 @@ from app.models.deliverer import Deliverer
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 from sqlalchemy import Date, and_, cast
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta, datetime, timezone
 
 import os
 
@@ -967,6 +967,9 @@ class User(db.Model):
         for book in read_books:
             if book:
                 books.append(book)
+        books.sort(key=lambda x: x.get("placed_on") if x.get("placed_on") is not None else datetime(1970, 1, 1,
+                tzinfo=timezone.utc),
+                   reverse=True)
         return books
 
     def get_current_books(self):
