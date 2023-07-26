@@ -80,7 +80,6 @@ def get_deliveries(deliverer):
     time_filter = request.args.get('time_filter')
     sort = request.args.get('sort')
     search_query = request.args.get('search_query')
-
     if not str(time_filter).strip('-').isnumeric():
         time_filter = 0
     else:
@@ -388,6 +387,8 @@ def toggle_retain_book(deliverer):
 @token_required
 def toggle_taken_book(deliverer):
     isbn = request.json.get('isbn')
+    count = request.json.get('count')
+    completed_count = request.json.get('completedCount')
     book = Book.query.filter_by(isbn=isbn).first()
     if not book:
         return jsonify({
@@ -406,8 +407,10 @@ def toggle_taken_book(deliverer):
             cast(Order.placed_on, Date) == cast(user.next_delivery_date, Date),
         ).first()
         if order:
+            print(count, completed_count)
             if order.is_taken:
-                order.is_taken = False
+                if count == completed_count:
+                    order.is_taken = False
             else:
                 order.is_taken = True
     db.session.commit()
