@@ -5,7 +5,7 @@ from app.models.user import User, Child
 from app.models.books import Book
 from app.models.buckets import DeliveryBucket, Suggestion
 from app.models.order import Order
-
+import json
 from app import db
 
 from app.api_admin.utils import api_admin, token_required, super_admin
@@ -303,6 +303,29 @@ def get_orders(admin):
         "orders": admin.get_orders()
     })
 
+@api_admin.route("/get-order", methods=['POST'])
+@token_required
+@super_admin
+def get_order(admin):
+    users = request.json['users']
+    week = int(request.json['week'])
+    result = []
+    for user_id in users:
+        temp = {"user_id": user_id, "books": []}
+        orders = Order.query.filter_by(user_id=user_id).all()
+        for order in orders:
+            week_number = order.placed_on.date().isocalendar()[1]
+            if week == week_number:
+                book = Book.query.filter_by(id=order.book_id).first()
+                temp['books'].append(book.to_json())
+                temp['books'][-1]['is_refused'] = order.is_refused
+                temp['books'][-1]['is_completed'] = order.is_completed
+                temp['books'][-1]['is_taken'] = order.is_taken
+        result.append(temp)
+    return jsonify({
+    "status": "success",
+    "data": result
+})
 
 @api_admin.route('/confirm-order', methods=['POST'])
 @token_required
