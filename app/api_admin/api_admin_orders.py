@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from sqlalchemy import cast, Date
+from sqlalchemy import cast, Date, desc
 
 from app.models.user import User, Child
 from app.models.books import Book
@@ -308,19 +308,21 @@ def get_orders(admin):
 @super_admin
 def get_order(admin):
     users = request.json['users']
-    week = int(request.json['week'])
+    weeks = set(map(int, request.json['week']))
     result = []
     for user_id in users:
         temp = {"user_id": user_id, "books": []}
-        orders = Order.query.filter_by(user_id=user_id).all()
+        orders = Order.query.filter_by(user_id=user_id).order_by(desc(Order.placed_on)).all()        
         for order in orders:
             week_number = order.placed_on.date().isocalendar()[1]
-            if week == week_number:
+            if week_number in weeks:
                 book = Book.query.filter_by(id=order.book_id).first()
                 temp['books'].append(book.to_json())
                 temp['books'][-1]['is_refused'] = order.is_refused
                 temp['books'][-1]['is_completed'] = order.is_completed
                 temp['books'][-1]['is_taken'] = order.is_taken
+                temp['books'][-1]['placed_on'] = order.placed_on
+                temp['books'][-1]['week'] = week_number
         result.append(temp)
     return jsonify({
     "status": "success",
