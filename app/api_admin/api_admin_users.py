@@ -1,6 +1,6 @@
 from flask import jsonify, request
-
-from sqlalchemy import or_
+import time
+from sqlalchemy import or_, and_, desc, extract
 
 from sqlalchemy import cast, Date
 
@@ -35,7 +35,7 @@ def get_users(admin):
     sort_registration_date = request.args.get('sort_registration_date')
 
     all_users = []
-    query = User.query.filter_by(is_deleted=False)
+    query = User.query.filter_by(is_deleted = False)
 
     if payment_status:
         if payment_status == 'Unpaid':
@@ -91,6 +91,69 @@ def get_users(admin):
         "total_users": total_users,
     })
 
+@api_admin.route('/getTracker',  methods=['POST'])
+@token_required
+@super_admin
+def get_tracker(admin):
+    query = User.query.filter_by(is_deleted=False)
+    start = int(request.json.get("start"))
+    user_filters = request.json.get('userFilters')
+    weeks = set(map(int, request.json['week']))
+    end = int(user_filters['userLimit'])
+    delivery_date = user_filters['deliveryDate']
+    
+    if user_filters['paymentStatus'] == "Active":
+       query = query.filter(User.delivery_count < User.total_delivery_count)
+    elif user_filters['paymentStatus'] == "One Delivery Left":
+        query = query.filter(User.total_delivery_count - User.delivery_count == 1)    
+    elif user_filters['paymentStatus'] == 'Completed':
+        query = query.filter(User.total_delivery_count == User.delivery_count)
+    elif user_filters['paymentStatus'] == 'Pending':
+        query = query.filter(User.delivery_count > User.total_delivery_count)
+    if delivery_date:
+        delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d').date()
+        query = query.filter_by(next_delivery_date=delivery_date)
+
+    week_day_mapping = {
+    "Sunday": 0,
+    "Monday": 1,
+    "Tuesday": 2,
+    "Wednesday": 3,
+    "Thursday": 4,
+    "Friday": 5,
+    "Saturday": 6
+    }
+    
+    if user_filters['weekDay'] in week_day_mapping:
+        desired_day = week_day_mapping[user_filters['weekDay']]
+        query = query.filter(extract('dow', User.last_delivery_date) == desired_day)
+
+    query = query.order_by(User.id.desc())
+    all_users = query.limit(end - start).offset(start).all()
+    
+    result = []
+    for user in all_users:
+        temp = {"user": {"id": user.id, "first_name": user.first_name, "last_name": user.last_name,
+         "delivery_count": user.delivery_count, "total_delivery_count": user.total_delivery_count,
+         "paymentStatus" : user.payment_status, "last_delivery_date": user.last_delivery_date,
+          "mobile_number": user.mobile_number}, "books": []}
+        orders = Order.query.filter_by(user_id=user.id).order_by(desc(Order.placed_on)).all()        
+        for order in orders:
+            week_number = order.placed_on.date().isocalendar()[1]
+            if week_number in weeks:
+                book = Book.query.filter_by(id=order.book_id).first()
+                temp['books'].append(book.to_json())
+                temp['books'][-1]['is_refused'] = order.is_refused
+                temp['books'][-1]['is_completed'] = order.is_completed
+                temp['books'][-1]['is_taken'] = order.is_taken
+                temp['books'][-1]['placed_on'] = order.placed_on
+                temp['books'][-1]['week'] = week_number
+        result.append(temp)
+    
+    return jsonify({
+        "status": "success",
+        "data": result,
+    })
 
 @api_admin.route('/get-user/<id>')
 @token_required
@@ -104,7 +167,8 @@ def get_user(admin, id):
         }), 400
     return jsonify({
         "status": "success",
-        "user": admin.get_users([user])[0]
+        "user": admin.get_users([user])[0],
+        
     })
 
 @api_admin.route('/get-archived-users')
