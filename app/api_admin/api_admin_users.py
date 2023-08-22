@@ -96,10 +96,10 @@ def get_users(admin):
 @super_admin
 def get_tracker(admin):
     query = User.query.filter_by(is_deleted=False)
-    start = int(request.json.get("start"))
+    start = int(request.json.get("page")) * 50
     user_filters = request.json.get('userFilters')
     weeks = set(map(int, request.json['week']))
-    end = int(user_filters['userLimit'])
+    end = start + 50
     delivery_date = user_filters['deliveryDate']
     
     if user_filters['paymentStatus'] == "Active":
@@ -110,10 +110,7 @@ def get_tracker(admin):
         query = query.filter(User.total_delivery_count == User.delivery_count)
     elif user_filters['paymentStatus'] == 'Pending':
         query = query.filter(User.delivery_count > User.total_delivery_count)
-    if delivery_date:
-        delivery_date = datetime.strptime(delivery_date, '%Y-%m-%d').date()
-        query = query.filter_by(next_delivery_date=delivery_date)
-
+        
     week_day_mapping = {
     "Sunday": 0,
     "Monday": 1,
@@ -123,14 +120,18 @@ def get_tracker(admin):
     "Friday": 5,
     "Saturday": 6
     }
-    
+
+    if delivery_date:
+        query = query.filter(User.next_delivery_date == datetime.strptime(delivery_date, "%Y-%m-%d"))
+
     if user_filters['weekDay'] in week_day_mapping:
         desired_day = week_day_mapping[user_filters['weekDay']]
         query = query.filter(extract('dow', User.last_delivery_date) == desired_day)
 
     query = query.order_by(User.id.desc())
+
     all_users = query.limit(end - start).offset(start).all()
-    
+
     result = []
     for user in all_users:
         temp = {"user": {"id": user.id, "first_name": user.first_name, "last_name": user.last_name,
@@ -139,7 +140,7 @@ def get_tracker(admin):
           "mobile_number": user.mobile_number}, "books": []}
         orders = Order.query.filter_by(user_id=user.id).order_by(desc(Order.placed_on)).all()        
         for order in orders:
-            week_number = order.placed_on.date().isocalendar()[1]
+            week_number = order.placed_on.date().isocalendar()[1] 
             if week_number in weeks:
                 book = Book.query.filter_by(id=order.book_id).first()
                 temp['books'].append(book.to_json())
