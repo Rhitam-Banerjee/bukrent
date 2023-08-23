@@ -96,24 +96,22 @@ def get_users(admin):
 @super_admin
 def get_tracker(admin):
     query = User.query.filter_by(is_deleted=False)
-    user_filters = request.json.get('userFilters')
+    tracker = request.json.get('tracker')
     weeks = set(map(int, request.json['week']))
-    delivery_date = user_filters['deliveryDate']
-    payment_status = user_filters['paymentStatus']
-    if payment_status== "Active":
+    delivery_dates = tracker['deliveryDates']
+    payment_status = tracker['paymentStatus']
+    if payment_status == "Active":
        query = query.filter(User.delivery_count < User.total_delivery_count)
-    elif payment_status== "One Delivery Left":
+    elif payment_status == "One Delivery Left":
         query = query.filter(User.total_delivery_count - User.delivery_count == 1)    
-    elif payment_status== 'Completed':
+    elif payment_status == 'Completed':
         query = query.filter(User.total_delivery_count == User.delivery_count)
-    elif payment_status== 'Pending':
+    elif payment_status == 'Pending':
         query = query.filter(User.delivery_count > User.total_delivery_count)
     
+    delivery_dates = [datetime.strptime(del_date, "%Y-%m-%d").date() for del_date in delivery_dates]
+    query = query.filter(User.next_delivery_date.in_(delivery_dates))
 
-    if delivery_date:
-
-        query = query.filter(User.next_delivery_date == datetime.strptime(delivery_date, "%Y-%m-%d").date())
-        
     total_users = query.count()
     query = query.order_by(User.id.desc())
     
