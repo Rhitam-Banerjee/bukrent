@@ -96,44 +96,29 @@ def get_users(admin):
 @super_admin
 def get_tracker(admin):
     query = User.query.filter_by(is_deleted=False)
-    start = int(request.json.get("page")) * 50
     user_filters = request.json.get('userFilters')
     weeks = set(map(int, request.json['week']))
-    end = start + 50
     delivery_date = user_filters['deliveryDate']
-    
-    if user_filters['paymentStatus'] == "Active":
+    payment_status = user_filters['paymentStatus']
+    if payment_status== "Active":
        query = query.filter(User.delivery_count < User.total_delivery_count)
-    elif user_filters['paymentStatus'] == "One Delivery Left":
+    elif payment_status== "One Delivery Left":
         query = query.filter(User.total_delivery_count - User.delivery_count == 1)    
-    elif user_filters['paymentStatus'] == 'Completed':
+    elif payment_status== 'Completed':
         query = query.filter(User.total_delivery_count == User.delivery_count)
-    elif user_filters['paymentStatus'] == 'Pending':
+    elif payment_status== 'Pending':
         query = query.filter(User.delivery_count > User.total_delivery_count)
-        
-    week_day_mapping = {
-    "Sunday": 0,
-    "Monday": 1,
-    "Tuesday": 2,
-    "Wednesday": 3,
-    "Thursday": 4,
-    "Friday": 5,
-    "Saturday": 6
-    }
+    
 
     if delivery_date:
-        query = query.filter(User.next_delivery_date == datetime.strptime(delivery_date, "%Y-%m-%d"))
 
-    if user_filters['weekDay'] in week_day_mapping:
-        desired_day = week_day_mapping[user_filters['weekDay']]
-        query = query.filter(extract('dow', User.last_delivery_date) == desired_day)
-
+        query = query.filter(User.next_delivery_date == datetime.strptime(delivery_date, "%Y-%m-%d").date())
+        
+    total_users = query.count()
     query = query.order_by(User.id.desc())
-
-    all_users = query.limit(end - start).offset(start).all()
-
+    
     result = []
-    for user in all_users:
+    for user in query:
         temp = {"user": {"id": user.id, "first_name": user.first_name, "last_name": user.last_name,
          "delivery_count": user.delivery_count, "total_delivery_count": user.total_delivery_count,
          "paymentStatus" : user.payment_status, "last_delivery_date": user.last_delivery_date,
@@ -154,6 +139,7 @@ def get_tracker(admin):
     return jsonify({
         "status": "success",
         "data": result,
+        "total_users" : total_users
     })
 
 @api_admin.route('/get-user/<id>')
