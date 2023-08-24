@@ -1,19 +1,14 @@
 from flask import jsonify, request
 import time
 from sqlalchemy import or_, and_, desc, extract
-
 from sqlalchemy import cast, Date
-
-
 from app.models.user import Address, User, Child
 from app.models.books import Book
 from app.models.buckets import DeliveryBucket
 from app.models.order import Order
 from app.models.deliverer import Deliverer
 from app import db
-
 from app.api_admin.utils import api_admin, validate_user, token_required, super_admin
-
 import os
 from datetime import datetime, date, timedelta
 
@@ -114,16 +109,16 @@ def get_tracker(admin):
 
     total_users = query.count()
     query = query.order_by(User.id.desc())
-    
+    query = query.join(Order).all()
     result = []
+    
     for user in query:
         temp = {"user": {"id": user.id, "first_name": user.first_name, "last_name": user.last_name,
          "delivery_count": user.delivery_count, "total_delivery_count": user.total_delivery_count,
          "paymentStatus" : user.payment_status, "last_delivery_date": user.last_delivery_date,
           "mobile_number": user.mobile_number}, "books": []}
-        orders = Order.query.filter_by(user_id=user.id).order_by(desc(Order.placed_on)).all()        
-        for order in orders:
-            week_number = order.placed_on.date().isocalendar()[1] 
+        for order in user.order:
+            week_number = order.placed_on.date().isocalendar()[1]
             if week_number in weeks:
                 book = Book.query.filter_by(id=order.book_id).first()
                 temp['books'].append(book.to_json())
