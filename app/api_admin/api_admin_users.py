@@ -120,8 +120,7 @@ def get_tracker(admin):
         for order in user.order:
             week_number = order.placed_on.date().isocalendar()[1]
             if week_number in weeks:
-                book = Book.query.filter_by(id=order.book_id).first()
-                temp['books'].append(book.to_json())
+                temp['books'].append(order.book.to_json())
                 temp['books'][-1]['is_refused'] = order.is_refused
                 temp['books'][-1]['is_completed'] = order.is_completed
                 temp['books'][-1]['is_taken'] = order.is_taken
