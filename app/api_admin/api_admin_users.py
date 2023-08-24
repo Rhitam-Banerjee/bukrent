@@ -1,6 +1,6 @@
 from flask import jsonify, request
 import time
-from sqlalchemy import or_, and_, desc, extract
+from sqlalchemy import or_, and_, desc
 from sqlalchemy import cast, Date
 from app.models.user import Address, User, Child
 from app.models.books import Book
@@ -95,6 +95,7 @@ def get_tracker(admin):
     weeks = set(map(int, request.json['week']))
     delivery_dates = tracker['deliveryDates']
     payment_status = tracker['paymentStatus']
+    page = int(request.json.get('page'))
     if payment_status == "Active":
        query = query.filter(User.delivery_count < User.total_delivery_count)
     elif payment_status == "One Delivery Left":
@@ -106,13 +107,12 @@ def get_tracker(admin):
     
     delivery_dates = [datetime.strptime(del_date, "%Y-%m-%d").date() for del_date in delivery_dates]
     query = query.filter(User.next_delivery_date.in_(delivery_dates))
-
-    total_users = query.count()
     query = query.order_by(User.id.desc())
-    query = query.join(Order).all()
-    result = []
+    query = query.paginate(page=page)
+    total_users = query.total
     
-    for user in query:
+    result = []
+    for user in query.items:
         temp = {"user": {"id": user.id, "first_name": user.first_name, "last_name": user.last_name,
          "delivery_count": user.delivery_count, "total_delivery_count": user.total_delivery_count,
          "paymentStatus" : user.payment_status, "last_delivery_date": user.last_delivery_date,
