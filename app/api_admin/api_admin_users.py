@@ -96,6 +96,7 @@ def get_tracker(admin):
     delivery_dates = tracker['deliveryDates']
     payment_status = tracker['paymentStatus']
     page = int(request.json.get('page'))
+    
     if payment_status == "Active":
        query = query.filter(User.delivery_count < User.total_delivery_count)
     elif payment_status == "One Delivery Left":
@@ -116,7 +117,7 @@ def get_tracker(admin):
         temp = {"user": {"id": user.id, "first_name": user.first_name, "last_name": user.last_name,
          "delivery_count": user.delivery_count, "total_delivery_count": user.total_delivery_count,
          "paymentStatus" : user.payment_status, "last_delivery_date": user.last_delivery_date,
-          "mobile_number": user.mobile_number}, "books": []}
+          "mobile_number": user.mobile_number, "plan_duration": user.plan_duration}, "books": []}
         for order in user.order:
             week_number = order.placed_on.date().isocalendar()[1]
             if week_number in weeks:
