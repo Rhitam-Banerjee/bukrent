@@ -8,7 +8,7 @@ from app.models.buckets import DeliveryBucket
 from app.models.order import Order
 from app.models.deliverer import Deliverer
 from app import db
-from app.api_admin.utils import api_admin, validate_user, token_required, super_admin
+from app.api_admin.utils import api_admin, validate_user, token_required, super_admin, week_from_date, _week1_start_ordinal
 import os
 from datetime import datetime, date, timedelta
 
@@ -119,7 +119,7 @@ def get_tracker(admin):
          "paymentStatus" : user.payment_status, "last_delivery_date": user.last_delivery_date,
           "mobile_number": user.mobile_number, "plan_duration": user.plan_duration}, "books": []}
         for order in user.order:
-            week_number = order.placed_on.date().isocalendar()[1]
+            week_number = week_number = week_from_date(order.placed_on.date())[1]
             if week_number in weeks:
                 temp['books'].append(order.book.to_json())
                 temp['books'][-1]['is_refused'] = order.is_refused

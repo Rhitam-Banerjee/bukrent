@@ -117,3 +117,20 @@ def upload_to_aws(file, s3_file, filename):
         return False
     except NoCredentialsError:
         return False
+
+def week_from_date(date_object):
+    date_ordinal = date_object.toordinal()
+    year = date_object.year
+    week = ((date_ordinal - _week1_start_ordinal(year)) // 7) + 1
+    if week >= 52:
+        if date_ordinal >= _week1_start_ordinal(year + 1):
+            year += 1
+            week = 1
+    return year, week
+
+def _week1_start_ordinal(year):
+     jan1 = date(year, 1, 1)
+     jan1_ordinal = jan1.toordinal()
+     jan1_weekday = jan1.weekday()
+     week1_start_ordinal = jan1_ordinal - ((jan1_weekday + 1) % 7)
+     return week1_start_ordinal
