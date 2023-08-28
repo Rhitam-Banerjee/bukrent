@@ -5,7 +5,7 @@ from functools import wraps
 
 import os
 import jwt
-from datetime import datetime
+from datetime import datetime, date
 
 import boto3
 from botocore.exceptions import NoCredentialsError
