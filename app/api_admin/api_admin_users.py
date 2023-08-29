@@ -96,7 +96,7 @@ def get_tracker(admin):
     delivery_dates = tracker['deliveryDates']
     payment_status = tracker['paymentStatus']
     page = int(request.json.get('page'))
-    
+
     if payment_status == "Active":
        query = query.filter(User.delivery_count < User.total_delivery_count)
     elif payment_status == "One Delivery Left":
@@ -107,7 +107,11 @@ def get_tracker(admin):
         query = query.filter(User.delivery_count > User.total_delivery_count)
     
     delivery_dates = [datetime.strptime(del_date, "%Y-%m-%d").date() for del_date in delivery_dates]
-    query = query.filter(User.next_delivery_date.in_(delivery_dates))
+    
+    sub_query = Order.query.with_entities(Order.user_id).filter(cast(Order.placed_on, Date).in_(delivery_dates)).subquery()
+
+    query = query.filter(or_(User.next_delivery_date.in_(delivery_dates), User.id.in_(sub_query)))
+
     query = query.order_by(User.id.desc())
     query = query.paginate(page=page)
     total_users = query.total
@@ -117,9 +121,9 @@ def get_tracker(admin):
         temp = {"user": {"id": user.id, "first_name": user.first_name, "last_name": user.last_name,
          "delivery_count": user.delivery_count, "total_delivery_count": user.total_delivery_count,
          "paymentStatus" : user.payment_status, "last_delivery_date": user.last_delivery_date,
-          "mobile_number": user.mobile_number, "plan_duration": user.plan_duration}, "books": []}
+          "mobile_number": user.mobile_number, "plan_duration" : user.plan_duration}, "books": []}
         for order in user.order:
-            week_number = week_number = week_from_date(order.placed_on.date())[1]
+            week_number = week_from_date(order.placed_on.date())[1]
             if week_number in weeks:
                 temp['books'].append(order.book.to_json())
                 temp['books'][-1]['is_refused'] = order.is_refused
