@@ -95,6 +95,7 @@ def get_tracker(admin):
     weeks = set(map(int, request.json['week']))
     delivery_dates = tracker['deliveryDates']
     payment_status = tracker['paymentStatus']
+    delivery_status = tracker['deliveryStatus']
     page = int(request.json.get('page'))
 
     if payment_status == "Active":
@@ -106,16 +107,26 @@ def get_tracker(admin):
     elif payment_status == 'Pending':
         query = query.filter(User.delivery_count > User.total_delivery_count)
     
+    if delivery_status == "Allocated":
+        query = query.filter(and_(User.next_delivery_date != None, User.deliverer_id != None))
+    elif delivery_status == "Not Allocated":
+        query = query.filter(or_(User.next_delivery_date == None, User.deliverer_id == None))
+    elif delivery_status == "Delivered":
+        query = query.filter(User.order.any(Order.is_completed == True))
+    elif delivery_status == "Not Delivered":
+        query = query.filter(User.order.any(and_(datetime.today().date() > cast(Order.placed_on, Date), Order.is_completed == False)))
+
     delivery_dates = [datetime.strptime(del_date, "%Y-%m-%d").date() for del_date in delivery_dates]
     
     sub_query = Order.query.with_entities(Order.user_id).filter(cast(Order.placed_on, Date).in_(delivery_dates)).subquery()
-
     query = query.filter(or_(User.next_delivery_date.in_(delivery_dates), User.id.in_(sub_query)))
 
     query = query.order_by(User.id.desc())
     query = query.paginate(page=page)
+
     total_users = query.total
     completed_delivery = 0
+
     result = []
     for user in query.items:
         temp = {"user": {"id": user.id, "first_name": user.first_name, "last_name": user.last_name,
