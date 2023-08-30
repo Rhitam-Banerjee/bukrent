@@ -115,28 +115,32 @@ def get_tracker(admin):
     query = query.order_by(User.id.desc())
     query = query.paginate(page=page)
     total_users = query.total
-    
+    completed_delivery = 0
     result = []
     for user in query.items:
         temp = {"user": {"id": user.id, "first_name": user.first_name, "last_name": user.last_name,
          "delivery_count": user.delivery_count, "total_delivery_count": user.total_delivery_count,
          "paymentStatus" : user.payment_status, "last_delivery_date": user.last_delivery_date,
-          "mobile_number": user.mobile_number, "plan_duration" : user.plan_duration}, "books": []}
+          "mobile_number": user.mobile_number, "plan_duration" : user.plan_duration, "plan_date": user.plan_date}, "books": []}
         for order in user.order:
+            if order.is_completed:
+                completed_delivery += 1
             week_number = week_from_date(order.placed_on.date())[1]
             if week_number in weeks:
-                temp['books'].append(order.book.to_json())
-                temp['books'][-1]['is_refused'] = order.is_refused
-                temp['books'][-1]['is_completed'] = order.is_completed
-                temp['books'][-1]['is_taken'] = order.is_taken
-                temp['books'][-1]['placed_on'] = order.placed_on
-                temp['books'][-1]['week'] = week_number
+                temp['books'].append(order.book.to_json() | {
+                'is_refused' : order.is_refused,
+                'is_completed' : order.is_completed,
+                'is_taken' : order.is_taken,
+                'placed_on' : order.placed_on,
+                'week' : week_number
+                })
         result.append(temp)
     
     return jsonify({
         "status": "success",
         "data": result,
-        "total_users" : total_users
+        "total_users" : total_users,
+        "completed_delivery_count" : completed_delivery
     })
 
 @api_admin.route('/get-user/<id>')
