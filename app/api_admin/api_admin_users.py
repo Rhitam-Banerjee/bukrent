@@ -118,8 +118,8 @@ def get_tracker(admin):
 
     delivery_dates = [datetime.strptime(del_date, "%Y-%m-%d").date() for del_date in delivery_dates]
     
-    sub_query = Order.query.with_entities(Order.user_id).filter(cast(Order.placed_on, Date).in_(delivery_dates)).subquery()
-    query = query.filter(or_(User.next_delivery_date.in_(delivery_dates), User.id.in_(sub_query)))
+    #sub_query = Order.query.with_entities(Order.user_id).filter(cast(Order.placed_on, Date).in_(delivery_dates)).subquery()
+    query = query.filter(User.next_delivery_date.in_(delivery_dates))
 
     query = query.order_by(User.id.desc())
     query = query.paginate(page=page)
