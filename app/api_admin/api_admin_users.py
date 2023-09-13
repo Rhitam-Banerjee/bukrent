@@ -91,6 +91,7 @@ def get_users(admin):
 @super_admin
 def get_tracker(admin):
     query = User.query.filter_by(is_deleted=False)
+    query = query.filter_by(payment_status="Paid")
     tracker = request.json.get('tracker')
     weeks = set(map(int, request.json['week']))
     delivery_dates = tracker['deliveryDates']
