@@ -91,6 +91,7 @@ def get_users(admin):
 @super_admin
 def get_tracker(admin):
     query = User.query.filter_by(is_deleted=False)
+    query = query.filter_by(payment_status="Paid")
     tracker = request.json.get('tracker')
     weeks = set(map(int, request.json['week']))
     delivery_dates = tracker['deliveryDates']
@@ -132,7 +133,7 @@ def get_tracker(admin):
         temp = {"user": {"id": user.id, "first_name": user.first_name, "last_name": user.last_name,
          "delivery_count": user.delivery_count, "total_delivery_count": user.total_delivery_count,
          "paymentStatus" : user.payment_status, "last_delivery_date": user.last_delivery_date,
-          "mobile_number": user.mobile_number, "plan_duration" : user.plan_duration, "plan_date": user.plan_date}, "books": []}
+          "mobile_number": user.mobile_number, "plan_duration" : user.plan_duration, "plan_date": user.plan_date, "next_delivery_date": user.next_delivery_date}, "books": []}
         for order in user.order:
             if order.is_completed:
                 completed_delivery += 1
@@ -370,7 +371,7 @@ def update_user_ops(admin):
             "status": "error",
             "message": "Invalid user ID"
         }), 400
-    if not str(delivery_count).isnumeric() or int(delivery_count) < 0: 
+    if not str(delivery_count).isnumeric() or int(delivery_count) < 0:
         return jsonify({"status": "error", "message": "Invalid delivery count"}), 400
     if not str(total_delivery_count).isnumeric() or int(total_delivery_count) < 0: 
         return jsonify({"status": "error", "message": "Invalid total delivery count"}), 400
@@ -407,10 +408,10 @@ def update_user_ops(admin):
     if not total_delivery_count: 
         if user.plan_expiry_date and user.plan_expiry_date < date.today() and user.plan_duration:
             user.total_delivery_count -= user.plan_duration * 4
-        user.plan_duration = plan_duration
-        user.total_delivery_count += user.plan_duration * 4
+            user.plan_duration = plan_duration
+            user.total_delivery_count += user.plan_duration * 4
     user.plan_duration = plan_duration
-    if not user.plan_pause_date: 
+    if not user.plan_pause_date:
         user.change_delivery_date(datetime.strftime(delivery_date, '%Y-%m-%d'))
     if delivery_status: 
         if delivery_status != user.delivery_status: 
