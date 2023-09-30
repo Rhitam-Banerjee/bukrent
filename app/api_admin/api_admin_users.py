@@ -133,7 +133,7 @@ def get_tracker(admin):
         temp = {"user": {"id": user.id, "first_name": user.first_name, "last_name": user.last_name,
          "delivery_count": user.delivery_count, "total_delivery_count": user.total_delivery_count,
          "paymentStatus" : user.payment_status, "last_delivery_date": user.last_delivery_date,
-          "mobile_number": user.mobile_number, "plan_duration" : user.plan_duration, "plan_date": user.plan_date, "next_delivery_date": user.next_delivery_date}, "books": []}
+          "mobile_number": user.mobile_number, "plan_duration" : user.plan_duration, "plan_date": user.plan_date, "next_delivery_date": user.next_delivery_date, "confirmed_delivery": user.confirmed_delivery}, "books": []}
         for order in user.order:
             if order.is_completed:
                 completed_delivery += 1
@@ -363,6 +363,8 @@ def update_user_ops(admin):
     delivery_status = request.json.get('delivery_status')
     plan_duration = request.json.get('plan_duration')
     books_per_week = request.json.get('books_per_week')
+    confirmed_delivery = request.json.get("confirmed_delivery")
+
     if not id: 
         return jsonify({"status": "error", "message": "Provide user ID"}), 400
     user = User.query.get(id)
@@ -401,6 +403,8 @@ def update_user_ops(admin):
     user.plan_date = plan_date
     user.payment_type = payment_type
     user.books_per_week = books_per_week
+    user.confirmed_delivery = confirmed_delivery
+
     if plan_expiry_date: 
         user.plan_expiry_date = plan_expiry_date
     elif user.plan_date and user.plan_duration: 

@@ -324,6 +324,8 @@ class User(db.Model):
     has_child_4 = db.Column(db.Boolean, default=False)
     has_child_5 = db.Column(db.Boolean, default=False)
     has_child_6 = db.Column(db.Boolean, default=False)
+    confirmed_delivery = db.Column(db.Boolean, default=False) 
+
 
     newsletter = db.Column(db.Boolean, default=False)
 
