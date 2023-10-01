@@ -98,6 +98,14 @@ def get_tracker(admin):
     payment_status = tracker['paymentStatus']
     delivery_status = tracker['deliveryStatus']
     page = int(request.json.get('page'))
+    search = request.json.get('query')
+
+    if search:
+        query = query.filter(or_(
+            User.first_name.ilike(f'{search}%'),
+            User.last_name.ilike(f'{search}%'),
+            User.mobile_number.ilike(f'{search}%')
+        ))
 
     if payment_status == "Active":
        query = query.filter(User.delivery_count < User.total_delivery_count)
