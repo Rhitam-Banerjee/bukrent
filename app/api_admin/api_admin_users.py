@@ -132,9 +132,6 @@ def get_tracker(admin):
         #sub_query = Order.query.with_entities(Order.user_id).filter(cast(Order.placed_on, Date).in_(delivery_dates)).subquery()
         query = query.filter(User.next_delivery_date.in_(delivery_dates))
 
-    if category == "packet":
-        query.filter(User.confirmed_delivery == True)
-
     query = query.order_by(User.id.desc())
     query = query.paginate(page=page)
 
