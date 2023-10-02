@@ -95,10 +95,11 @@ def get_tracker(admin):
     tracker = request.json.get('tracker')
     weeks = set(map(int, request.json['week']))
     delivery_dates = tracker['deliveryDates']
-    payment_status = tracker['paymentStatus']
+    payment_status = tracker['trackerPaymentStatus']
     delivery_status = tracker['deliveryStatus']
     page = int(request.json.get('page'))
     search = request.json.get('query')
+    category = tracker['category']
 
     if search:
         query = query.filter(or_(
@@ -131,6 +132,9 @@ def get_tracker(admin):
         #sub_query = Order.query.with_entities(Order.user_id).filter(cast(Order.placed_on, Date).in_(delivery_dates)).subquery()
         query = query.filter(User.next_delivery_date.in_(delivery_dates))
 
+    if category == "packet":
+        query.filter(User.confirmed_delivery == True)
+
     query = query.order_by(User.id.desc())
     query = query.paginate(page=page)
 
@@ -142,19 +146,29 @@ def get_tracker(admin):
         temp = {"user": {"id": user.id, "first_name": user.first_name, "last_name": user.last_name,
          "delivery_count": user.delivery_count, "total_delivery_count": user.total_delivery_count,
          "paymentStatus" : user.payment_status, "last_delivery_date": user.last_delivery_date,
-          "mobile_number": user.mobile_number, "plan_duration" : user.plan_duration, "plan_date": user.plan_date, "next_delivery_date": user.next_delivery_date, "confirmed_delivery": user.confirmed_delivery}, "books": []}
+          "mobile_number": user.mobile_number, "plan_duration" : user.plan_duration, "plan_date": user.plan_date, "next_delivery_date": user.next_delivery_date, "confirmed_delivery": user.confirmed_delivery, "address": user.to_json()["address"]}, "books": []}
         for order in user.order:
             if order.is_completed:
                 completed_delivery += 1
-            week_number = week_from_date(order.placed_on.date())[1]
-            if week_number in weeks:
-                temp['books'].append(order.book.to_json() | {
-                'is_refused' : order.is_refused,
-                'is_completed' : order.is_completed,
-                'is_taken' : order.is_taken,
-                'placed_on' : order.placed_on,
-                'week' : week_number
-                })
+            if category == "packet":
+                if order.placed_on.strftime("%Y-%m-%d") == str(user.next_delivery_date):
+                    temp['books'].append(order.book.to_json() | {
+                        'is_refused' : order.is_refused,
+                        'is_completed' : order.is_completed,
+                        'is_taken' : order.is_taken,
+                        'placed_on' : order.placed_on,
+                    }
+                        )
+            else:
+                week_number = week_from_date(order.placed_on.date())[1]
+                if week_number in weeks:
+                    temp['books'].append(order.book.to_json() | {
+                    'is_refused' : order.is_refused,
+                    'is_completed' : order.is_completed,
+                    'is_taken' : order.is_taken,
+                    'placed_on' : order.placed_on,
+                    'week' : week_number
+                    })
         result.append(temp)
     
     return jsonify({
