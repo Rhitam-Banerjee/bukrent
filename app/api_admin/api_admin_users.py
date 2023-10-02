@@ -25,10 +25,12 @@ def get_users(admin):
     plan_duration = request.args.get('duration')
     delivery_date = request.args.get('delivery_date')
     deliverer_id = request.args.get('deliverer_id')
+    delivery_status = request.args.get('delivery_status')
     sort_expiry_date = request.args.get('sort_expiry_date')
     sort_plan_date = request.args.get('sort_plan_date')
     sort_registration_date = request.args.get('sort_registration_date')
-
+    delivery_status = request.args.get('delivery_status')
+    
     all_users = []
     query = User.query.filter_by(is_deleted = False)
 
@@ -46,6 +48,8 @@ def get_users(admin):
         query = query.filter_by(next_delivery_date=delivery_date)
     if deliverer_id: 
         query = query.filter_by(deliverer_id=deliverer_id)
+    if delivery_status:
+        query = query.filter(User.deliverer_id != None)
     if search:
         query = query.filter(or_(
             User.first_name.ilike(f'{search}%'),
