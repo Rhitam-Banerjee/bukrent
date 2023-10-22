@@ -30,7 +30,7 @@ def create_app(script_info=None):
         "https://delivery.bukrent.com",
         "https://edit.bukrent.com",
         "https://ops.bukrent.com",
-
+        "https://brightr-4n4j.vercel.app"
         "https://brightr.vercel.app",
         "https://brightr.com",
         "https://brightr.club",
