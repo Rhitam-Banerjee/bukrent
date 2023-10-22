@@ -21,7 +21,8 @@ def create_app(script_info=None):
         "https://bukrent.vercel.app",
         "https://bukrent.com",
         "https://www.bukrent.com",
-        "https://payment.bukrent.com"
+        "https://payment.bukrent.com",
+        "https://brightr-4n4j.vercel.app"
     ])
 
     from app.api.api import api
