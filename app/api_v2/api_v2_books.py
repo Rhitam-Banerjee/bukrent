@@ -4,7 +4,6 @@ import openpyxl
 from flask import jsonify, request
 import random
 import json
-from operator import itemgetter
 
 from sqlalchemy import Date, Integer, and_, cast, desc, or_, table
 from sqlalchemy.inspection import inspect
@@ -239,7 +238,7 @@ def get_new_books():
     elif age: 
         age = int(age)
     start, end = int(start), int(end)
-    books_query = db.session.query(NewBook,NewBook.authors)
+    books_query = db.session.query(NewBook)
     if search_query:
         books_query = books_query.join(NewCategoryBook, NewCategory).filter(
             or_(
@@ -291,7 +290,6 @@ def get_new_books():
                          Order.query.filter_by(book_id=old_book.id).count()
         books.append({
             **book.to_json(),   
-            "author": authors,
             "return_date": return_date,
             "wishlist_count": wishlist_count,
             "previous_count": previous_count
@@ -580,163 +578,3 @@ def add_books_from_csv():
         print(e)
 
     return jsonify({"status": "success", "added_isbns": added_isbns, "not_added_isbns": not_added_isbns})
-
-
-@api_v2_books.route('/getBookAuthor', methods=['GET'])
-def get_book_author():
-    isbn = request.args.get('isbn')
-
-    if not isbn:
-        return jsonify({'error': 'ISBN not provided'}), 400
-
-    # Query the database to find the book with the provided ISBN.
-    book = NewBook.query.filter_by(isbn=isbn).first()
-
-    if not book:
-        return jsonify({'error': 'Book not found'}), 404
-
-    # Split the authors by comma and create a list of author names.
-    authors = book.authors.split(', ')
-
-    # Query the database to find books with at least one of the authors in the list.
-    related_books = NewBook.query.filter(NewBook.authors.in_(authors)).all()
-
-    # Create a list of book details (author, rating, review count, ISBN, description).
-    book_details = [
-        {
-            'name':book.name,
-            'author': book.authors,
-            'rating': book.rating,
-            'review_count': book.review_count,
-            'isbn': book.isbn,
-            'description': book.description,
-            'image':book.image,
-        }
-        for book in related_books
-    ]
-
-    return jsonify({'author': authors, 'related_books': book_details})
-
-@api_v2_books.route('/getBooksByCategory', methods=['GET'])
-def get_books_by_category():
-    category_name = request.args.get('category_name')
-
-    if not category_name:
-        return jsonify({'error': 'Category name not provided'}), 400
-
-    # Query the database to find the category by name.
-    category = NewCategory.query.filter_by(name=category_name).first()
-
-    if not category:
-        return jsonify({'error': 'Category not found'}), 404
-
-    # Query the database to find books with the specified category.
-    books_in_category = NewBook.query.join(
-        NewCategoryBook, NewCategoryBook.book_id == NewBook.id
-    ).filter(NewCategoryBook.category_id == category.id).all()
-
-    # Create a list of book details (name, author, rating, review count, ISBN, description).
-    book_details = [
-        {
-            'name': book.name,
-            'authors': book.authors.split(', '),
-            'rating': book.rating,
-            'review_count': book.review_count,
-            'isbn': book.isbn,
-            'description': book.description,
-            'image':book.image,
-            'book_order': book.book_order, 
-            'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
-        }
-        for book in books_in_category
-    ]
-    
-    book_details = sorted(book_details, key=lambda x: (x['book_order'], x['publication_date'] or ''))
-
-    return jsonify({'category_name': category_name, 'books_in_category': book_details})
-
-
-
-
-@api_v2_books.route('/getBookDetails', methods=['GET'])
-def get_book_details():
-    isbn = request.args.get('isbn')
-
-    if not isbn:
-        return jsonify({'error': 'ISBN not provided'}), 400
-
-    # Query the database to find the book with the provided ISBN.
-    book = NewBook.query.filter_by(isbn=isbn).first()
-
-    if not book:
-        return jsonify({'error': 'Book not found'}), 404
-
-    # Create a dictionary with all book details.
-    book_details = {
-        'name': book.name,
-        'author': book.authors,
-        'rating': book.rating,
-        'review_count': book.review_count,
-        'isbn': book.isbn,
-        'description': book.description,
-        'price': book.price,
-        'for_age': book.for_age,
-        'grade_level': book.grade_level,
-        'lexile_measure': book.lexile_measure,
-        'pages': book.pages,
-        'dimensions': book.dimensions,
-        'publisher': book.publisher,
-        'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None,
-        'language': book.language,
-    }
-
-    return jsonify({'book_details': book_details})
-
-@api_v2_books.route('/getAuthorsByISBN', methods=['GET'])
-def get_authors_by_isbn():
-    isbn = request.args.get('isbn')
-
-    if not isbn:
-        return jsonify({'error': 'ISBN not provided'}), 400
-
-    # Query the database to find the book with the provided ISBN.
-    book = NewBook.query.filter_by(isbn=isbn).first()
-
-    if not book:
-        return jsonify({'error': 'Book not found'}), 404
-
-    # Split the authors by comma and create a list of author names.
-    authors = book.authors.split(', ')
-
-    return jsonify({'isbn': isbn, 'authors': authors})
-
-@api_v2_books.route('/getBooksByAuthor', methods=['GET'])
-def get_books_by_author():
-    author_name = request.args.get('author')
-
-    if not author_name:
-        return jsonify({'error': 'Author name not provided'}), 400
-
-    # Query the database to find books with the provided author's name.
-    author_name = author_name.strip()  # Remove leading/trailing spaces
-    books = NewBook.query.filter(NewBook.authors.ilike(f'%{author_name}%')).all()
-
-    if not books:
-        return jsonify({'error': 'No books found for the author'}), 404
-
-    # Create a list of book details with author names as an array.
-    book_details = [
-        {
-            'name': book.name,
-            'authors': book.authors.split(', '),  # Convert authors to an array
-            'isbn': book.isbn,
-            'rating': book.rating,
-            'review_count': book.review_count,
-            'description': book.description,
-            'image': book.image,
-        }
-        for book in books
-    ]
-    book_details = sorted(book_details, key=lambda x: int(x['review_count']), reverse=True)
-
-    return jsonify({'author': author_name, 'books': book_details})

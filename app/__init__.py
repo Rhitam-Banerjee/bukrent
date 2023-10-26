@@ -11,7 +11,8 @@ migrate = Migrate()
 
 def create_app(script_info=None):
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Lakshay@localhost:5432/postgres'
+    # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/linuxuser/Python/web/flask/bukrent/bukrent-development/app/dev.db'
+
 
     app_settings = os.getenv('APP_SETTINGS')
     app.config.from_object(app_settings)
@@ -19,7 +20,7 @@ def create_app(script_info=None):
     migrate.init_app(app, db)
 
     CORS(app, supports_credentials=True, origins=[
-         'http://localhost:3000',
+        'http://localhost:3000',
         'http://localhost:3001',
         'http://localhost:3006',
         "https://bukrent.com",
@@ -29,7 +30,7 @@ def create_app(script_info=None):
         "https://delivery.bukrent.com",
         "https://edit.bukrent.com",
         "https://ops.bukrent.com",
-        "https://brightr-4n4j.vercel.app",
+
         "https://brightr.vercel.app",
         "https://brightr.com",
         "https://brightr.club",
@@ -39,7 +40,6 @@ def create_app(script_info=None):
         "https://delivery.brightr.club",
         "https://editold.brightr.club",
         "https://ops.brightr.club",
-        "https://brightr-4hzf.vercel.app",
     ])
 
     from app.api.api import api
