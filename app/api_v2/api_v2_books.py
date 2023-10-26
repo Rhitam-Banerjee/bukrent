@@ -5,7 +5,7 @@ from flask import jsonify, request
 import random
 import json
 
-from sqlalchemy import Date, Integer, and_, cast, desc, or_, table
+from sqlalchemy import Date, Integer, and_, cast, desc, or_, table,desc, asc, nullslast
 from sqlalchemy.inspection import inspect
 from app import db
 from app.models.new_books import NewBookImage, NewBookSection, NewBook, NewCategory, NewCategoryBook
@@ -221,38 +221,52 @@ def get_new_books():
     search_query = request.args.get('search_query')
     section_id = request.args.get('section_id')
     sort_review_count = request.args.get('sort_review_count')
-    if age and not str(age).isnumeric() and age != '-1': 
-        return jsonify({"success": False, "message": "Provide age group"}), 400
-    if category_id and not NewCategory.query.filter_by(id=category_id).count(): 
+    
+    if age and not age.isnumeric() and age != '-1': 
+        return jsonify({"success": False, "message": "Provide a valid age group"}), 400
+    
+    if category_id and not NewCategory.query.filter_by(id=category_id).first(): 
         return jsonify({"success": False, "message": "Invalid category ID"}), 400
-    if section_id and not NewBookSection.query.filter_by(id=section_id).count(): 
+    
+    if section_id and not NewBookSection.query.filter_by(id=section_id).first(): 
         return jsonify({"success": False, "message": "Invalid section ID"}), 400
+    
     if not search_query: 
         search_query = ''
+    
     if not start or not start.isnumeric(): 
         start = 0
+    
     if not end or not end.isnumeric(): 
         end = 10
-    if str(age) == '-1': 
-        age = None
-    elif age: 
-        age = int(age)
+    
+    age = int(age) if age and age != '-1' else None
     start, end = int(start), int(end)
+    
     books_query = db.session.query(NewBook)
+    
     if search_query:
-        books_query = books_query.join(NewCategoryBook, NewCategory).filter(
+        # Use outerjoin with the appropriate onclause
+        books_query = books_query.outerjoin(
+            NewCategoryBook, 
+            NewCategoryBook.book_id == NewBook.id  # Correct the onclause
+        ).outerjoin(
+            NewCategory,
+            NewCategory.id == NewCategoryBook.category_id  # Correct the onclause
+        ).filter(
             or_(
                 NewBook.name.ilike(f'{search_query}%'),
                 NewBook.isbn.ilike(f'{search_query}%'),
                 NewCategory.name.ilike(f'{search_query}%'),
             )
         )
-
+    
     if age is not None: 
         books_query = books_query.filter(
             NewBook.min_age <= age, 
             NewBook.max_age >= age
         )
+    
     if category_id and section_id: 
         books_query = books_query.filter(
             NewBook.id == NewCategoryBook.book_id,
@@ -269,33 +283,41 @@ def get_new_books():
             NewBook.id == NewCategoryBook.book_id,
             NewCategoryBook.section_id == section_id
         )
-    if sort_review_count and sort_review_count.isnumeric(): 
-        if bool(int(sort_review_count)): 
-            books_query = books_query.order_by(NewBook.review_count.desc())
-        else: 
-            books_query = books_query.order_by(NewBook.review_count)
+    
+    # Sorting based on your criteria
+    books_query = books_query.order_by(
+        nullslast(desc(NewBook.book_order)),
+        nullslast(asc(NewBook.publication_date)),
+        asc(NewBook.review_count)
+    )
+    
     books = []
+    
     for book in books_query.limit(end - start).offset(start).all():
         return_date = None
         old_book = Book.query.filter_by(isbn=book.isbn).first()
+        
         if not old_book.stock_available: 
             order = Order.query.filter(
                 Order.book_id == old_book.id,
                 cast(Order.placed_on, Date) >= cast(date.today() + timedelta(days=-7), Date)
             ).order_by(Order.placed_on).first()
+            
             if order:
                 return_date = order.placed_on + timedelta(days=7)
+        
         wishlist_count = Wishlist.query.filter_by(book_id=old_book.id).count()
         previous_count = Dump.query.filter_by(book_id=old_book.id, read_before=True).count() + \
                          Order.query.filter_by(book_id=old_book.id).count()
+        
         books.append({
             **book.to_json(),   
             "return_date": return_date,
             "wishlist_count": wishlist_count,
             "previous_count": previous_count
         })
+    
     return jsonify({"success": True, "books": books})
-
 
 @api_v2_books.route('/search-new-books')
 def search_new_books(): 
