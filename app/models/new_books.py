@@ -156,7 +156,7 @@ class NewBook(db.Model):
     description = db.Column(db.String)
     book_type = db.Column(db.String)
     authors = db.Column(db.String)
-    genre = db.Column(db.String)
+
 
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
@@ -202,7 +202,6 @@ class NewBook(db.Model):
             "book_order": self.book_order,
             "min_age": self.min_age,
             "max_age": self.max_age,
-            "genre": self.genre,
             "price": self.price,
             "for_age": self.for_age,
             "lexile_measure": self.lexile_measure,
