@@ -655,25 +655,24 @@ def get_books_by_category():
     ).filter(NewCategoryBook.category_id == category.id).all()
 
     # Create a list of book details (name, author, rating, review count, ISBN, description).
-    book_details = [
-        {
+    book_details = []
+    for book in books_in_category:
+        authors = book.authors.split(', ') if book.authors else []  # Handle 'authors' attribute gracefully
+        book_details.append({
             'name': book.name,
-            'authors': book.authors.split(', '),
+            'authors': authors,
             'rating': book.rating,
             'review_count': book.review_count,
             'isbn': book.isbn,
             'description': book.description,
-            'image':book.image,
-            'book_order': book.book_order, 
+            'image': book.image,
+            'book_order': book.book_order,
             'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
-        }
-        for book in books_in_category
-    ]
+        })
 
     book_details = sorted(book_details, key=lambda x: (x['book_order'], x['publication_date'] or ''))
 
     return jsonify({'category_name': category_name, 'books_in_category': book_details})
-
 
 
 
@@ -759,3 +758,53 @@ def get_books_by_author():
     book_details = sorted(book_details, key=lambda x: int(x['review_count']), reverse=True)
 
     return jsonify({'author': author_name, 'books': book_details})
+
+@api_v2_books.route('/get-books-by-genre')
+def get_books_by_genre():
+    genre = request.args.get('genre')
+    if not genre:
+        return jsonify({"success": False, "message": "Genre parameter is required."}), 400
+
+    # Query NewBook records with a specific genre
+    books = NewBook.query.filter(NewBook.genre.ilike(f'%{genre}%')).all()
+
+    book_details = []
+    for book in books:
+        stock_available, rentals = 0, 0
+        book_record = Book.query.filter_by(isbn=book.isbn).first()
+        if book_record:
+            stock_available = book_record.stock_available
+            rentals = book_record.rentals
+
+        authors = book.authors.split(', ') if book.authors else []  # Handle the case where 'authors' is None
+
+        book_details.append({
+            "id": book.id,
+            "guid": book.guid,
+            "name": book.name,
+            "image": book.image,
+            "isbn": book.isbn,
+            "rating": book.rating,
+            "review_count": book.review_count,
+            "book_order": book.book_order,
+            "min_age": book.min_age,
+            "max_age": book.max_age,
+            "genre": book.genre,
+            "price": book.price,
+            "for_age": book.for_age,
+            "lexile_measure": book.lexile_measure,
+            "grade_level": book.grade_level,
+            "pages": book.pages,
+            "dimensions": book.dimensions,
+            "publisher": book.publisher,
+            "publication_date": book.publication_date,
+            "language": book.language,
+            "description": book.description,
+            "categories": [category.to_json() for category in NewCategoryBook.query.filter_by(book_id=book.id).all()],
+            "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=book.id).all()],
+            "stock_available": stock_available,
+            "rentals": rentals,
+            "authors": authors  # 'authors' list with default value or empty list
+        })
+
+    return jsonify({"success": True, "books": book_details})
