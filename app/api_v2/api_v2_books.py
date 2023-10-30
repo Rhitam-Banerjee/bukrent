@@ -759,55 +759,6 @@ def get_books_by_author():
 
     return jsonify({'author': author_name, 'books': book_details})
 
-@api_v2_books.route('/get-books-by-genre')
-def get_books_by_genre():
-    genre = request.args.get('genre')
-    if not genre:
-        return jsonify({"success": False, "message": "Genre parameter is required."}), 400
-
-    # Query NewBook records with a specific genre
-    books = NewBook.query.filter(NewBook.genre.ilike(f'%{genre}%')).all()
-
-    book_details = []
-    for book in books:
-        stock_available, rentals = 0, 0
-        book_record = Book.query.filter_by(isbn=book.isbn).first()
-        if book_record:
-            stock_available = book_record.stock_available
-            rentals = book_record.rentals
-
-        authors = book.authors.split(', ') if book.authors else []  # Handle the case where 'authors' is None
-
-        book_details.append({
-            "id": book.id,
-            "guid": book.guid,
-            "name": book.name,
-            "image": book.image,
-            "isbn": book.isbn,
-            "rating": book.rating,
-            "review_count": book.review_count,
-            "book_order": book.book_order,
-            "min_age": book.min_age,
-            "max_age": book.max_age,
-            "genre": book.genre,
-            "price": book.price,
-            "for_age": book.for_age,
-            "lexile_measure": book.lexile_measure,
-            "grade_level": book.grade_level,
-            "pages": book.pages,
-            "dimensions": book.dimensions,
-            "publisher": book.publisher,
-            "publication_date": book.publication_date,
-            "language": book.language,
-            "description": book.description,
-            "categories": [category.to_json() for category in NewCategoryBook.query.filter_by(book_id=book.id).all()],
-            "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=book.id).all()],
-            "stock_available": stock_available,
-            "rentals": rentals,
-            "authors": authors  # 'authors' list with default value or empty list
-        })
-
-    return jsonify({"success": True, "books": book_details})
 @api_v2_books.route('/getTopBooksByReviewCount', methods=['GET'])
 def get_top_books_by_review_count():
     age = request.args.get('age')
@@ -910,3 +861,54 @@ def get_teacher_picks_by_age():
 
     return jsonify({'teacher_picks_by_age': book_details})
 
+@api_v2_books.route('/get-books-by-genre')
+def get_books_by_age():
+    age = request.args.get('age')
+
+    if not age or not age.isnumeric():
+        return jsonify({"success": False, "message": "Age parameter is required and must be numeric."}), 400
+
+    age = int(age)
+
+    # Query NewBook records for a specific age
+    books = NewBook.query.filter(NewBook.min_age <= age,
+                                 NewBook.max_age >= age).order_by(NewBook.genre).all()
+
+    response = []
+
+    current_genre = None
+    genre_books = []
+
+    for book in books:
+        if current_genre is None:
+            current_genre = book.genre
+        if book.genre != current_genre:
+            response.append({"category": current_genre, "books": genre_books})
+            current_genre = book.genre
+            genre_books = []
+
+        stock_available, rentals = 0, 0
+        book_record = Book.query.filter_by(isbn=book.isbn).first()
+        if book_record:
+            stock_available = book_record.stock_available
+            rentals = book_record.rentals
+
+        authors = book.authors.split(', ') if book.authors else []
+
+        genre_books.append({
+            "isbn": book.isbn,
+            "name": book.name, 
+            "review_count": book.review_count,
+            "min_age": book.min_age,
+            "max_age": book.max_age,
+            "rating": book.rating,
+            "image": book.image,
+            "stock_available": stock_available,
+            "rentals": rentals,
+            "authors": authors
+        })
+
+    if current_genre:
+        response.append({"category": current_genre, "books": genre_books})
+
+    return jsonify({"success": True, "book_set": response})
