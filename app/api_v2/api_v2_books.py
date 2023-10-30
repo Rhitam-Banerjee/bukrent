@@ -808,3 +808,105 @@ def get_books_by_genre():
         })
 
     return jsonify({"success": True, "books": book_details})
+@api_v2_books.route('/getTopBooksByReviewCount', methods=['GET'])
+def get_top_books_by_review_count():
+    age = request.args.get('age')
+
+    if not age or not age.isnumeric():
+        return jsonify({'error': 'Invalid or missing age parameter'}), 400
+
+    age = int(age)
+
+    # Query the database to find books within the specified age group and order them by review_count.
+    books = NewBook.query.filter(NewBook.min_age <= age, NewBook.max_age >= age) \
+        .order_by(NewBook.review_count.desc()).limit(10).all()
+
+    # Create a list of book details (name, author, rating, review count, ISBN, description).
+    book_details = []
+    for book in books:
+        authors = book.authors.split(', ') if book.authors else []  # Handle 'authors' attribute gracefully
+        book_details.append({
+            'name': book.name,
+            'authors': authors,
+            'rating': book.rating,
+            'review_count': book.review_count,
+            'isbn': book.isbn,
+            'description': book.description,
+            'image': book.image,
+            'book_order': book.book_order,
+            'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
+        })
+
+    # Sort the book_details by review_count in descending order
+    book_details = sorted(book_details, key=lambda x: x['review_count'], reverse=True)
+
+    return jsonify({'top_books_by_review_count': book_details})
+
+@api_v2_books.route('/getGlobalBestsellersByAge', methods=['GET'])
+def get_global_bestsellers_by_age():
+    age = request.args.get('age')
+
+    if not age or not age.isnumeric():
+        return jsonify({'error': 'Invalid or missing age parameter'}), 400
+
+    age = int(age)
+
+    # Query the database to find books within the specified age group and with the "Global Bestseller" category.
+    books = NewBook.query.filter(
+        NewBook.min_age <= age,
+        NewBook.max_age >= age,
+        NewBook.categories.any(NewCategory.name == 'Global Bestseller')
+    ).all()
+
+    # Create a list of book details (name, author, rating, review count, ISBN, description).
+    book_details = []
+    for book in books:
+        authors = book.authors.split(', ') if book.authors else []  # Handle 'authors' attribute gracefully
+        book_details.append({
+            'name': book.name,
+            'authors': authors,
+            'rating': book.rating,
+            'review_count': book.review_count,
+            'isbn': book.isbn,
+            'description': book.description,
+            'image': book.image,
+            'book_order': book.book_order,
+            'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
+        })
+
+    return jsonify({'global_bestsellers_by_age': book_details})
+
+@api_v2_books.route('/getTeacherPicksByAge', methods=['GET'])
+def get_teacher_picks_by_age():
+    age = request.args.get('age')
+
+    if not age or not age.isnumeric():
+        return jsonify({'error': 'Invalid or missing age parameter'}), 400
+
+    age = int(age)
+
+    # Query the database to find books within the specified age group and with the "Teacher Pick" category.
+    books = NewBook.query.filter(
+        NewBook.min_age <= age,
+        NewBook.max_age >= age,
+        NewBook.categories.any(NewCategory.name == 'Teacher Pick')
+    ).all()
+
+    # Create a list of book details (name, author, rating, review count, ISBN, description).
+    book_details = []
+    for book in books:
+        authors = book.authors.split(', ') if book.authors else []  # Handle 'authors' attribute gracefully
+        book_details.append({
+            'name': book.name,
+            'authors': authors,
+            'rating': book.rating,
+            'review_count': book.review_count,
+            'isbn': book.isbn,
+            'description': book.description,
+            'image': book.image,
+            'book_order': book.book_order,
+            'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
+        })
+
+    return jsonify({'teacher_picks_by_age': book_details})
+

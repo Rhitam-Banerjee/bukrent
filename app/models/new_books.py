@@ -156,6 +156,7 @@ class NewBook(db.Model):
     description = db.Column(db.String)
     book_type = db.Column(db.String)
     authors = db.Column(db.String)
+    genre = db.Column(db.String)
 
 
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
@@ -204,6 +205,7 @@ class NewBook(db.Model):
             "max_age": self.max_age,
             "price": self.price,
             "for_age": self.for_age,
+            "genre": self.genre,
             "lexile_measure": self.lexile_measure,
             "grade_level": self.grade_level,
             "pages": self.pages,
