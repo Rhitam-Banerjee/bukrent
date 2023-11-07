@@ -4,7 +4,7 @@ import openpyxl
 from flask import jsonify, request
 import random
 import json
-
+from random import shuffle
 from sqlalchemy import Date, Integer, and_, cast, desc, or_, table,desc, asc, nullslast
 from sqlalchemy.inspection import inspect
 from app import db
@@ -871,19 +871,27 @@ def get_books_by_age():
     age = int(age)
 
     # Query NewBook records for a specific age
-    books = NewBook.query.filter(NewBook.min_age <= age,
-                                 NewBook.max_age >= age).order_by(NewBook.genre).all()
+    books = NewBook.query.filter(NewBook.min_age <= age, NewBook.max_age >= age).order_by(NewBook.genre).all()
 
     response = []
 
     current_genre = None
     genre_books = []
 
+    # Dictionary to store the books by genre name
+    genre_books_dict = {}
+
     for book in books:
         if current_genre is None:
             current_genre = book.genre
         if book.genre != current_genre:
-            response.append({"category": current_genre, "books": genre_books})
+            # Sort books within the genre: First unique category.name book, then random order
+            unique_category_books = sorted(
+                genre_books_dict[current_genre], key=lambda x: x['categories'][0]['name'] if x['categories'] else '',
+                reverse=True)
+            random_books = random.sample(genre_books_dict[current_genre], len(genre_books_dict[current_genre]))
+            genre_books.extend(unique_category_books + random_books)
+            response.append({"genre": current_genre, "books": genre_books})
             current_genre = book.genre
             genre_books = []
 
@@ -895,9 +903,17 @@ def get_books_by_age():
 
         authors = book.authors.split(', ') if book.authors else []
 
-        genre_books.append({
+        # Retrieve categories associated with the book
+        categories = []
+        category_books = NewCategoryBook.query.filter_by(book_id=book.id).all()
+        for category_book in category_books:
+            category = NewCategory.query.get(category_book.category_id)
+            if category:
+                categories.append(category.to_json())
+
+        genre_books_dict.setdefault(current_genre, []).append({
             "isbn": book.isbn,
-            "name": book.name, 
+            "name": book.name,
             "review_count": book.review_count,
             "min_age": book.min_age,
             "max_age": book.max_age,
@@ -905,10 +921,17 @@ def get_books_by_age():
             "image": book.image,
             "stock_available": stock_available,
             "rentals": rentals,
-            "authors": authors
+            "authors": authors,
+            "categories": categories
         })
 
     if current_genre:
-        response.append({"category": current_genre, "books": genre_books})
+        # Sort books within the last genre
+        unique_category_books = sorted(
+            genre_books_dict[current_genre], key=lambda x: x['categories'][0]['name'] if x['categories'] else '',
+            reverse=True)
+        random_books = random.sample(genre_books_dict[current_genre], len(genre_books_dict[current_genre]))
+        genre_books.extend(unique_category_books + random_books)
+        response.append({"genre": current_genre, "books": genre_books})
 
     return jsonify({"success": True, "book_set": response})
