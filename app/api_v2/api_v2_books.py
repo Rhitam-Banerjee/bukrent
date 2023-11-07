@@ -932,6 +932,10 @@ def get_books_by_age():
             reverse=True)
         random_books = random.sample(genre_books_dict[current_genre], len(genre_books_dict[current_genre]))
         genre_books.extend(unique_category_books + random_books)
-        response.append({"genre": current_genre, "books": genre_books})
+
+    # Move books with stock_available = 0 to the end of the books array
+    genre_books.sort(key=lambda x: x['stock_available'] == 0)
+    
+    response.append({"genre": current_genre, "books": genre_books})
 
     return jsonify({"success": True, "book_set": response})
