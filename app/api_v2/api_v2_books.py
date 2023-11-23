@@ -299,17 +299,17 @@ def get_new_books():
         old_book = Book.query.filter_by(isbn=book.isbn).first()
         print(old_book)
         if old_book is not None:
-          if not old_book.stock_available: 
-            order = Order.query.filter(
+           if not old_book.stock_available: 
+             order = Order.query.filter(
                 Order.book_id == old_book.id,
                 cast(Order.placed_on, Date) >= cast(date.today() + timedelta(days=-7), Date)
-            ).order_by(Order.placed_on).first()
+             ).order_by(Order.placed_on).first()
             
-            if order:
+             if order:
                 return_date = order.placed_on + timedelta(days=7)
         
-        wishlist_count = Wishlist.query.filter_by(book_id=old_book.id).count()
-        previous_count = Dump.query.filter_by(book_id=old_book.id, read_before=True).count() + \
+           wishlist_count = Wishlist.query.filter_by(book_id=old_book.id).count()
+           previous_count = Dump.query.filter_by(book_id=old_book.id, read_before=True).count() + \
                          Order.query.filter_by(book_id=old_book.id).count()
         
         books.append({
