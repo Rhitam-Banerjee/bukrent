@@ -214,7 +214,7 @@ def get_category_books():
 
 @api_v2_books.route('/get-new-books')
 def get_new_books(): 
-    start = request.args.get('start')
+    start = request.args.get('start') 
     end = request.args.get('end')
     age = request.args.get('age')
     category_id = request.args.get('category_id')
@@ -312,12 +312,12 @@ def get_new_books():
            previous_count = Dump.query.filter_by(book_id=old_book.id, read_before=True).count() + \
                          Order.query.filter_by(book_id=old_book.id).count()
         
-        books.append({
-            **book.to_json(),   
-            "return_date": return_date,
-            "wishlist_count": wishlist_count,
-            "previous_count": previous_count
-        })
+           books.append({
+              **book.to_json(),   
+              "return_date": return_date,
+              "wishlist_count": wishlist_count,
+              "previous_count": previous_count
+            })
     
     return jsonify({"success": True, "books": books})
 
