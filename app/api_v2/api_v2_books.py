@@ -220,7 +220,6 @@ def get_new_books():
     category_id = request.args.get('category_id')
     search_query = request.args.get('search_query')
     section_id = request.args.get('section_id')
-    sort_review_count = request.args.get('sort_review_count')
     
     if age and not age.isnumeric() and age != '-1': 
         return jsonify({"success": False, "message": "Provide a valid age group"}), 400
@@ -323,7 +322,7 @@ def get_new_books():
     for book in books_query:
   
      if book.id not in book_ids_in_array:
-        print(book.to_json())
+        books.append(book.to_json())
         
     return jsonify({"success": True, "books": books})
 
