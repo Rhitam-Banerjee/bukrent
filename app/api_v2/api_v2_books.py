@@ -511,6 +511,7 @@ def update_book_quantity():
     new_book = NewBook.query.filter_by(id=id).first()
    
     if new_book is not None: 
+        print("newbook")
         print(new_book.to_json())
     if not new_book: 
         print(1)
@@ -518,6 +519,7 @@ def update_book_quantity():
     book = Book.query.filter_by(isbn=new_book.isbn).first()
     
     if book is not None: 
+         print("oldbook")
          print(book.to_json())
     if not book: 
         print(2)
