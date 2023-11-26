@@ -220,6 +220,7 @@ def get_new_books():
     category_id = request.args.get('category_id')
     search_query = request.args.get('search_query')
     section_id = request.args.get('section_id')
+    sort_review_count = request.args.get('sort_review_count')
     
     if age and not age.isnumeric() and age != '-1': 
         return jsonify({"success": False, "message": "Provide a valid age group"}), 400
@@ -322,7 +323,7 @@ def get_new_books():
     for book in books_query:
   
      if book.id not in book_ids_in_array:
-        books.append(book.to_json())
+        print(book.to_json())
         
     return jsonify({"success": True, "books": books})
 
@@ -508,9 +509,11 @@ def update_book_quantity():
     if not str(stock_available).isnumeric() or not str(rentals).isnumeric() or int(stock_available) < 0 or int(rentals) < 0: 
         return jsonify({"success": False, "message": "Invalid book quantity"}), 400
     new_book = NewBook.query.filter_by(id=id).first()
+    print(new_book)
     if not new_book: 
         return jsonify({"success": False, "message": "Invalid book ID"}), 404
     book = Book.query.filter_by(isbn=new_book.isbn).first()
+    print(book)
     if not book: 
         return jsonify({"success": False, "message": "Invalid book ID"}), 404
     
