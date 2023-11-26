@@ -513,15 +513,14 @@ def update_book_quantity():
     if new_book is not None: 
         print(new_book.to_json())
     if not new_book: 
-        
-        
+        print(1)
         return jsonify({"success": False, "message": "Invalid book ID"}), 404
     book = Book.query.filter_by(isbn=new_book.isbn).first()
     
     if book is not None: 
          print(book.to_json())
     if not book: 
-       
+        print(1)
         return jsonify({"success": False, "message": "Invalid book ID"}), 404
     
     book.stock_available = stock_available
