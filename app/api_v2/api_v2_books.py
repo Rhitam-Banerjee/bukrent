@@ -520,7 +520,7 @@ def update_book_quantity():
     if book is not None: 
          print(book.to_json())
     if not book: 
-        print(1)
+        print(2)
         return jsonify({"success": False, "message": "Invalid book ID"}), 404
     
     book.stock_available = stock_available
