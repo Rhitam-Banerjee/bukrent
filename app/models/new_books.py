@@ -143,7 +143,6 @@ class NewBook(db.Model):
     book_order = db.Column(db.Integer)
     min_age = db.Column(db.Integer)
     max_age = db.Column(db.Integer)
-
     price = db.Column(db.Float)
     for_age = db.Column(db.String)
     grade_level = db.Column(db.String)
@@ -157,7 +156,10 @@ class NewBook(db.Model):
     book_type = db.Column(db.String)
     authors = db.Column(db.String)
     genre = db.Column(db.String)
-
+    stock_available = db.Column(db.Integer)
+    rentals = db.Column(db.Integer)
+    
+    
 
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
@@ -187,7 +189,7 @@ class NewBook(db.Model):
         db.session.commit()
 
     def to_json(self): 
-        stock_available, rentals = 0, 0
+        
         book = Book.query.filter_by(isbn=self.isbn).first()
         if book: 
             stock_available = book.stock_available
@@ -216,6 +218,6 @@ class NewBook(db.Model):
             "description": self.description,
             "categories": [category.to_json() for category in NewCategoryBook.query.filter_by(book_id=self.id).all()],
             "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=self.id).all()],
-            "stock_available": stock_available,
-            "rentals": rentals,
+            "stock_available": self.stock_available,
+            "rentals": self.rentals,
         }
