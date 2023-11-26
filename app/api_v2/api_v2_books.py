@@ -509,11 +509,11 @@ def update_book_quantity():
     if not str(stock_available).isnumeric() or not str(rentals).isnumeric() or int(stock_available) < 0 or int(rentals) < 0: 
         return jsonify({"success": False, "message": "Invalid book quantity"}), 400
     new_book = NewBook.query.filter_by(id=id).first()
-    print(new_book)
+    print(new_book.to_json())
     if not new_book: 
         return jsonify({"success": False, "message": "Invalid book ID"}), 404
     book = Book.query.filter_by(isbn=new_book.isbn).first()
-    print(book)
+    print(book.to_json())
     if not book: 
         return jsonify({"success": False, "message": "Invalid book ID"}), 404
     
