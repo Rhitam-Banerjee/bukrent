@@ -194,6 +194,9 @@ class NewBook(db.Model):
         if book: 
             stock_available = book.stock_available
             rentals = book.rentals
+        else:
+            stock_available = self.stock_available
+            rentals = self.rentals    
         return {
             "id": self.id,
             "guid": self.guid,
@@ -218,6 +221,6 @@ class NewBook(db.Model):
             "description": self.description,
             "categories": [category.to_json() for category in NewCategoryBook.query.filter_by(book_id=self.id).all()],
             "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=self.id).all()],
-            "stock_available": self.stock_available,
-            "rentals": self.rentals,
+            "stock_available": stock_available,
+            "rentals": rentals,
         }

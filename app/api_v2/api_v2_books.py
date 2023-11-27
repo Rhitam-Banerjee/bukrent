@@ -323,7 +323,7 @@ def get_new_books():
     for book in books_query:
   
      if book.id not in book_ids_in_array:
-        print(book.to_json())
+      
         books.append(book.to_json())
         
     return jsonify({"success": True, "books": books})
@@ -508,27 +508,28 @@ def update_book_quantity():
     stock_available = request.json.get('stock_available')
     rentals = request.json.get('rentals')
     if not str(stock_available).isnumeric() or not str(rentals).isnumeric() or int(stock_available) < 0 or int(rentals) < 0: 
+        
         return jsonify({"success": False, "message": "Invalid book quantity"}), 400
     new_book = NewBook.query.filter_by(id=id).first()
    
     if new_book is not None: 
         print("newbook")
-        print(new_book.to_json())
+       
     if not new_book: 
-        print(1)
+        
         return jsonify({"success": False, "message": "Invalid book ID"}), 404
     book = Book.query.filter_by(isbn=new_book.isbn).first()
     
     if book is not None: 
          print("oldbook")
-         print(book.to_json())
+         
     if not book: 
         new_book.stock_available = stock_available
         new_book.rentals = rentals
         db.session.commit()
 
         return jsonify({"success": True, "book": new_book.to_json()})
-    
+   
     book.stock_available = stock_available
     book.rentals = rentals
     
