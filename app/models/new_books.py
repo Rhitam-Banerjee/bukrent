@@ -131,6 +131,34 @@ class NewBookImage(db.Model):
     def to_json(self): 
         return self.source
 
+class NewBookVideo(db.Model):
+    __tablename__ = 'new_videos'
+    video_id = db.Column(db.Integer, primary_key=True)
+    source = db.Column(db.String, nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('new_books.id'))
+    
+    @staticmethod
+    def create(source, book_id):
+        if NewBook.query.filter_by(id=book_id).count() and not NewBookVideo.query.filter_by(source=source, book_id=book_id).count():
+            video_dict = dict(
+                source=source,
+                book_id=book_id,
+            )
+            new_video_obj = NewBookVideo(**video_dict)
+            db.session.add(new_video_obj)
+            db.session.commit()
+            
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()                 
+    
+    def to_json(self):
+        return {
+            'source': self.source,
+            'book_id': self.book_id,
+        }
+        
+
 class NewBook(db.Model): 
     __tablename__ = 'new_books'
     id = db.Column(db.Integer, primary_key=True)
@@ -158,9 +186,6 @@ class NewBook(db.Model):
     genre = db.Column(db.String)
     stock_available = db.Column(db.Integer)
     rentals = db.Column(db.Integer)
-    
-    
-
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
     @staticmethod

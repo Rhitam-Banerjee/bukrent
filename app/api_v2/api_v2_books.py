@@ -8,7 +8,7 @@ from random import shuffle
 from sqlalchemy import Date, Integer, and_, cast, desc, or_, table,desc, asc, nullslast
 from sqlalchemy.inspection import inspect
 from app import db
-from app.models.new_books import NewBookImage, NewBookSection, NewBook, NewCategory, NewCategoryBook
+from app.models.new_books import NewBookImage,NewBookVideo, NewBookSection, NewBook, NewCategory, NewCategoryBook
 from app.models.order import Order
 from app.models.buckets import Wishlist, Dump
 from app.models.books import Book
@@ -537,7 +537,6 @@ def update_book_quantity():
 
     return jsonify({"success": True, "book": new_book.to_json()})
 
-
 @api_v2_books.route('/delete-new-book', methods=['POST'])
 def delete_new_book(): 
     id = request.json.get('id')
@@ -546,7 +545,6 @@ def delete_new_book():
         return jsonify({"success": False, "message": "Invalid book ID"}), 404
     new_book.delete()
     return jsonify({"success": True})
-
 
 @api_v2_books.route('/add-books-from-csv', methods=['POST'])
 def add_books_from_csv():
@@ -696,8 +694,6 @@ def get_books_by_category():
     book_details = sorted(book_details, key=lambda x: (x['book_order'], x['publication_date'] or ''))
 
     return jsonify({'category_name': category_name, 'books_in_category': book_details})
-
-
 
 @api_v2_books.route('/getBookDetails', methods=['GET'])
 def get_book_details():
@@ -962,3 +958,43 @@ def get_books_by_age():
     response.append({"genre": current_genre, "books": genre_books})
 
     return jsonify({"success": True, "book_set": response})
+
+@api_v2_books.route('/new-book-video', methods=['POST'])
+def new_book_video():
+    isbn = request.form.get('isbn')
+    video_file = request.files.get('video')
+    
+    book = NewBook.query.filter_by(isbn=isbn).first()
+    
+    if not book:
+        book =Book.query.filter_by(isbn=isbn).first()
+        if not book:
+          return jsonify({"success": False, "message": "Book with given ISBN does not exist"}), 404
+    
+    book_id = book.id
+    
+    extension = video_file.filename.split(".")[-1]
+    upload_to_aws(video_file, 'book_videos/', f'book_videos/{isbn}.{extension}')
+    s3_url = "https://bukrent-production.s3.ap-south-1.amazonaws.com"
+    source = f'{s3_url}/book_videos/{isbn}.{extension}'
+    
+    NewBookVideo.create(source,book_id)  
+
+    return jsonify({"success": True, "message": "Video uploaded and associated with the book"}), 200
+
+@api_v2_books.route('/book-video/<isbn>', methods=['GET'])
+def get_book_video(isbn):
+    book = NewBook.query.filter_by(isbn=isbn).first()
+
+    if not book:
+        book = Book.query.filter_by(isbn=isbn).first()
+        if not book:
+            return jsonify({"success": False, "message": "Book with given ISBN does not exist"}), 404
+
+    book_video = NewBookVideo.query.filter_by(book_id=book.id).first()
+
+    if not book_video:
+        return jsonify({"success": False, "message": "Video not found for the book"}), 404
+
+    video_source = book_video.source
+    return jsonify({"success": True, "video_source": video_source}), 200
