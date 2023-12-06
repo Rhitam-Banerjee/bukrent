@@ -998,3 +998,63 @@ def get_book_video(isbn):
 
     video_source = book_video.source
     return jsonify({"success": True, "video_source": video_source}), 200
+
+@api_v2_books.route('/book-images/<isbn>', methods=['GET'])
+def get_book_images(isbn):
+    book = NewBook.query.filter_by(isbn=isbn).first()
+
+    if not book:
+        book = Book.query.filter_by(isbn=isbn).first()
+        if not book:
+            return jsonify({"success": False, "message": "Book with given ISBN does not exist"}), 404
+    
+
+    book_images_dict={
+        "image":book.image
+    }
+    sources = NewBookImage.query.filter_by(book_id=book.id).all()
+    source_info = []
+    for source in sources:
+        source_info.append({
+            "image_id":source.id,
+            "image_source": source.source,
+            
+        })
+    
+    return jsonify({"success": True, "book_images": book_images_dict,"other_images":source_info}), 200  
+
+@api_v2_books.route('/add-book-images/<isbn>', methods=['POST'])
+def add_book_images(isbn):
+    book = NewBook.query.filter_by(isbn=isbn).first()
+
+    if not book:
+        book = Book.query.filter_by(isbn=isbn).first()
+        if not book:
+            return jsonify({"success": False, "message": "Book with given ISBN does not exist"}), 404
+    
+    files = request.files.getlist('images')
+    
+    
+    for file in files:
+        try:
+            extension = file.filename.split(".")[-1]
+            upload_to_aws(file, 'secondary_book_images', f'secondary_book_images/{isbn}.{extension}')
+            s3_url = "https://bukrent-production.s3.ap-south-1.amazonaws.com"
+            image_source = f'{s3_url}/secondary_book_images/{isbn}.{extension}'
+            NewBookImage.create(source=image_source, book_id=book.id)
+        except Exception as e:
+            return jsonify({"success": False, "message": str(e)}), 500
+     
+    return jsonify({"success": True, "message": "Images uploaded successfully"}), 200
+
+@api_v2_books.route('/delete-book-image/<image_id>', methods=['DELETE'])
+def delete_book_image(image_id):
+    image = NewBookImage.query.get(image_id)
+
+    if not image:
+        return jsonify({"success": False, "message": "Image not found"}), 404
+
+    # Delete the image
+    image.delete()
+
+    return jsonify({"success": True, "message": f"Image with ID {image_id} deleted successfully"}), 200

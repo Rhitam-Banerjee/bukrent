@@ -114,7 +114,7 @@ class NewBookImage(db.Model):
 
     @staticmethod
     def create(source, book_id): 
-        if NewBook.query.filter_by(id=book_id).count() and not NewBookImage.query.filter_by(source=source, book_id=book_id).count(): 
+        if NewBook.query.filter_by(id=book_id).count(): 
             book_image_dict = dict(
                 guid = str(uuid.uuid4()),
                 source = source,
@@ -158,7 +158,6 @@ class NewBookVideo(db.Model):
             'book_id': self.book_id,
         }
         
-
 class NewBook(db.Model): 
     __tablename__ = 'new_books'
     id = db.Column(db.Integer, primary_key=True)
