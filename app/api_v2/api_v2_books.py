@@ -1115,10 +1115,7 @@ def create_xlsx():
         source_values = [source.source for source in sources]
         result = ', '.join(source_values)
         
-        worksheet.write(iterator, 17, result)
-        
-    
-        
+        worksheet.write(iterator, 17, result)        
         worksheet.write(iterator, 0, book.isbn)
         worksheet.write(iterator, 1, book.name)
         worksheet.write(iterator, 2, book.review_count)
@@ -1133,6 +1130,7 @@ def create_xlsx():
         worksheet.write(iterator, 12, book.publisher)
         worksheet.write(iterator, 13, book.publication_date)
         worksheet.write(iterator, 14, book.authors)
+        worksheet.write(iterator, 16, book.image)
         worksheet.write(iterator, 18, book.book_order)
         worksheet.write(iterator, 19, book.description)
         worksheet.write(iterator, 20, book.language)
@@ -1141,6 +1139,17 @@ def create_xlsx():
     
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     file_path = "./All_books.xlsx"
+    try:
+     with open(file_path, 'rb') as file:
+       
+       upload_to_aws(file, 'book_videos/', f'book_videos/{timestamp}.{"xlsx"}')
+       s3_url = "https://bukrent-production.s3.ap-south-1.amazonaws.com"
+       file_url = f'{s3_url}/book_videos/{timestamp}.{"xlsx"}'
+    
+       return jsonify({"success": True, "message": "Excel file uploaded successfully", "url": file_url}), 200
+        
+    except Exception as e:
+     return jsonify({"success": False, "message": str(e)}), 404    
   
   except Exception as e:
         return jsonify({"success": False, "message": e}), 404
