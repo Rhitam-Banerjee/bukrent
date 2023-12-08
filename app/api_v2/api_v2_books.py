@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from sqlalchemy import update
 import openpyxl
-from flask import jsonify, request
+from flask import jsonify, request ,send_file,after_this_request
 import random
 import json
 from random import shuffle
@@ -12,7 +12,8 @@ from app.models.new_books import NewBookImage,NewBookVideo, NewBookSection, NewB
 from app.models.order import Order
 from app.models.buckets import Wishlist, Dump
 from app.models.books import Book
-
+import datetime
+import xlsxwriter
 from app.api_admin.utils import upload_to_aws
 from app.api_v2.utils import api_v2_books
 
@@ -74,7 +75,6 @@ def get_book_set():
             })
     return jsonify({"success": True, "book_set": book_set})
 
-
 @api_v2_books.route('/get-most-popular-set')
 def get_most_popular_set(): 
     age = request.args.get('age')
@@ -111,7 +111,6 @@ def get_most_popular_set():
     books = sorted(books, key=lambda book: int(book.review_count), reverse=True)[:count]
     books = [book.to_json() for book in books]
     return jsonify({"success": True, "books": books})
-
 
 @api_v2_books.route('/get-must-read-set')
 def get_must_read_set(): 
@@ -1058,3 +1057,92 @@ def delete_book_image(image_id):
     image.delete()
 
     return jsonify({"success": True, "message": f"Image with ID {image_id} deleted successfully"}), 200
+
+@api_v2_books.route('/create_xlsx',methods=['GET'])
+def create_xlsx():
+  try:  
+    iterator = 0
+    books = NewBook.query.all()
+    workbook = xlsxwriter.Workbook("./All_books.xlsx")
+    worksheet = workbook.add_worksheet("All")
+    worksheet.write(iterator, 0, "ISBN")
+    worksheet.write(iterator, 1, "Name")
+    worksheet.write(iterator, 2, "Review_Count")
+    worksheet.write(iterator, 3, "Available")
+    worksheet.write(iterator, 4, "Rentals")
+    worksheet.write(iterator, 5, "Category")
+    worksheet.write(iterator, 6, "Wishlist")
+    worksheet.write(iterator, 7, "Previous")
+    worksheet.write(iterator, 8, "Genres")
+    worksheet.write(iterator, 9, "Rating")
+    worksheet.write(iterator, 10, "Min_Age")
+    worksheet.write(iterator, 11, "Max_Age")
+    worksheet.write(iterator, 12, "Publisher")
+    worksheet.write(iterator, 13, "Publication_Date")
+    worksheet.write(iterator, 14, "Authors")
+    worksheet.write(iterator, 15, "Video")
+    worksheet.write(iterator, 16, "Primary Image")
+    worksheet.write(iterator, 17, "Secondary Images")
+    worksheet.write(iterator, 18, "Book Order")
+    worksheet.write(iterator, 19, "Book Description")
+    worksheet.write(iterator, 20, "Language")
+    
+
+    for book in books:
+        iterator += 1
+        old_book = Book.query.filter_by(isbn=book.isbn).first()
+        if old_book is not None:
+         wishlist_count = Wishlist.query.filter_by(book_id=old_book.id).count()
+         previous_count = Dump.query.filter_by(book_id=old_book.id, read_before=True).count() + \
+                         Order.query.filter_by(book_id=old_book.id).count()
+         available = old_book.stock_available
+         rentals = old_book.rentals
+    
+        category_id = NewCategoryBook.query.filter_by(book_id=book.id).first()
+        if category_id:
+            category = NewCategory.query.filter_by(id=category_id.category_id).first()
+            worksheet.write(iterator, 5, category.name)
+        
+        book_video = NewBookVideo.query.filter_by(book_id=book.id).first()
+        
+        if not book_video:
+         worksheet.write(iterator, 15, "Video not found")
+        else:
+         
+          worksheet.write(iterator, 15, book_video.source)
+          
+        sources = NewBookImage.query.filter_by(book_id=book.id).all()   
+        source_values = [source.source for source in sources]
+        result = ', '.join(source_values)
+        
+        worksheet.write(iterator, 17, result)
+        
+    
+        
+        worksheet.write(iterator, 0, book.isbn)
+        worksheet.write(iterator, 1, book.name)
+        worksheet.write(iterator, 2, book.review_count)
+        worksheet.write(iterator, 3, available)
+        worksheet.write(iterator, 4, rentals)
+        worksheet.write(iterator, 6, wishlist_count)
+        worksheet.write(iterator, 7, previous_count)
+        worksheet.write(iterator, 8, book.genre)
+        worksheet.write(iterator, 9, book.rating)
+        worksheet.write(iterator, 10, book.min_age)
+        worksheet.write(iterator, 11, book.max_age)
+        worksheet.write(iterator, 12, book.publisher)
+        worksheet.write(iterator, 13, book.publication_date)
+        worksheet.write(iterator, 14, book.authors)
+        worksheet.write(iterator, 18, book.book_order)
+        worksheet.write(iterator, 19, book.description)
+        worksheet.write(iterator, 20, book.language)
+        
+    workbook.close()
+    
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    file_path = "./All_books.xlsx"
+  
+  except Exception as e:
+        return jsonify({"success": False, "message": e}), 404
+    
+    
