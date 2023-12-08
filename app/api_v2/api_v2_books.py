@@ -1097,6 +1097,13 @@ def create_xlsx():
                          Order.query.filter_by(book_id=old_book.id).count()
          available = old_book.stock_available
          rentals = old_book.rentals
+        else:
+          wishlist_count = Wishlist.query.filter_by(book_id=book.id).count()
+          previous_count = Dump.query.filter_by(book_id=book.id, read_before=True).count() + \
+                         Order.query.filter_by(book_id=book.id).count()
+          rentals=book.rentals
+          available=book.stock_available
+           
     
         category_id = NewCategoryBook.query.filter_by(book_id=book.id).first()
         if category_id:
@@ -1142,9 +1149,9 @@ def create_xlsx():
     try:
      with open(file_path, 'rb') as file:
        
-       upload_to_aws(file, 'book_videos/', f'book_videos/{timestamp}.{"xlsx"}')
+       upload_to_aws(file, 'excel_data/', f'excel_data/{timestamp}.{"xlsx"}')
        s3_url = "https://bukrent-production.s3.ap-south-1.amazonaws.com"
-       file_url = f'{s3_url}/book_videos/{timestamp}.{"xlsx"}'
+       file_url = f'{s3_url}/excel_data/{timestamp}.{"xlsx"}'
     
        return jsonify({"success": True, "message": "Excel file uploaded successfully", "url": file_url}), 200
         
