@@ -1091,20 +1091,25 @@ def create_xlsx():
     for book in books:
         iterator += 1
         old_book = Book.query.filter_by(isbn=book.isbn).first()
+        
+        
+        rentals=book.rentals
+        available=book.stock_available
         if old_book is not None:
-         wishlist_count = Wishlist.query.filter_by(book_id=old_book.id).count()
-         previous_count = Dump.query.filter_by(book_id=old_book.id, read_before=True).count() + \
+           if not old_book.stock_available: 
+             order = Order.query.filter(
+                Order.book_id == old_book.id,
+                cast(Order.placed_on, Date) >= cast(date.today() + timedelta(days=-7), Date)
+             ).order_by(Order.placed_on).first()
+            
+             
+        
+           wishlist_count = Wishlist.query.filter_by(book_id=old_book.id).count()
+           previous_count = Dump.query.filter_by(book_id=old_book.id, read_before=True).count() + \
                          Order.query.filter_by(book_id=old_book.id).count()
-         available = old_book.stock_available
-         rentals = old_book.rentals
-        else:
-          wishlist_count = Wishlist.query.filter_by(book_id=book.id).count()
-          previous_count = Dump.query.filter_by(book_id=book.id, read_before=True).count() + \
-                         Order.query.filter_by(book_id=book.id).count()
-          rentals=book.rentals
-          available=book.stock_available
+           rentals=old_book.rentals
+           available=old_book.stock_available
            
-    
         category_id = NewCategoryBook.query.filter_by(book_id=book.id).first()
         if category_id:
             category = NewCategory.query.filter_by(id=category_id.category_id).first()
