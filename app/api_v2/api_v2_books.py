@@ -1093,8 +1093,7 @@ def create_xlsx():
         old_book = Book.query.filter_by(isbn=book.isbn).first()
         
         
-        rentals=book.rentals
-        available=book.stock_available
+        
         if old_book is not None:
            if not old_book.stock_available: 
              order = Order.query.filter(
@@ -1109,6 +1108,9 @@ def create_xlsx():
                          Order.query.filter_by(book_id=old_book.id).count()
            rentals=old_book.rentals
            available=old_book.stock_available
+        else:
+            rentals=book.rentals
+            available=book.stock_available   
            
         category_id = NewCategoryBook.query.filter_by(book_id=book.id).first()
         if category_id:
