@@ -1092,7 +1092,10 @@ def create_xlsx():
         iterator += 1
         old_book = Book.query.filter_by(isbn=book.isbn).first()
         
-        
+        wishlist_count = 0
+        previous_count = 0
+        rentals=0
+        available=0
         
         if old_book is not None:
            if not old_book.stock_available: 
