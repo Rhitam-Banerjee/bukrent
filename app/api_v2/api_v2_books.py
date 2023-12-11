@@ -461,6 +461,7 @@ def new_book():
         return jsonify({"success": True, "book": new_book.to_json()})
     elif request.method == 'PUT': 
         new_book = NewBook.query.filter_by(id=id).first()
+        print(new_book.name)
         if not new_book: 
             return jsonify({"success": False, "message": "Invalid book ID"}), 404
         
