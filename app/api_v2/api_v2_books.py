@@ -483,14 +483,14 @@ def new_book():
           book.rating = rating
           new_book.min_age = min_age
           new_book.max_age = max_age
-        
-        new_book.isbn = book.isbn = isbn
-        new_book.name = book.name = name
-        new_book.image = book.image = book_image
-        new_book.review_count = book.review_count = review_count
-        new_book.rating = book.rating = rating
-        new_book.min_age = min_age
-        new_book.max_age = max_age
+        else:  
+          new_book.isbn =  isbn
+          new_book.name =  name
+          new_book.image = book_image
+          new_book.review_count = review_count
+          new_book.rating  = rating
+          new_book.min_age = min_age
+          new_book.max_age = max_age
 
         for category in NewCategoryBook.query.filter_by(book_id=new_book.id).all(): 
             category.delete()
