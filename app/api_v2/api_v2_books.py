@@ -473,7 +473,17 @@ def new_book():
             upload_to_aws(image_file, 'book_images', f'book_images/{isbn}.{extension}')
             s3_url = os.environ.get('AWS_S3_URL')
             book_image = f'{s3_url}/book_images/{isbn}.{extension}'
-
+        
+        
+        if not new_book:
+          book.isbn = isbn
+          book.name = name
+          book.image = book_image
+          book.review_count = review_count
+          book.rating = rating
+          new_book.min_age = min_age
+          new_book.max_age = max_age
+        
         new_book.isbn = book.isbn = isbn
         new_book.name = book.name = name
         new_book.image = book.image = book_image
