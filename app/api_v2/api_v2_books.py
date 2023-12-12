@@ -403,6 +403,8 @@ def new_book():
     if request.method == 'POST': 
         if NewBook.query.filter_by(isbn=isbn).count(): 
             return jsonify({"success": False, "message": "Book with given ISBN already exists"}), 400
+        if NewBook.query.filter_by(isbn=isbn).count(): 
+            return jsonify({"success": False, "message": "Book with given ISBN already exists"}), 400
         
         book_image = image
         if not image or not image.startswith('http'): 
@@ -461,7 +463,7 @@ def new_book():
         return jsonify({"success": True, "book": new_book.to_json()})
     elif request.method == 'PUT': 
         new_book = NewBook.query.filter_by(id=id).first()
-        print(new_book.isbn)
+        
         if not new_book: 
             return jsonify({"success": False, "message": "Invalid book ID"}), 404
         
@@ -495,11 +497,13 @@ def new_book():
         for category in NewCategoryBook.query.filter_by(book_id=new_book.id).all(): 
             category.delete()
         for category in categories: 
+            print(category)
             NewCategoryBook.create(
                 category['category']['id'],
                 new_book.id,
                 category['section']['id'],
             )
+            
         
         if book:
          book.age_group_1 = (min_age >= 0 and min_age <= 2) or (max_age >= 0 and max_age <= 2)
