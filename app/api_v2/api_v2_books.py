@@ -386,6 +386,7 @@ def new_book():
     rating = request.form.get('rating')
     review_count = request.form.get('review_count')
     categories = request.form.get('categories')
+    print(categories)
     image_file = request.files.get('image')
     if not all((isbn, name, min_age, max_age, rating, review_count, categories)) or (not image and not image_file): 
         return jsonify({"success": False, "message": "Provide all the data"}), 400
@@ -503,6 +504,7 @@ def new_book():
                 new_book.id,
                 category['section']['id'],
             )
+            print(NewCategoryBook)
             
         
         if book:
