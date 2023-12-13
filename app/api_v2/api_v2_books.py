@@ -1035,7 +1035,7 @@ def get_book_images(isbn):
         source_info.append({
             "image_id":source.id,
             "image_source": source.source,
-            
+            "image_angle":source.image_angle,
         })
     
     return jsonify({"success": True, "book_images": book_images_dict,"other_images":source_info}), 200  
@@ -1064,7 +1064,7 @@ def add_book_images(isbn):
      
     return jsonify({"success": True, "message": "Images uploaded successfully"}), 200
 
-@api_v2_books.route('/delete-book-image/<image_id>', methods=['DELETE'])
+@api_v2_books.route('/delete-book-image/<image_id>', methods=['GET'])
 def delete_book_image(image_id):
     image = NewBookImage.query.get(image_id)
 
@@ -1075,6 +1075,22 @@ def delete_book_image(image_id):
     image.delete()
 
     return jsonify({"success": True, "message": f"Image with ID {image_id} deleted successfully"}), 200
+
+
+@api_v2_books.route('/change-book-angle/<image_id>', methods=['GET'])
+def change_book_angle(image_id):
+    new_angle = request.args.get('new_angle')  # Assuming the new angle is passed as a query parameter
+    image = NewBookImage.query.get(image_id)
+
+    if not image:
+        return jsonify({"success": False, "message": "Image not found"}), 404
+
+   
+    image.image_angle = new_angle  # Update the image angle
+
+    db.session.commit()  
+
+    return jsonify({"success": True, "message": f"Image angle with ID {image_id} changed successfully"}), 200
 
 @api_v2_books.route('/create_xlsx',methods=['GET'])
 def create_xlsx():

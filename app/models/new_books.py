@@ -111,14 +111,16 @@ class NewBookImage(db.Model):
     guid = db.Column(db.String, nullable=False, unique=True)
     source = db.Column(db.String, nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('new_books.id'))
+    image_angle = db.Column(db.Integer, default=0)
 
     @staticmethod
-    def create(source, book_id): 
+    def create(source, book_id ,image_angle=0): 
         if NewBook.query.filter_by(id=book_id).count(): 
             book_image_dict = dict(
                 guid = str(uuid.uuid4()),
                 source = source,
                 book_id = book_id,
+                image_angle=image_angle
             )
             new_book_image_obj = NewBookImage(**book_image_dict)
             db.session.add(new_book_image_obj)
@@ -128,8 +130,13 @@ class NewBookImage(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def to_json(self): 
-        return self.source
+    def to_json(self):
+     return {
+        'id': self.id,
+        'guid': self.guid,
+        'source': self.source,
+        'book_id': self.book_id,
+        'image_angle': self.image_angle }
 
 class NewBookVideo(db.Model):
     __tablename__ = 'new_videos'
