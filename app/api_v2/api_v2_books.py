@@ -826,8 +826,12 @@ def get_top_books_by_review_count():
 
     # Sort the book_details by review_count in descending order
     book_details = sorted(book_details, key=lambda x: x['review_count'], reverse=True)
-
-    return jsonify({'top_books_by_review_count': book_details})
+     
+    result_dict={
+        "books":book_details,
+        "genre":"Top Books"
+    }
+    return jsonify({'book_set': [result_dict], 'success': True})
 
 @api_v2_books.route('/getGlobalBestsellersByAge', methods=['GET'])
 def get_global_bestsellers_by_age():
@@ -860,8 +864,12 @@ def get_global_bestsellers_by_age():
             'book_order': book.book_order,
             'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
         })
-
-    return jsonify({'global_bestsellers_by_age': book_details})
+        
+    result_dict={
+        "books":book_details,
+        "genre":"Top Books"
+    }
+    return jsonify({'book_set': [result_dict], 'success': True})
 
 @api_v2_books.route('/getTeacherPicksByAge', methods=['GET'])
 def get_teacher_picks_by_age():
@@ -895,7 +903,11 @@ def get_teacher_picks_by_age():
             'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
         })
 
-    return jsonify({'teacher_picks_by_age': book_details})
+    result_dict={
+        "books":book_details,
+        "genre":"Top Books"
+    }
+    return jsonify({'book_set': [result_dict], 'success': True})
 
 @api_v2_books.route('/get-books-by-genre')
 def get_books_by_age():
