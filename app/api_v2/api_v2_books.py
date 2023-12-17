@@ -817,8 +817,12 @@ def get_top_books_by_review_count():
         book_record = Book.query.filter_by(isbn=book.isbn).first()
         if book_record:
             stock_available = book_record.stock_available
+        else:
+            stock_available=book.stock_available
+        
+        if stock_available:
             
-        book_details.append({
+         book_details.append({
             'name': book.name,
             'authors': authors,
             'rating': book.rating,
@@ -829,7 +833,7 @@ def get_top_books_by_review_count():
             'book_order': book.book_order,
             'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None,
             "stock_available": stock_available,
-        })
+         })
 
     # Sort the book_details by review_count in descending order
     
@@ -864,8 +868,12 @@ def get_global_bestsellers_by_age():
         book_record = Book.query.filter_by(isbn=book.isbn).first()
         if book_record:
             stock_available = book_record.stock_available
+        else:
+            stock_available=book.stock_available
+        
+        if stock_available:
             
-        book_details.append({
+         book_details.append({
             'name': book.name,
             'authors': authors,
             'rating': book.rating,
@@ -876,7 +884,7 @@ def get_global_bestsellers_by_age():
             'book_order': book.book_order,
             'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None,
             "stock_available": stock_available,
-        })
+         })
     random.shuffle(book_details)
     result_dict={
         "books":book_details,
@@ -910,9 +918,12 @@ def get_teacher_picks_by_age():
         book_record = Book.query.filter_by(isbn=book.isbn).first()
         if book_record:
             stock_available = book_record.stock_available
+        else:
+            stock_available=book.stock_available
+        
+        if stock_available:
             
-
-        book_details.append({
+         book_details.append({
             'name': book.name,
             'authors': authors,
             'rating': book.rating,
@@ -923,7 +934,7 @@ def get_teacher_picks_by_age():
             'book_order': book.book_order,
             'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None,
             "stock_available": stock_available,
-        })
+         })
     random.shuffle(book_details)
     result_dict={
         "books":book_details,
