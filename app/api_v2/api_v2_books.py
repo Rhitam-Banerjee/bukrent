@@ -806,7 +806,7 @@ def get_top_books_by_review_count():
 
     # Query the database to find books within the specified age group and order them by review_count.
     books = NewBook.query.filter(NewBook.min_age <= age, NewBook.max_age >= age) \
-        .order_by(NewBook.review_count.desc()).all()
+        .order_by(NewBook.review_count.desc()).limit(30).all()
 
     # Create a list of book details (name, author, rating, review count, ISBN, description).
     book_details = []
