@@ -806,12 +806,18 @@ def get_top_books_by_review_count():
 
     # Query the database to find books within the specified age group and order them by review_count.
     books = NewBook.query.filter(NewBook.min_age <= age, NewBook.max_age >= age) \
-        .order_by(NewBook.review_count.desc()).limit(10).all()
+        .order_by(NewBook.review_count.desc()).all()
 
     # Create a list of book details (name, author, rating, review count, ISBN, description).
     book_details = []
+    
     for book in books:
         authors = book.authors.split(', ') if book.authors else []  # Handle 'authors' attribute gracefully
+        stock_available = 0
+        book_record = Book.query.filter_by(isbn=book.isbn).first()
+        if book_record:
+            stock_available = book_record.stock_available
+            
         book_details.append({
             'name': book.name,
             'authors': authors,
@@ -821,12 +827,13 @@ def get_top_books_by_review_count():
             'description': book.description,
             'image': book.image,
             'book_order': book.book_order,
-            'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
+            'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None,
+            "stock_available": stock_available,
         })
 
     # Sort the book_details by review_count in descending order
-    book_details = sorted(book_details, key=lambda x: x['review_count'], reverse=True)
-     
+    
+    random.shuffle(book_details)
     result_dict={
         "books":book_details,
         "genre":"Top Books"
@@ -852,7 +859,12 @@ def get_global_bestsellers_by_age():
     # Create a list of book details (name, author, rating, review count, ISBN, description).
     book_details = []
     for book in books:
-        authors = book.authors.split(', ') if book.authors else []  # Handle 'authors' attribute gracefully
+        authors = book.authors.split(', ') if book.authors else [] 
+        stock_available = 0
+        book_record = Book.query.filter_by(isbn=book.isbn).first()
+        if book_record:
+            stock_available = book_record.stock_available
+            
         book_details.append({
             'name': book.name,
             'authors': authors,
@@ -862,9 +874,10 @@ def get_global_bestsellers_by_age():
             'description': book.description,
             'image': book.image,
             'book_order': book.book_order,
-            'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
+            'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None,
+            "stock_available": stock_available,
         })
-        
+    random.shuffle(book_details)
     result_dict={
         "books":book_details,
         "genre":"Top Books"
@@ -886,11 +899,19 @@ def get_teacher_picks_by_age():
         NewBook.max_age >= age,
         NewBook.categories.any(NewCategory.name == 'Teacher Pick')
     ).all()
+    
 
     # Create a list of book details (name, author, rating, review count, ISBN, description).
     book_details = []
     for book in books:
-        authors = book.authors.split(', ') if book.authors else []  # Handle 'authors' attribute gracefully
+        
+        authors = book.authors.split(', ') if book.authors else []  
+        stock_available = 0
+        book_record = Book.query.filter_by(isbn=book.isbn).first()
+        if book_record:
+            stock_available = book_record.stock_available
+            
+
         book_details.append({
             'name': book.name,
             'authors': authors,
@@ -900,9 +921,10 @@ def get_teacher_picks_by_age():
             'description': book.description,
             'image': book.image,
             'book_order': book.book_order,
-            'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
+            'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None,
+            "stock_available": stock_available,
         })
-
+    random.shuffle(book_details)
     result_dict={
         "books":book_details,
         "genre":"Top Books"
