@@ -838,6 +838,7 @@ def get_top_books_by_review_count():
     # Sort the book_details by review_count in descending order
     
     random.shuffle(book_details)
+    book_details = book_details[:10]
     result_dict={
         "books":book_details,
         "genre":"Top Books"
@@ -886,6 +887,7 @@ def get_global_bestsellers_by_age():
             "stock_available": stock_available,
          })
     random.shuffle(book_details)
+    book_details = book_details[:10]
     result_dict={
         "books":book_details,
         "genre":"Top Books"
@@ -936,6 +938,7 @@ def get_teacher_picks_by_age():
             "stock_available": stock_available,
          })
     random.shuffle(book_details)
+    book_details = book_details[:10]
     result_dict={
         "books":book_details,
         "genre":"Top Books"
