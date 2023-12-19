@@ -948,15 +948,20 @@ def get_teacher_picks_by_age():
 @api_v2_books.route('/get-books-by-genre')
 def get_books_by_age():
     age = request.args.get('age')
+    start = request.args.get('start', default=0, type=int)
+    end = request.args.get('end', default=10, type=int)
 
-    if not age or not age.isnumeric():
-        return jsonify({"success": False, "message": "Age parameter is required and must be numeric."}), 400
+    if not age or not age.isnumeric() or start < 0 or end < start:
+        return jsonify({"success": False, "message": "Invalid input parameters."}), 400
 
     age = int(age)
 
     # Query NewBook records for a specific age
-    books = NewBook.query.filter(NewBook.min_age <= age, NewBook.max_age >= age).order_by(NewBook.genre).all()
-
+    books = NewBook.query.filter(NewBook.min_age <= age,
+                                 NewBook.max_age >= age,
+                                 NewBook.genre != "",
+                                 NewBook.genre != "null").limit(end - start).offset(start)
+  
     response = []
 
     current_genre = None
@@ -969,7 +974,7 @@ def get_books_by_age():
         if current_genre is None:
             current_genre = book.genre
         if book.genre != current_genre:
-            # Sort books within the genre: First unique category.name book, then random order
+           
             unique_category_books = sorted(
                 genre_books_dict[current_genre], key=lambda x: x['categories'][0]['name'] if x['categories'] else '',
                 reverse=True)
@@ -1021,7 +1026,8 @@ def get_books_by_age():
     genre_books.sort(key=lambda x: x['stock_available'] == 0)
     
     response.append({"genre": current_genre, "books": genre_books})
-
+    
+     
     return jsonify({"success": True, "book_set": response})
 
 @api_v2_books.route('/new-book-video', methods=['POST'])
@@ -1123,7 +1129,6 @@ def delete_book_image(image_id):
     image.delete()
 
     return jsonify({"success": True, "message": f"Image with ID {image_id} deleted successfully"}), 200
-
 
 @api_v2_books.route('/change-book-angle/<image_id>', methods=['GET'])
 def change_book_angle(image_id):
