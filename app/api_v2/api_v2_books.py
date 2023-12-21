@@ -945,90 +945,6 @@ def get_teacher_picks_by_age():
     }
     return jsonify({'book_set': [result_dict], 'success': True})
 
-@api_v2_books.route('/get-books-by-genre')
-def get_books_by_age():
-    age = request.args.get('age')
-    start = request.args.get('start', default=0, type=int)
-    end = request.args.get('end', default=10, type=int)
-
-    if not age or not age.isnumeric() or start < 0 or end < start:
-        return jsonify({"success": False, "message": "Invalid input parameters."}), 400
-
-    age = int(age)
-
-    # Query NewBook records for a specific age
-    books = NewBook.query.filter(NewBook.min_age <= age,
-                                 NewBook.max_age >= age,
-                                 NewBook.genre != "",
-                                 NewBook.genre != "null").limit(end - start).offset(start)
-  
-    response = []
-
-    current_genre = None
-    genre_books = []
-
-    # Dictionary to store the books by genre name
-    genre_books_dict = {}
-
-    for book in books:
-        if current_genre is None:
-            current_genre = book.genre
-        if book.genre != current_genre:
-           
-            unique_category_books = sorted(
-                genre_books_dict[current_genre], key=lambda x: x['categories'][0]['name'] if x['categories'] else '',
-                reverse=True)
-            random_books = random.sample(genre_books_dict[current_genre], len(genre_books_dict[current_genre]))
-            genre_books.extend(unique_category_books + random_books)
-            response.append({"genre": current_genre, "books": genre_books})
-            current_genre = book.genre
-            genre_books = []
-
-        stock_available, rentals = 0, 0
-        book_record = Book.query.filter_by(isbn=book.isbn).first()
-        if book_record:
-            stock_available = book_record.stock_available
-            rentals = book_record.rentals
-
-        authors = book.authors.split(', ') if book.authors else []
-
-        # Retrieve categories associated with the book
-        categories = []
-        category_books = NewCategoryBook.query.filter_by(book_id=book.id).all()
-        for category_book in category_books:
-            category = NewCategory.query.get(category_book.category_id)
-            if category:
-                categories.append(category.to_json())
-
-        genre_books_dict.setdefault(current_genre, []).append({
-            "isbn": book.isbn,
-            "name": book.name,
-            "review_count": book.review_count,
-            "min_age": book.min_age,
-            "max_age": book.max_age,
-            "rating": book.rating,
-            "image": book.image,
-            "stock_available": stock_available,
-            "rentals": rentals,
-            "authors": authors,
-            "categories": categories
-        })
-
-    if current_genre:
-        # Sort books within the last genre
-        unique_category_books = sorted(
-            genre_books_dict[current_genre], key=lambda x: x['categories'][0]['name'] if x['categories'] else '',
-            reverse=True)
-        random_books = random.sample(genre_books_dict[current_genre], len(genre_books_dict[current_genre]))
-        genre_books.extend(unique_category_books + random_books)
-
-    # Move books with stock_available = 0 to the end of the books array
-    genre_books.sort(key=lambda x: x['stock_available'] == 0)
-    
-    response.append({"genre": current_genre, "books": genre_books})
-    
-     
-    return jsonify({"success": True, "book_set": response})
 
 @api_v2_books.route('/new-book-video', methods=['POST'])
 def new_book_video():
@@ -1257,5 +1173,64 @@ def create_xlsx():
   
   except Exception as e:
         return jsonify({"success": False, "message": e}), 404
-    
-    
+
+@api_v2_books.route('/get-books-by-genre', methods=['GET'])
+def get_books_by_age_and_genre():
+    age = request.args.get('age')
+
+    if not age:
+        return jsonify({'error': 'Age not provided'}), 400
+
+    try:
+        age = int(age)
+        if age < 0:
+            raise ValueError("Age must be a non-negative integer")
+    except ValueError:
+        return jsonify({'error': 'Invalid age format'}), 400
+
+    # Query the database to find books with the provided age and non-empty genre.
+    books = db.session.query(NewBook).filter(
+        NewBook.min_age <= age,
+        NewBook.max_age >= age,
+        NewBook.genre.isnot(None),
+        NewBook.genre != "",
+        NewBook.genre != "null"
+    ).all()
+
+    if not books:
+        return jsonify({'error': 'No books found for the specified age and genre'}), 404
+
+    # Organize books by genre
+    books_by_genre = {}
+    for book in books:
+        if book.genre not in books_by_genre:
+            books_by_genre[book.genre] = {'books': []}
+            
+        stock_available = 0
+        book_record = Book.query.filter_by(isbn=book.isbn).first()
+        if book_record:
+            stock_available = book_record.stock_available
+        else:
+            stock_available=book.stock_available
+        book_details = {
+            'name': book.name,
+            'isbn': book.isbn,
+            'rating': book.rating,
+            'max_age': book.max_age,
+            'min_age': book.min_age,
+            'review_count': book.review_count,
+            'description': book.description,
+            'image': book.image,
+            "stock_available": stock_available,
+        }
+        books_by_genre[book.genre]['books'].append(book_details)
+
+    # Convert to the desired response format
+    response_data = {
+        'book_set': [
+            {'genre': genre, 'books': details['books']}
+            for genre, details in books_by_genre.items()
+        ]
+    }
+
+    return jsonify(response_data)
