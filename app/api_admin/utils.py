@@ -112,10 +112,16 @@ def upload_to_aws(file, s3_file, filename):
 
     try:
         print(s3.upload_fileobj(file, bucket, filename))
+        print("success")
         return True
-    except FileNotFoundError:
+    except FileNotFoundError as e:
+        print(f"File not found error: {e}")
         return False
-    except NoCredentialsError:
+    except NoCredentialsError as e:
+        print(f"No credentials error: {e}")
+        return False
+    except Exception as e:
+        print(f"An error occurred: {e}")
         return False
 
 def week_from_date(date_object):

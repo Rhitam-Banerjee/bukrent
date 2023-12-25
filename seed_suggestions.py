@@ -6,13 +6,13 @@ from app.models.order import Order
 import xlsxwriter
 
 app = create_app()
-db.init_app(app)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost:5432/bukrent'
 
 with app.app_context():
     iterator = 0
     books = NewBook.query.all()
-    workbook = xlsxwriter.Workbook("/home/ubuntu/bukrent/All_books.xlsx")
+    workbook = xlsxwriter.Workbook("./All_books.xlsx")
     worksheet = workbook.add_worksheet("All")
     worksheet.write(iterator, 0, "ISBN")
     worksheet.write(iterator, 1, "Name")
@@ -26,11 +26,12 @@ with app.app_context():
     for book in books:
         iterator += 1
         old_book = Book.query.filter_by(isbn=book.isbn).first()
-        wishlist_count = Wishlist.query.filter_by(book_id=old_book.id).count()
-        previous_count = Dump.query.filter_by(book_id=old_book.id, read_before=True).count() + \
+        if old_book is not None:
+         wishlist_count = Wishlist.query.filter_by(book_id=old_book.id).count()
+         previous_count = Dump.query.filter_by(book_id=old_book.id, read_before=True).count() + \
                          Order.query.filter_by(book_id=old_book.id).count()
-        available = old_book.stock_available
-        rentals = old_book.rentals
+         available = old_book.stock_available
+         rentals = old_book.rentals
         category_id = NewCategoryBook.query.filter_by(book_id=book.id).first()
         if category_id:
             category = NewCategory.query.filter_by(id=category_id.category_id).first()

@@ -111,14 +111,16 @@ class NewBookImage(db.Model):
     guid = db.Column(db.String, nullable=False, unique=True)
     source = db.Column(db.String, nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('new_books.id'))
+    image_angle = db.Column(db.Integer, default=0)
 
     @staticmethod
-    def create(source, book_id): 
-        if NewBook.query.filter_by(id=book_id).count() and not NewBookImage.query.filter_by(source=source, book_id=book_id).count(): 
+    def create(source, book_id ,image_angle=0): 
+        if NewBook.query.filter_by(id=book_id).count(): 
             book_image_dict = dict(
                 guid = str(uuid.uuid4()),
                 source = source,
                 book_id = book_id,
+                image_angle=image_angle
             )
             new_book_image_obj = NewBookImage(**book_image_dict)
             db.session.add(new_book_image_obj)
@@ -128,9 +130,41 @@ class NewBookImage(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def to_json(self): 
-        return self.source
+    def to_json(self):
+     return {
+        'id': self.id,
+        'guid': self.guid,
+        'source': self.source,
+        'book_id': self.book_id,
+        'image_angle': self.image_angle }
 
+class NewBookVideo(db.Model):
+    __tablename__ = 'new_videos'
+    video_id = db.Column(db.Integer, primary_key=True)
+    source = db.Column(db.String, nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('new_books.id'))
+    
+    @staticmethod
+    def create(source, book_id):
+        if NewBook.query.filter_by(id=book_id).count() and not NewBookVideo.query.filter_by(source=source, book_id=book_id).count():
+            video_dict = dict(
+                source=source,
+                book_id=book_id,
+            )
+            new_video_obj = NewBookVideo(**video_dict)
+            db.session.add(new_video_obj)
+            db.session.commit()
+            
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()                 
+    
+    def to_json(self):
+        return {
+            'source': self.source,
+            'book_id': self.book_id,
+        }
+        
 class NewBook(db.Model): 
     __tablename__ = 'new_books'
     id = db.Column(db.Integer, primary_key=True)
@@ -143,7 +177,6 @@ class NewBook(db.Model):
     book_order = db.Column(db.Integer)
     min_age = db.Column(db.Integer)
     max_age = db.Column(db.Integer)
-
     price = db.Column(db.Float)
     for_age = db.Column(db.String)
     grade_level = db.Column(db.String)
@@ -156,7 +189,9 @@ class NewBook(db.Model):
     description = db.Column(db.String)
     book_type = db.Column(db.String)
     authors = db.Column(db.String)
-
+    genre = db.Column(db.String)
+    stock_available = db.Column(db.Integer)
+    rentals = db.Column(db.Integer)
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
     @staticmethod
@@ -185,11 +220,14 @@ class NewBook(db.Model):
         db.session.commit()
 
     def to_json(self): 
-        stock_available, rentals = 0, 0
+        
         book = Book.query.filter_by(isbn=self.isbn).first()
         if book: 
             stock_available = book.stock_available
             rentals = book.rentals
+        else:
+            stock_available = self.stock_available
+            rentals = self.rentals    
         return {
             "id": self.id,
             "guid": self.guid,
@@ -203,6 +241,7 @@ class NewBook(db.Model):
             "max_age": self.max_age,
             "price": self.price,
             "for_age": self.for_age,
+            "genre": self.genre,
             "lexile_measure": self.lexile_measure,
             "grade_level": self.grade_level,
             "pages": self.pages,
