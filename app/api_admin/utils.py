@@ -76,7 +76,7 @@ def validate_user(f):
                 raise ValueError("Invalid PIN code")
             if plan_id and int(plan_id) not in [1, 2, 4]:
                 raise ValueError("Invalid plan ID")
-            if plan_duration and int(plan_duration) not in [1, 3, 12]:
+            if plan_duration and int(plan_duration) not in [1, 3, 6, 12]:
                 raise ValueError("Invalid plan duration")
             if payment_status and payment_status not in ['Paid', 'Unpaid', 'Trial']:
                 raise ValueError("Invalid payment status")
