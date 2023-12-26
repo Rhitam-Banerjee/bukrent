@@ -94,7 +94,7 @@ class NewCategory(db.Model):
             category_book.delete()
         db.session.delete(self)
         db.session.commit()
-
+     
     def to_json(self): 
         return {
             "id": self.id,
@@ -104,6 +104,45 @@ class NewCategory(db.Model):
             "min_age": self.min_age,
             "max_age": self.max_age
         }
+
+class NewGenre(db.Model):
+    __tablename__ = 'genres'
+    genre_id = db.Column(db.Integer, primary_key=True)
+    genre_name = db.Column(db.String(255), nullable=False)
+    book_id = db.Column(db.Integer)
+    min_age = db.Column(db.Integer)
+    max_age = db.Column(db.Integer)
+    
+    @staticmethod
+    def create(genre_name, min_age, max_age): 
+        
+        genre_dict = dict(
+            name = genre_name,
+            min_age = min_age,
+            max_age = max_age
+        )
+        new_genre_obj = NewGenre(**genre_dict)
+        db.session.add(new_genre_obj)
+        db.session.commit()
+    
+    def delete(self):
+
+        entries_to_delete = NewGenre.query.filter(NewGenre.genre_name == self.genre_name).all()
+       
+        for entry in entries_to_delete:
+            db.session.delete(entry)
+        
+        db.session.commit()   
+    
+    def to_json(self): 
+        return {
+            "id": self.genre_id,
+            "book_id": self.book_id,
+            "name": self.genre_name,
+            "min_age": self.min_age,
+            "max_age": self.max_age
+        }
+    
 
 class NewBookImage(db.Model): 
     __tablename__ = 'new_book_images'
