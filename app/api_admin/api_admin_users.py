@@ -250,7 +250,6 @@ def update_user(admin):
     else: 
         user.first_name = ''
         user.last_name = ''
-
     if plan_date:
         user.plan_date = datetime.strptime(plan_date, '%Y-%m-%d')
         if plan_duration and str(plan_duration).isnumeric(): 
@@ -272,8 +271,7 @@ def update_user(admin):
     if not user.total_delivery_count:
         user.total_delivery_count = 0
     if user.plan_duration:
-        user.total_delivery_count += int(user.plan_duration * 4)
-
+        user.total_delivery_count = int(user.plan_duration) * 4
     user_children = Child.query.filter_by(user_id=user.id).all()
     for child in user_children:
         child.delete()
