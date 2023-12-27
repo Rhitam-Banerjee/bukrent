@@ -103,14 +103,24 @@ def get_genres():
     else:
         genres = NewGenre.query.all()
 
-    genre_list = [{
-        'id': genre.genre_id,
-        'name': genre.genre_name,
-        'min_age': genre.min_age,
-        'max_age': genre.max_age
-    } for genre in genres]
+    # Dictionary to hold unique genres by name
+    unique_genres = {}
+
+    for genre in genres:
+        # Check if the genre name already exists in the dictionary
+        if genre.genre_name not in unique_genres:
+            unique_genres[genre.genre_name] = {
+                'id': genre.genre_id,
+                'name': genre.genre_name,
+                'min_age': genre.min_age,
+                'max_age': genre.max_age
+            }
+
+    # Convert the dictionary values (unique genres) to a list
+    genre_list = list(unique_genres.values())
 
     return jsonify({"success": True, "genres": genre_list})
+
 
 @api_v2_books.route('/update-genre/<string:genre_name>', methods=['POST'])
 def update_genre_by_name(genre_name):
