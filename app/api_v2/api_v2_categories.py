@@ -3,7 +3,7 @@ from flask import jsonify, request
 from sqlalchemy import and_, or_
 
 from app import db
-from app.models.new_books import NewBookSection, NewCategory
+from app.models.new_books import NewBookSection, NewCategory,NewGenre
 
 from app.api_v2.utils import api_v2_books
 
@@ -93,3 +93,84 @@ def delete_category():
 def get_sections(): 
     sections = [section.to_json() for section in NewBookSection.query.all()]
     return jsonify({"success": True, "sections": sections})
+
+@api_v2_books.route('/get-genres')
+def get_genres(): 
+    age = request.args.get('age')
+
+    if age:
+        genres = NewGenre.query.filter(NewGenre.min_age <= age, NewGenre.max_age >= age).all()
+    else:
+        genres = NewGenre.query.all()
+
+    # Dictionary to hold unique genres by name
+    unique_genres = {}
+
+    for genre in genres:
+        # Check if the genre name already exists in the dictionary
+        if genre.genre_name not in unique_genres:
+            unique_genres[genre.genre_name] = {
+                'id': genre.genre_id,
+                'name': genre.genre_name,
+                'min_age': genre.min_age,
+                'max_age': genre.max_age
+            }
+
+    # Convert the dictionary values (unique genres) to a list
+    genre_list = list(unique_genres.values())
+
+    return jsonify({"success": True, "genres": genre_list})
+
+
+@api_v2_books.route('/update-genre/<string:genre_name>', methods=['POST'])
+def update_genre_by_name(genre_name):
+    genres = NewGenre.query.filter_by(genre_name=genre_name).all()
+    if not genres:
+        return jsonify({'error': 'No genres found with the given genre_name'}), 404
+
+   
+    updated_details = {}
+    if 'name' in request.json:
+        updated_details['genre_name'] = request.json['name']
+    if 'min_age' in request.json:
+        updated_details['min_age'] = request.json['min_age']
+    if 'max_age' in request.json:
+        updated_details['max_age'] = request.json['max_age']
+
+    # Update details for all genres with the same genre_name
+    for genre in genres:
+        for field, value in updated_details.items():
+            setattr(genre, field, value)
+
+    db.session.commit()
+    return jsonify({'message': f'Updated details for all genres with genre_name: {genre_name}'})
+
+@api_v2_books.route('/delete-genre/<string:genre_name>', methods=['GET'])
+def delete_genre_by_name(genre_name):
+    genres = NewGenre.query.filter_by(genre_name=genre_name).all()
+    if not genres:
+        return jsonify({'error': 'No genres found with the given genre_name'}), 404
+
+    for genre in genres:
+        db.session.delete(genre)
+
+    db.session.commit()
+    return jsonify({'message': f'Deleted all genres with genre_name: {genre_name}'})
+
+@api_v2_books.route('/create-genre', methods=['POST'])
+def create_genre():
+    
+    genre_name = request.json.get('genre_name')
+    min_age = request.json.get('min_age')
+    max_age = request.json.get('max_age')
+
+   
+    if not (genre_name and min_age and max_age):
+        return jsonify({'error': 'Incomplete data provided'}), 400
+
+    new_genre = NewGenre(genre_name=genre_name, min_age=min_age, max_age=max_age)
+    db.session.add(new_genre)
+    db.session.commit()
+
+    return jsonify({'message': 'New genre created successfully'})
+

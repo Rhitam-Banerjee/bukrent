@@ -386,9 +386,10 @@ def new_book():
     rating = request.form.get('rating')
     review_count = request.form.get('review_count')
     categories = request.form.get('categories')
+    genre = request.form.get('genre')
     print(categories)
     image_file = request.files.get('image')
-    if not all((isbn, name, min_age, max_age, rating, review_count, categories)) or (not image and not image_file): 
+    if not all((isbn, name, min_age, max_age, rating, review_count, categories,genre)) or (not image and not image_file): 
         return jsonify({"success": False, "message": "Provide all the data"}), 400
     if not str(min_age).isnumeric() or not str(max_age).isnumeric() or int(min_age) < 0 or int(min_age) > int(max_age): 
         return jsonify({"success": False, "message": "Invalid minimum and maximum age"}), 400
@@ -486,6 +487,7 @@ def new_book():
           book.rating = rating
           new_book.min_age = min_age
           new_book.max_age = max_age
+          new_book.genre=genre
         else:  
           new_book.isbn =  isbn
           new_book.name =  name
@@ -494,6 +496,7 @@ def new_book():
           new_book.rating  = rating
           new_book.min_age = min_age
           new_book.max_age = max_age
+          new_book.genre=genre
 
         for category in NewCategoryBook.query.filter_by(book_id=new_book.id).all(): 
             category.delete()
@@ -750,6 +753,7 @@ def get_book_details():
         'publisher': book.publisher,
         'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None,
         'language': book.language,
+        'genre':book.genre,
     }
 
     return jsonify({'book_details': book_details})
@@ -952,7 +956,6 @@ def get_teacher_picks_by_age():
         "genre":"Top Books"
     }
     return jsonify({'book_set': [result_dict], 'success': True})
-
 
 @api_v2_books.route('/new-book-video', methods=['POST'])
 def new_book_video():

@@ -74,7 +74,7 @@ def validate_user(f):
                         }), 400
             if pin_code and len(pin_code) != 6:
                 raise ValueError("Invalid PIN code")
-            if plan_id and int(plan_id) not in [1, 2, 4]:
+            if plan_id and int(plan_id) not in [1, 2, 3, 4]:
                 raise ValueError("Invalid plan ID")
             if plan_duration and int(plan_duration) not in [1, 3, 6, 12]:
                 raise ValueError("Invalid plan duration")
