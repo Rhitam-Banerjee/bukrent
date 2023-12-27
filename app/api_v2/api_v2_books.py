@@ -612,13 +612,20 @@ def add_books_from_csv():
     book_columns = [c_attr.key for c_attr in inspect_book_object.mapper.column_attrs]
     for book in books:
         for x in book:
+            # Convert Float and Numeric String --> Integer
             if isinstance(book[x], float) or (isinstance(book[x], str) and book[x].isnumeric()):
                 book[x] = int(book[x])
 
         if 'isbn' not in book or 'name' not in book:
             continue
-        isbn = book['isbn']
 
+        isbn = str(book['isbn'])
+
+        if book['price'] == 'null':
+            book['price'] = 0.0
+        elif isinstance(book['price'], str):
+            book['price'] = float(book['price'].replace(",", ""))
+            
         book_attr = {key: value for key, value in book.items() if key in book_columns}
         new_book_attr = {key: value for key, value in book.items() if key in new_book_columns}
         fetch_book = NewBook.query.filter_by(isbn=isbn).first()
@@ -628,10 +635,11 @@ def add_books_from_csv():
             update_book = update(Book).where(Book.isbn == isbn).values(**book_attr)
             db.engine.execute(update_book)
             added_isbns.append(isbn)
-            db.session.commit()
-            print("ADDED")
         else:
-            not_added_isbns.append(isbn)
+            new_book_instance = NewBook.create(**new_book_attr)
+            book_instance = Book(**book_attr)
+            added_isbns.append(isbn)
+        db.session.commit()
     try:
         os.remove(filename)
     except Exception as e:
