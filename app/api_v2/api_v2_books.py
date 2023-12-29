@@ -820,6 +820,9 @@ def get_book_details():
         'publisher': book.publisher,
         'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None,
         'language': book.language,
+        "paperbackprice":book.paperbackprice,
+        "boardbookprice":book.boardbookprice,
+        "hardcoverprice":book.hardcoverprice,
         'genre':book.genre,
     }
 
