@@ -394,6 +394,10 @@ def new_book():
     publisher = request.form.get('publisher')
     author = request.form.get('author')
     language = request.form.get('language')
+    paperbackprice = request.form.get('paperbackprice')
+    boardbookprice = request.form.get('boardbookprice')
+    hardcoverprice = request.form.get('hardcoverprice')
+    
     print(categories)
     image_file = request.files.get('image')
     if not all((isbn, name, min_age, max_age, rating, review_count, categories)) or (not image and not image_file): 
@@ -509,6 +513,21 @@ def new_book():
            print (pages)  
            pages=int(pages)
            new_book.pages = pages
+           
+          if paperbackprice is not None and paperbackprice != '':
+           print (paperbackprice)  
+           paperbackprice=int(paperbackprice)
+           new_book.paperbackprice = paperbackprice 
+         
+          if boardbookprice is not None and boardbookprice != '':
+           print (boardbookprice)  
+           boardbookprice=int(boardbookprice)
+           new_book.boardbookprice = boardbookprice   
+          
+          if hardcoverprice is not None and hardcoverprice != '':
+           print (hardcoverprice)  
+           hardcoverprice=int(hardcoverprice)
+           new_book.hardcoverprice = hardcoverprice    
 
            if publisher is not None:
             new_book.publisher = publisher
