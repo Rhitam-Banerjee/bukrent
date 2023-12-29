@@ -232,7 +232,7 @@ class NewBook(db.Model):
     stock_available = db.Column(db.Integer)
     rentals = db.Column(db.Integer)
     hardcoverprice = db.Column(db.Integer)
-    boardbokprice = db.Column(db.Integer)
+    boardbookprice = db.Column(db.Integer)
     paperbackprice = db.Column(db.Integer)
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
@@ -298,6 +298,6 @@ class NewBook(db.Model):
             "stock_available": stock_available,
             "rentals": rentals,
             "paperbackprice":self.paperbackprice,
-            "boardbookprice":self.boardbokprice,
+            "boardbookprice":self.boardbookprice,
             "hardcoverprice":self.hardcoverprice,
         }
