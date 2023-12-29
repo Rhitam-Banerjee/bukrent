@@ -740,9 +740,9 @@ def get_book_author():
             'isbn': book.isbn,
             'description': book.description,
             'image':book.image,
-            "paperbackprice":book.PaperBackPrice,
-            "boardbookprice":book.BoardbookPrice,
-            "hardcoverprice":book.HardCoverPrice,
+            "paperbackprice":book.paperbackprice,
+            "boardbookprice":book.boardbookprice,
+            "hardcoverprice":book.hardcoverprice,
         }
         for book in related_books
     ]
@@ -780,9 +780,9 @@ def get_books_by_category():
             'description': book.description,
             'image': book.image,
             'book_order': book.book_order,
-            "paperbackprice":book.PaperBackPrice,
-            "boardbookprice":book.BoardbookPrice,
-            "hardcoverprice":book.HardCoverPrice,
+            "paperbackprice":book.paperbackprice,
+            "boardbookprice":book.boardbookprice,
+            "hardcoverprice":book.hardcoverprice,
             'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
         })
 
