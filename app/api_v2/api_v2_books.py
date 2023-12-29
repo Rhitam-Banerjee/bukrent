@@ -388,7 +388,6 @@ def new_book():
     categories = request.form.get('categories')
     genre = request.form.get('genre')
     pages = request.form.get('pages')
-    
     lexile_measure = request.form.get('lexile_measure')
     description = request.form.get('description')
     publication_date = request.form.get('publication_date')
@@ -397,7 +396,7 @@ def new_book():
     language = request.form.get('language')
     print(categories)
     image_file = request.files.get('image')
-    if not all((isbn, name, min_age, max_age, rating, review_count, categories,genre,lexile_measure,description,publication_date,publisher,author,language,pages)) or (not image and not image_file): 
+    if not all((isbn, name, min_age, max_age, rating, review_count, categories)) or (not image and not image_file): 
         return jsonify({"success": False, "message": "Provide all the data"}), 400
     if not str(min_age).isnumeric() or not str(max_age).isnumeric() or int(min_age) < 0 or int(min_age) > int(max_age): 
         return jsonify({"success": False, "message": "Invalid minimum and maximum age"}), 400
@@ -408,6 +407,11 @@ def new_book():
     if type(json.loads(categories)) != type([]): 
         return jsonify({"success": False, "message": "Invalid category list"}), 400
    
+    if pages is not None and pages != '':
+        try:
+            pages = int(pages) 
+        except ValueError:
+            return jsonify({"success": False, "message": "Invalid 'pages' value"}), 400
 
     min_age = int(min_age)
     max_age = int(max_age)
@@ -501,18 +505,23 @@ def new_book():
           if lexile_measure is not None:
            new_book.lexile_measure = lexile_measure
 
-          if pages is not None:
-           pages=int(pages);
+          if pages is not None and pages != '':
+           print (pages)  
+           pages=int(pages)
            new_book.pages = pages
 
            if publisher is not None:
             new_book.publisher = publisher
 
-           if publication_date is not None:
+           if publication_date is not None and publication_date != 'null':
+               
             new_book.publication_date = publication_date
 
            if language is not None:
             new_book.language = language
+            
+           if author is not None:
+            new_book.author = author 
 
            if description is not None:
             book.description = description
@@ -528,18 +537,22 @@ def new_book():
           if lexile_measure is not None:
            new_book.lexile_measure = lexile_measure
 
-          if pages is not None:
-           pages=int(pages);   
+          if pages is not None and pages != '':
+           print(pages)   
+           pages=int(pages)
            new_book.pages = pages
 
            if publisher is not None:
             new_book.publisher = publisher
 
-           if publication_date is not None:
+           if publication_date is not None and publication_date != 'null':
             new_book.publication_date = publication_date
 
            if language is not None:
             new_book.language = language
+            
+           if author is not None:
+            new_book.author = author   
 
            if description is not None:
             new_book.description = description
@@ -727,6 +740,9 @@ def get_book_author():
             'isbn': book.isbn,
             'description': book.description,
             'image':book.image,
+            "paperbackprice":book.PaperBackPrice,
+            "boardbookprice":book.BoardbookPrice,
+            "hardcoverprice":book.HardCoverPrice,
         }
         for book in related_books
     ]
@@ -764,6 +780,9 @@ def get_books_by_category():
             'description': book.description,
             'image': book.image,
             'book_order': book.book_order,
+            "paperbackprice":book.PaperBackPrice,
+            "boardbookprice":book.BoardbookPrice,
+            "hardcoverprice":book.HardCoverPrice,
             'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
         })
 
