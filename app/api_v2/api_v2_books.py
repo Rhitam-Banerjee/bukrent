@@ -560,6 +560,21 @@ def new_book():
            print(pages)   
            pages=int(pages)
            new_book.pages = pages
+          
+          if paperbackprice is not None and paperbackprice != '':
+           print (paperbackprice)  
+           paperbackprice=int(paperbackprice)
+           new_book.paperbackprice = paperbackprice 
+         
+          if boardbookprice is not None and boardbookprice != '':
+           print (boardbookprice)  
+           boardbookprice=int(boardbookprice)
+           new_book.boardbookprice = boardbookprice   
+          
+          if hardcoverprice is not None and hardcoverprice != '':
+           print (hardcoverprice)  
+           hardcoverprice=int(hardcoverprice)
+           new_book.hardcoverprice = hardcoverprice 
 
            if publisher is not None:
             new_book.publisher = publisher
