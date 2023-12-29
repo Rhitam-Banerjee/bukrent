@@ -406,26 +406,7 @@ def new_book():
         return jsonify({"success": False, "message": "Invalid review count"}), 400
     if type(json.loads(categories)) != type([]): 
         return jsonify({"success": False, "message": "Invalid category list"}), 400
-    if lexile_measure is None:
-        lexile_measure = ''  
-
-    if pages is None:
-        pages = ''  
-
-    if publisher is None:
-        publisher = ''  
-
-    if publication_date is None:
-        publication_date = ''  
-
-    if language is None:
-        language = ''  
-
-    if description is None:
-        description = ''  
-
-    if genre is None:
-        genre = ''  
+   
 
     min_age = int(min_age)
     max_age = int(max_age)
@@ -516,13 +497,23 @@ def new_book():
           new_book.min_age = min_age
           new_book.max_age = max_age
           new_book.genre=genre
-          new_book.pages=pages
-          new_book.lexile_measure=lexile_measure
-          book.description=description
-          new_book.publication_date=publication_date
-          new_book.publisher=publisher
-          new_book.author=author
-          new_book.language=language
+          if lexile_measure is not None:
+           new_book.lexile_measure = lexile_measure
+
+          if pages is not None:
+           new_book.pages = pages
+
+           if publisher is not None:
+            new_book.publisher = publisher
+
+           if publication_date is not None:
+            new_book.publication_date = publication_date
+
+           if language is not None:
+            new_book.language = language
+
+           if description is not None:
+            book.description = description
         else:  
           new_book.isbn =  isbn
           new_book.name =  name
@@ -532,13 +523,24 @@ def new_book():
           new_book.min_age = min_age
           new_book.max_age = max_age
           new_book.genre=genre
-          new_book.pages=pages
-          new_book.lexile_measure=lexile_measure
-          new_book.description=description
-          new_book.publication_date=publication_date
-          new_book.publisher=publisher
-          new_book.author=author
-          new_book.language=language
+          if lexile_measure is not None:
+           new_book.lexile_measure = lexile_measure
+
+          if pages is not None:
+           new_book.pages = pages
+
+           if publisher is not None:
+            new_book.publisher = publisher
+
+           if publication_date is not None:
+            new_book.publication_date = publication_date
+
+           if language is not None:
+            new_book.language = language
+
+           if description is not None:
+            book.description = description
+          
           
 
         for category in NewCategoryBook.query.filter_by(book_id=new_book.id).all(): 
