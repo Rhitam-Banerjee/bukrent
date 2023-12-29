@@ -231,9 +231,9 @@ class NewBook(db.Model):
     genre = db.Column(db.String)
     stock_available = db.Column(db.Integer)
     rentals = db.Column(db.Integer)
-    HardCoverPrice = db.Column(db.Integer)
-    BoardbookPrice = db.Column(db.Integer)
-    PaperBackPrice = db.Column(db.Integer)
+    hardcoverprice = db.Column(db.Integer)
+    boardbokprice = db.Column(db.Integer)
+    paperbackprice = db.Column(db.Integer)
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
     @staticmethod
@@ -297,7 +297,7 @@ class NewBook(db.Model):
             "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=self.id).all()],
             "stock_available": stock_available,
             "rentals": rentals,
-            "paperbackprice":self.PaperBackPrice,
-            "boardbookprice":self.BoardbookPrice,
-            "hardcoverprice":self.HardCoverPrice,
+            "paperbackprice":self.paperbackprice,
+            "boardbookprice":self.boardbokprice,
+            "hardcoverprice":self.hardcoverprice,
         }
