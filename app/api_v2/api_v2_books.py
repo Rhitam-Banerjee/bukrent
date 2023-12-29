@@ -539,7 +539,7 @@ def new_book():
             new_book.language = language
 
            if description is not None:
-            book.description = description
+            new_book.description = description
           
           
 
