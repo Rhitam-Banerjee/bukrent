@@ -867,6 +867,9 @@ def get_books_by_author():
             'review_count': book.review_count,
             'description': book.description,
             'image': book.image,
+            "paperbackprice":book.paperbackprice,
+            "boardbookprice":book.boardbookprice,
+            "hardcoverprice":book.hardcoverprice,
         }
         for book in books
     ]
