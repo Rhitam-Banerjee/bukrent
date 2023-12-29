@@ -406,6 +406,27 @@ def new_book():
         return jsonify({"success": False, "message": "Invalid review count"}), 400
     if type(json.loads(categories)) != type([]): 
         return jsonify({"success": False, "message": "Invalid category list"}), 400
+    if lexile_measure is None:
+        lexile_measure = ''  
+
+    if pages is None:
+        pages = ''  
+
+    if publisher is None:
+        publisher = ''  
+
+    if publication_date is None:
+        publication_date = ''  
+
+    if language is None:
+        language = ''  
+
+    if description is None:
+        description = ''  
+
+    if genre is None:
+        genre = ''  
+
     min_age = int(min_age)
     max_age = int(max_age)
     categories = json.loads(categories)
