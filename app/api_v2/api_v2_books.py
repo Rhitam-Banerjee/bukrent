@@ -388,7 +388,7 @@ def new_book():
     categories = request.form.get('categories')
     genre = request.form.get('genre')
     pages = request.form.get('pages')
-    pages=int(pages);
+    
     lexile_measure = request.form.get('lexile_measure')
     description = request.form.get('description')
     publication_date = request.form.get('publication_date')
@@ -502,6 +502,7 @@ def new_book():
            new_book.lexile_measure = lexile_measure
 
           if pages is not None:
+           pages=int(pages);
            new_book.pages = pages
 
            if publisher is not None:
@@ -528,6 +529,7 @@ def new_book():
            new_book.lexile_measure = lexile_measure
 
           if pages is not None:
+           pages=int(pages);   
            new_book.pages = pages
 
            if publisher is not None:
