@@ -387,9 +387,16 @@ def new_book():
     review_count = request.form.get('review_count')
     categories = request.form.get('categories')
     genre = request.form.get('genre')
+    pages = request.form.get('pages')
+    lexile_measure = request.form.get('lexile_measure')
+    description = request.form.get('description')
+    publication_date = request.form.get('publication_date')
+    publisher = request.form.get('publisher')
+    author = request.form.get('author')
+    language = request.form.get('language')
     print(categories)
     image_file = request.files.get('image')
-    if not all((isbn, name, min_age, max_age, rating, review_count, categories,genre)) or (not image and not image_file): 
+    if not all((isbn, name, min_age, max_age, rating, review_count, categories,genre,lexile_measure,description,publication_date,publisher,author,language,pages)) or (not image and not image_file): 
         return jsonify({"success": False, "message": "Provide all the data"}), 400
     if not str(min_age).isnumeric() or not str(max_age).isnumeric() or int(min_age) < 0 or int(min_age) > int(max_age): 
         return jsonify({"success": False, "message": "Invalid minimum and maximum age"}), 400
@@ -488,6 +495,13 @@ def new_book():
           new_book.min_age = min_age
           new_book.max_age = max_age
           new_book.genre=genre
+          new_book.pages=pages
+          new_book.lexile_measure=lexile_measure
+          book.description=description
+          new_book.publication_date=publication_date
+          new_book.publisher=publisher
+          new_book.author=author
+          new_book.language=language
         else:  
           new_book.isbn =  isbn
           new_book.name =  name
@@ -497,6 +511,14 @@ def new_book():
           new_book.min_age = min_age
           new_book.max_age = max_age
           new_book.genre=genre
+          new_book.pages=pages
+          new_book.lexile_measure=lexile_measure
+          new_book.description=description
+          new_book.publication_date=publication_date
+          new_book.publisher=publisher
+          new_book.author=author
+          new_book.language=language
+          
 
         for category in NewCategoryBook.query.filter_by(book_id=new_book.id).all(): 
             category.delete()
