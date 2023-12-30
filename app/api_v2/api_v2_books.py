@@ -611,8 +611,11 @@ def add_books_from_csv():
 
     inspect_new_book_object = inspect(NewBook)
     inspect_book_object = inspect(Book)
+    inspect_new_category = inspect(NewCategory)
+    inspect_new_category_book = inspect(NewCategoryBook)
     new_book_columns = [c_attr.key for c_attr in inspect_new_book_object.mapper.column_attrs]
     book_columns = [c_attr.key for c_attr in inspect_book_object.mapper.column_attrs]
+    
     for book in books:
         for x in book:
             # Convert Float and Numeric String --> Integer
@@ -621,28 +624,43 @@ def add_books_from_csv():
 
         if 'isbn' not in book or 'name' not in book:
             continue
-
         isbn = str(book['isbn'])
-
         if book['price'] == 'null':
             book['price'] = 0.0
         elif isinstance(book['price'], str):
             book['price'] = float(book['price'].replace(",", ""))
-            
+
         book_attr = {key: value for key, value in book.items() if key in book_columns}
         new_book_attr = {key: value for key, value in book.items() if key in new_book_columns}
+        # stmt = insert(NewBook).values(**new_book_attr)
+
+        # new_book_attr['guid'] = str(uuid.uuid4())
+        # stmt = stmt.on_conflict_do_update(
+        #     index_elements=['id'],
+        #     set_=new_book_attr
+        # )
         fetch_book = NewBook.query.filter_by(isbn=isbn).first()
         if fetch_book:
             update_new_book = update(NewBook).where(NewBook.isbn == isbn).values(**new_book_attr)
             db.engine.execute(update_new_book)
             update_book = update(Book).where(Book.isbn == isbn).values(**book_attr)
             db.engine.execute(update_book)
+            if "categories" in header_row.values():
+                new_category_book = NewCategoryBook.query.filter_by(book_id=fetch_book.id)
+                update_category = update(NewCategory).where(NewCategory)
             added_isbns.append(isbn)
+            print("UPDATED")
         else:
             new_book_instance = NewBook.create(**new_book_attr)
-            book_instance = Book(**book_attr)
+            Book.create(book['name'], book['image'], str(book['isbn']), book['rating'], book['review_count'], book['type'], book['language'], book['price'], book['description'], 0, None, None, None, None)
             added_isbns.append(isbn)
-        db.session.commit()
+            new_category_id = NewCategory.create(book['name'], book['order'], book['min_age'], book['max_age'])
+            new_category_book_obj = NewCategoryBook.create(new_category_id, new_book_instance.id, 1)
+            print("ADDED", f"{new_book_attr=}", "\n"* 5, f"{book_attr=}", "\n"* 5)
+        try:
+            db.session.commit()
+        except Exception as e:
+            print(f"Error during commit: {e}")
     try:
         os.remove(filename)
     except Exception as e:

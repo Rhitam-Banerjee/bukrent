@@ -63,7 +63,7 @@ class NewCategoryBook(db.Model):
             "category": NewCategory.query.get(self.category_id).to_json(),
             "section": NewBookSection.query.get(self.section_id).to_json()
         }
-
+    
 class NewCategory(db.Model): 
     __tablename__ = 'new_categories'
     id = db.Column(db.Integer, primary_key=True)
@@ -75,9 +75,10 @@ class NewCategory(db.Model):
     books = db.relationship('NewBook', secondary=NewCategoryBook.__table__)
 
     @staticmethod
-    def create(name, category_order, min_age, max_age): 
-        if NewCategory.query.filter_by(name=name).count(): 
-            return
+    def create(name, category_order, min_age, max_age):
+        value = NewCategory.query.filter_by(name=name)
+        if value.count() == 1:
+            return value.first().id
         category_dict = dict(
             guid = str(uuid.uuid4()),
             name = name,
@@ -88,13 +89,14 @@ class NewCategory(db.Model):
         new_category_obj = NewCategory(**category_dict)
         db.session.add(new_category_obj)
         db.session.commit()
+        return new_category_obj
 
     def delete(self): 
         for category_book in NewCategoryBook.query.filter_by(category_id=self.id).all(): 
             category_book.delete()
         db.session.delete(self)
         db.session.commit()
-     
+
     def to_json(self): 
         return {
             "id": self.id,
@@ -216,6 +218,7 @@ class NewBook(db.Model):
     book_order = db.Column(db.Integer)
     min_age = db.Column(db.Integer)
     max_age = db.Column(db.Integer)
+
     price = db.Column(db.Float)
     for_age = db.Column(db.String)
     grade_level = db.Column(db.String)
@@ -228,13 +231,11 @@ class NewBook(db.Model):
     description = db.Column(db.String)
     book_type = db.Column(db.String)
     authors = db.Column(db.String)
-    genre = db.Column(db.String)
-    stock_available = db.Column(db.Integer)
-    rentals = db.Column(db.Integer)
+
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
     @staticmethod
-    def create(name, image, isbn, rating, review_count, min_age, max_age, language, price): 
+    def create(name, image, isbn, rating, review_count, min_age, max_age, language, price, description): 
         if NewBook.query.filter_by(isbn=str(isbn)).count(): 
             return
         book_dict = dict(
@@ -247,11 +248,13 @@ class NewBook(db.Model):
             min_age = min_age,
             max_age = max_age,
             language = language,
-            price = price
+            price = price,
+            description = description
         )
         new_book_obj = NewBook(**book_dict)
         db.session.add(new_book_obj)
         db.session.commit()
+        return new_book_obj
 
     def delete(self): 
         for category in NewCategoryBook.query.filter_by(book_id=self.id).all(): 
@@ -260,14 +263,11 @@ class NewBook(db.Model):
         db.session.commit()
 
     def to_json(self): 
-        
+        stock_available, rentals = 0, 0
         book = Book.query.filter_by(isbn=self.isbn).first()
         if book: 
             stock_available = book.stock_available
             rentals = book.rentals
-        else:
-            stock_available = self.stock_available
-            rentals = self.rentals    
         return {
             "id": self.id,
             "guid": self.guid,
@@ -281,7 +281,6 @@ class NewBook(db.Model):
             "max_age": self.max_age,
             "price": self.price,
             "for_age": self.for_age,
-            "genre": self.genre,
             "lexile_measure": self.lexile_measure,
             "grade_level": self.grade_level,
             "pages": self.pages,
@@ -295,3 +294,4 @@ class NewBook(db.Model):
             "stock_available": stock_available,
             "rentals": rentals,
         }
+
