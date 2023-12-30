@@ -416,6 +416,7 @@ def new_book():
             pages = int(pages) 
         except ValueError:
             return jsonify({"success": False, "message": "Invalid 'pages' value"}), 400
+    
 
     min_age = int(min_age)
     max_age = int(max_age)
@@ -439,9 +440,19 @@ def new_book():
             isbn, 
             rating, 
             review_count, 
-            100, 
             min_age, 
-            max_age
+            max_age,
+            language,
+            genre,
+            pages,
+            lexile_measure,
+            description,
+            publisher,
+            publication_date,
+            paperbackprice,
+            boardbookprice,
+            hardcoverprice,
+            author
         )
         new_book = NewBook.query.filter_by(isbn=isbn).first()
 
@@ -461,7 +472,6 @@ def new_book():
                 review_count, 
                 '', 
                 'English', 
-                'English',
                 '',
                 '', 
                 1, 
@@ -845,7 +855,6 @@ def get_book_details():
         'review_count': book.review_count,
         'isbn': book.isbn,
         'description': book.description,
-        'price': book.price,
         'for_age': book.for_age,
         'grade_level': book.grade_level,
         'lexile_measure': book.lexile_measure,

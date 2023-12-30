@@ -143,7 +143,6 @@ class NewGenre(db.Model):
             "max_age": self.max_age
         }
     
-
 class NewBookImage(db.Model): 
     __tablename__ = 'new_book_images'
     id = db.Column(db.Integer, primary_key=True)
@@ -216,7 +215,6 @@ class NewBook(db.Model):
     book_order = db.Column(db.Integer)
     min_age = db.Column(db.Integer)
     max_age = db.Column(db.Integer)
-    price = db.Column(db.Float)
     for_age = db.Column(db.String)
     grade_level = db.Column(db.String)
     lexile_measure = db.Column(db.String)
@@ -237,7 +235,7 @@ class NewBook(db.Model):
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
     @staticmethod
-    def create(name, image, isbn, rating, review_count, min_age, max_age, language, price): 
+    def create(name, image, isbn, rating, review_count, min_age, max_age, language,genre,pages,lexile_measure,description,publisher,publication_date,paperbackprice,boardbookprice,hardcoverprice,authors): 
         if NewBook.query.filter_by(isbn=str(isbn)).count(): 
             return
         book_dict = dict(
@@ -250,7 +248,16 @@ class NewBook(db.Model):
             min_age = min_age,
             max_age = max_age,
             language = language,
-            price = price
+            genre=genre,
+            pages=pages,
+            lexile_measure=lexile_measure,
+            description=description,
+            publisher=publisher,
+            publication_date=publication_date,
+            paperbackprice=paperbackprice,
+            boardbookprice=boardbookprice,
+            hardcoverprice=hardcoverprice,
+            authors=authors
         )
         new_book_obj = NewBook(**book_dict)
         db.session.add(new_book_obj)
@@ -282,7 +289,6 @@ class NewBook(db.Model):
             "book_order": self.book_order,
             "min_age": self.min_age,
             "max_age": self.max_age,
-            "price": self.price,
             "for_age": self.for_age,
             "genre": self.genre,
             "lexile_measure": self.lexile_measure,
