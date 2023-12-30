@@ -387,9 +387,20 @@ def new_book():
     review_count = request.form.get('review_count')
     categories = request.form.get('categories')
     genre = request.form.get('genre')
+    pages = request.form.get('pages')
+    lexile_measure = request.form.get('lexile_measure')
+    description = request.form.get('description')
+    publication_date = request.form.get('publication_date')
+    publisher = request.form.get('publisher')
+    author = request.form.get('author')
+    language = request.form.get('language')
+    paperbackprice = request.form.get('paperbackprice')
+    boardbookprice = request.form.get('boardbookprice')
+    hardcoverprice = request.form.get('hardcoverprice')
+    
     print(categories)
     image_file = request.files.get('image')
-    if not all((isbn, name, min_age, max_age, rating, review_count, categories,genre)) or (not image and not image_file): 
+    if not all((isbn, name, min_age, max_age, rating, review_count, categories)) or (not image and not image_file): 
         return jsonify({"success": False, "message": "Provide all the data"}), 400
     if not str(min_age).isnumeric() or not str(max_age).isnumeric() or int(min_age) < 0 or int(min_age) > int(max_age): 
         return jsonify({"success": False, "message": "Invalid minimum and maximum age"}), 400
@@ -399,6 +410,14 @@ def new_book():
         return jsonify({"success": False, "message": "Invalid review count"}), 400
     if type(json.loads(categories)) != type([]): 
         return jsonify({"success": False, "message": "Invalid category list"}), 400
+   
+    if pages is not None and pages != '':
+        try:
+            pages = int(pages) 
+        except ValueError:
+            return jsonify({"success": False, "message": "Invalid 'pages' value"}), 400
+    
+
     min_age = int(min_age)
     max_age = int(max_age)
     categories = json.loads(categories)
@@ -421,9 +440,19 @@ def new_book():
             isbn, 
             rating, 
             review_count, 
-            100, 
             min_age, 
-            max_age
+            max_age,
+            language,
+            genre,
+            pages,
+            lexile_measure,
+            description,
+            publisher,
+            publication_date,
+            paperbackprice,
+            boardbookprice,
+            hardcoverprice,
+            author
         )
         new_book = NewBook.query.filter_by(isbn=isbn).first()
 
@@ -443,7 +472,6 @@ def new_book():
                 review_count, 
                 '', 
                 'English', 
-                'English',
                 '',
                 '', 
                 1, 
@@ -488,6 +516,44 @@ def new_book():
           new_book.min_age = min_age
           new_book.max_age = max_age
           new_book.genre=genre
+          if lexile_measure is not None:
+           new_book.lexile_measure = lexile_measure
+
+          if pages is not None and pages != '':
+           print (pages)  
+           pages=int(pages)
+           new_book.pages = pages
+           
+          if paperbackprice is not None and paperbackprice != '':
+           print (paperbackprice)  
+           paperbackprice=int(paperbackprice)
+           new_book.paperbackprice = paperbackprice 
+         
+          if boardbookprice is not None and boardbookprice != '':
+           print (boardbookprice)  
+           boardbookprice=int(boardbookprice)
+           new_book.boardbookprice = boardbookprice   
+          
+          if hardcoverprice is not None and hardcoverprice != '':
+           print (hardcoverprice)  
+           hardcoverprice=int(hardcoverprice)
+           new_book.hardcoverprice = hardcoverprice    
+
+           if publisher is not None:
+            new_book.publisher = publisher
+
+           if publication_date is not None and publication_date != 'null':
+               
+            new_book.publication_date = publication_date
+
+           if language is not None:
+            new_book.language = language
+            
+           if author is not None:
+            new_book.author = author 
+
+           if description is not None:
+            book.description = description
         else:  
           new_book.isbn =  isbn
           new_book.name =  name
@@ -497,6 +563,45 @@ def new_book():
           new_book.min_age = min_age
           new_book.max_age = max_age
           new_book.genre=genre
+          if lexile_measure is not None:
+           new_book.lexile_measure = lexile_measure
+
+          if pages is not None and pages != '':
+           print(pages)   
+           pages=int(pages)
+           new_book.pages = pages
+          
+          if paperbackprice is not None and paperbackprice != '':
+           print (paperbackprice)  
+           paperbackprice=int(paperbackprice)
+           new_book.paperbackprice = paperbackprice 
+         
+          if boardbookprice is not None and boardbookprice != '':
+           print (boardbookprice)  
+           boardbookprice=int(boardbookprice)
+           new_book.boardbookprice = boardbookprice   
+          
+          if hardcoverprice is not None and hardcoverprice != '':
+           print (hardcoverprice)  
+           hardcoverprice=int(hardcoverprice)
+           new_book.hardcoverprice = hardcoverprice 
+
+           if publisher is not None:
+            new_book.publisher = publisher
+
+           if publication_date is not None and publication_date != 'null':
+            new_book.publication_date = publication_date
+
+           if language is not None:
+            new_book.language = language
+            
+           if author is not None:
+            new_book.author = author   
+
+           if description is not None:
+            new_book.description = description
+          
+          
 
         for category in NewCategoryBook.query.filter_by(book_id=new_book.id).all(): 
             category.delete()
@@ -697,6 +802,9 @@ def get_book_author():
             'isbn': book.isbn,
             'description': book.description,
             'image':book.image,
+            "paperbackprice":book.paperbackprice,
+            "boardbookprice":book.boardbookprice,
+            "hardcoverprice":book.hardcoverprice,
         }
         for book in related_books
     ]
@@ -734,6 +842,9 @@ def get_books_by_category():
             'description': book.description,
             'image': book.image,
             'book_order': book.book_order,
+            "paperbackprice":book.paperbackprice,
+            "boardbookprice":book.boardbookprice,
+            "hardcoverprice":book.hardcoverprice,
             'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None
         })
 
@@ -762,7 +873,6 @@ def get_book_details():
         'review_count': book.review_count,
         'isbn': book.isbn,
         'description': book.description,
-        'price': book.price,
         'for_age': book.for_age,
         'grade_level': book.grade_level,
         'lexile_measure': book.lexile_measure,
@@ -771,6 +881,9 @@ def get_book_details():
         'publisher': book.publisher,
         'publication_date': book.publication_date.strftime('%Y-%m-%d') if book.publication_date else None,
         'language': book.language,
+        "paperbackprice":book.paperbackprice,
+        "boardbookprice":book.boardbookprice,
+        "hardcoverprice":book.hardcoverprice,
         'genre':book.genre,
     }
 
@@ -818,6 +931,9 @@ def get_books_by_author():
             'review_count': book.review_count,
             'description': book.description,
             'image': book.image,
+            "paperbackprice":book.paperbackprice,
+            "boardbookprice":book.boardbookprice,
+            "hardcoverprice":book.hardcoverprice,
         }
         for book in books
     ]

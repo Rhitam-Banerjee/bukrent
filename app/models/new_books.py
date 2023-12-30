@@ -145,7 +145,6 @@ class NewGenre(db.Model):
             "max_age": self.max_age
         }
     
-
 class NewBookImage(db.Model): 
     __tablename__ = 'new_book_images'
     id = db.Column(db.Integer, primary_key=True)
@@ -231,11 +230,13 @@ class NewBook(db.Model):
     description = db.Column(db.String)
     book_type = db.Column(db.String)
     authors = db.Column(db.String)
-
+    genre = db.Column(db.String)
+    stock_available = db.Column(db.Integer)
+    rentals = db.Column(db.Integer)
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
     @staticmethod
-    def create(name, image, isbn, rating, review_count, min_age, max_age, language, price, description): 
+    def create(name, image, isbn, rating, review_count, min_age, max_age, language,genre,pages,lexile_measure,description,publisher,publication_date,paperbackprice,boardbookprice,hardcoverprice,authors): 
         if NewBook.query.filter_by(isbn=str(isbn)).count(): 
             return
         book_dict = dict(
@@ -248,8 +249,7 @@ class NewBook(db.Model):
             min_age = min_age,
             max_age = max_age,
             language = language,
-            price = price,
-            description = description
+            price = price
         )
         new_book_obj = NewBook(**book_dict)
         db.session.add(new_book_obj)
@@ -279,7 +279,6 @@ class NewBook(db.Model):
             "book_order": self.book_order,
             "min_age": self.min_age,
             "max_age": self.max_age,
-            "price": self.price,
             "for_age": self.for_age,
             "lexile_measure": self.lexile_measure,
             "grade_level": self.grade_level,
@@ -293,5 +292,8 @@ class NewBook(db.Model):
             "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=self.id).all()],
             "stock_available": stock_available,
             "rentals": rentals,
+            "paperbackprice":self.paperbackprice,
+            "boardbookprice":self.boardbookprice,
+            "hardcoverprice":self.hardcoverprice,
         }
 
