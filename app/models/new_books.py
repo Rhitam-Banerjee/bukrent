@@ -233,6 +233,9 @@ class NewBook(db.Model):
     genre = db.Column(db.String)
     stock_available = db.Column(db.Integer)
     rentals = db.Column(db.Integer)
+    hardcoverprice = db.Column(db.Integer)
+    boardbookprice = db.Column(db.Integer)
+    paperbackprice = db.Column(db.Integer)
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
     @staticmethod
@@ -249,7 +252,16 @@ class NewBook(db.Model):
             min_age = min_age,
             max_age = max_age,
             language = language,
-            price = price
+            genre=genre,
+            pages=pages,
+            lexile_measure=lexile_measure,
+            description=description,
+            publisher=publisher,
+            publication_date=publication_date,
+            paperbackprice=paperbackprice,
+            boardbookprice=boardbookprice,
+            hardcoverprice=hardcoverprice,
+            authors=authors
         )
         new_book_obj = NewBook(**book_dict)
         db.session.add(new_book_obj)
@@ -264,13 +276,7 @@ class NewBook(db.Model):
 
     def to_json(self): 
         stock_available, rentals = 0, 0
-        book = Book.query.filter_by(isbn=self.isbn).first()
-        if not (self.paperbackprice):
-            paperbackprice=0
-        if not (self.boardbookprice):
-            boardbookprice=0
-        if not (self.hardcoverprice):
-            hardcoverprice=0        
+        book = Book.query.filter_by(isbn=self.isbn).first()     
         
         if book: 
             stock_available = book.stock_available
@@ -299,8 +305,8 @@ class NewBook(db.Model):
             "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=self.id).all()],
             "stock_available": stock_available,
             "rentals": rentals,
-            "paperbackprice":paperbackprice,
-            "boardbookprice":boardbookprice,
-            "hardcoverprice":hardcoverprice,
+            "paperbackprice":self.paperbackprice,
+            "boardbookprice":self.boardbookprice,
+            "hardcoverprice":self.hardcoverprice,
         }
 
