@@ -265,6 +265,13 @@ class NewBook(db.Model):
     def to_json(self): 
         stock_available, rentals = 0, 0
         book = Book.query.filter_by(isbn=self.isbn).first()
+        if not (self.paperbackprice):
+            paperbackprice=0
+        if not (self.boardbookprice):
+            boardbookprice=0
+        if not (self.hardcoverprice):
+            hardcoverprice=0        
+        
         if book: 
             stock_available = book.stock_available
             rentals = book.rentals
@@ -292,8 +299,8 @@ class NewBook(db.Model):
             "images": [image.to_json() for image in NewBookImage.query.filter_by(book_id=self.id).all()],
             "stock_available": stock_available,
             "rentals": rentals,
-            "paperbackprice":self.paperbackprice,
-            "boardbookprice":self.boardbookprice,
-            "hardcoverprice":self.hardcoverprice,
+            "paperbackprice":paperbackprice,
+            "boardbookprice":boardbookprice,
+            "hardcoverprice":hardcoverprice,
         }
 
