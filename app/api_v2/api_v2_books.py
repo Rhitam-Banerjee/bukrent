@@ -398,7 +398,7 @@ def new_book():
     boardbookprice = request.form.get('boardbookprice')
     hardcoverprice = request.form.get('hardcoverprice')
     
-    print(categories)
+    
     image_file = request.files.get('image')
     if not all((isbn, name, min_age, max_age, rating, review_count, categories)) or (not image and not image_file): 
         return jsonify({"success": False, "message": "Provide all the data"}), 400
@@ -410,13 +410,30 @@ def new_book():
         return jsonify({"success": False, "message": "Invalid review count"}), 400
     if type(json.loads(categories)) != type([]): 
         return jsonify({"success": False, "message": "Invalid category list"}), 400
-   
-    if pages is not None and pages != '':
-        try:
-            pages = int(pages) 
-        except ValueError:
-            return jsonify({"success": False, "message": "Invalid 'pages' value"}), 400
     
+    if pages == 'null':
+            pages=None
+    if description == 'null':
+            description=None
+    if lexile_measure == 'null':
+            lexile_measure=None
+    if publisher == 'null':
+            publisher=None
+    if genre == 'null':
+            genre=None
+    if author == 'null':
+            author=None 
+    if language == 'null':
+            language=None 
+    if publication_date == 'null':
+            publication_date=None 
+    if paperbackprice == 'null':
+            paperbackprice=None 
+    if hardcoverprice == 'null':
+            hardcoverprice=None  
+    if boardbookprice == 'null':
+            boardbookprice=None 
+   
 
     min_age = int(min_age)
     max_age = int(max_age)
@@ -433,7 +450,10 @@ def new_book():
             upload_to_aws(image_file, 'book_images', f'book_images/{isbn}.{extension}')
             s3_url = os.environ.get('AWS_S3_URL')
             book_image = f'{s3_url}/book_images/{isbn}.{extension}'
-
+            
+       
+                
+            
         NewBook.create(
             name, 
             book_image, 
@@ -716,11 +736,8 @@ def add_books_from_csv():
 
     inspect_new_book_object = inspect(NewBook)
     inspect_book_object = inspect(Book)
-    inspect_new_category = inspect(NewCategory)
-    inspect_new_category_book = inspect(NewCategoryBook)
     new_book_columns = [c_attr.key for c_attr in inspect_new_book_object.mapper.column_attrs]
     book_columns = [c_attr.key for c_attr in inspect_book_object.mapper.column_attrs]
-    
     for book in books:
         for x in book:
             # Convert Float and Numeric String --> Integer
@@ -729,43 +746,28 @@ def add_books_from_csv():
 
         if 'isbn' not in book or 'name' not in book:
             continue
+
         isbn = str(book['isbn'])
+
         if book['price'] == 'null':
             book['price'] = 0.0
         elif isinstance(book['price'], str):
             book['price'] = float(book['price'].replace(",", ""))
-
+            
         book_attr = {key: value for key, value in book.items() if key in book_columns}
         new_book_attr = {key: value for key, value in book.items() if key in new_book_columns}
-        # stmt = insert(NewBook).values(**new_book_attr)
-
-        # new_book_attr['guid'] = str(uuid.uuid4())
-        # stmt = stmt.on_conflict_do_update(
-        #     index_elements=['id'],
-        #     set_=new_book_attr
-        # )
         fetch_book = NewBook.query.filter_by(isbn=isbn).first()
         if fetch_book:
             update_new_book = update(NewBook).where(NewBook.isbn == isbn).values(**new_book_attr)
             db.engine.execute(update_new_book)
             update_book = update(Book).where(Book.isbn == isbn).values(**book_attr)
             db.engine.execute(update_book)
-            if "categories" in header_row.values():
-                new_category_book = NewCategoryBook.query.filter_by(book_id=fetch_book.id)
-                update_category = update(NewCategory).where(NewCategory)
             added_isbns.append(isbn)
-            print("UPDATED")
         else:
             new_book_instance = NewBook.create(**new_book_attr)
-            Book.create(book['name'], book['image'], str(book['isbn']), book['rating'], book['review_count'], book['type'], book['language'], book['price'], book['description'], 0, None, None, None, None)
+            book_instance = Book(**book_attr)
             added_isbns.append(isbn)
-            new_category_id = NewCategory.create(book['name'], book['order'], book['min_age'], book['max_age'])
-            new_category_book_obj = NewCategoryBook.create(new_category_id, new_book_instance.id, 1)
-            print("ADDED", f"{new_book_attr=}", "\n"* 5, f"{book_attr=}", "\n"* 5)
-        try:
-            db.session.commit()
-        except Exception as e:
-            print(f"Error during commit: {e}")
+        db.session.commit()
     try:
         os.remove(filename)
     except Exception as e:
