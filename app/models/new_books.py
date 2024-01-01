@@ -89,7 +89,7 @@ class NewCategory(db.Model):
         new_category_obj = NewCategory(**category_dict)
         db.session.add(new_category_obj)
         db.session.commit()
-        return new_category_obj
+        return new_category_obj.id
 
     def delete(self): 
         for category_book in NewCategoryBook.query.filter_by(category_id=self.id).all(): 
@@ -239,8 +239,10 @@ class NewBook(db.Model):
 
     @staticmethod
     def create(name, image, isbn, rating, review_count, min_age, max_age, language,genre,pages,lexile_measure,description,publisher,publication_date,paperbackprice,boardbookprice,hardcoverprice,authors): 
-        if NewBook.query.filter_by(isbn=str(isbn)).count(): 
-            return
+        temp = NewBook.query.filter_by(isbn=str(isbn))
+        if temp.count():
+            print("Count is ", temp.count())
+            return temp.first().id
         book_dict = dict(
             guid = str(uuid.uuid4()),
             name = name,
@@ -265,7 +267,7 @@ class NewBook(db.Model):
         new_book_obj = NewBook(**book_dict)
         db.session.add(new_book_obj)
         db.session.commit()
-        return new_book_obj
+        return new_book_obj.id
 
     def delete(self): 
         for category in NewCategoryBook.query.filter_by(book_id=self.id).all(): 
