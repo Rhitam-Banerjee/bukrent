@@ -67,7 +67,7 @@ def get_book_set():
         if category.name == 'Best Seller - Most Popular': 
             random.shuffle(books)
         else: 
-            books = sorted(books, key=lambda book: int(book['review_count']), reverse=True)
+            books = sorted(books, key=lambda book: int(book['review_count'].replace(',', '')), reverse=True)
         if len(books): 
             book_set.append({
                 "category": category.name,
