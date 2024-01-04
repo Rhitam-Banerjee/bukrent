@@ -73,6 +73,7 @@ def get_book_set():
                 "category": category.name,
                 "books": books
             })
+        random.shuffle(book_set)    
     return jsonify({"success": True, "book_set": book_set})
 
 @api_v2_books.route('/get-most-popular-set')
