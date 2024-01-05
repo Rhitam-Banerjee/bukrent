@@ -43,10 +43,14 @@ def get_book_set():
     if not section: 
         return jsonify({"success": False, "message": "Invalid section name"})
     age = int(age)
+    
     categories_query = NewCategory.query.filter(
         NewCategory.min_age <= age,
         NewCategory.max_age >= age
     ).order_by(NewCategory.category_order)
+    random_multiplier = random.uniform(0.5, 1.5)
+    start=start*random_multiplier
+    end=end*random_multiplier
     if start is not None and end is not None: 
         categories_query = categories_query.limit(end - start).offset(start)
     categories = categories_query.all()
