@@ -49,10 +49,9 @@ def get_book_set():
         NewCategory.max_age >= age
     ).order_by(NewCategory.category_order)
     random_multiplier = random.uniform(0.5, 1.5)
-    start=start*random_multiplier
-    end=end*random_multiplier
+    
     if start is not None and end is not None: 
-        categories_query = categories_query.limit(end - start).offset(start)
+        categories_query = categories_query.limit(end - start).offset(start * random_multiplier)
     categories = categories_query.all()
     book_set = []
     if len(categories) > 1: 
