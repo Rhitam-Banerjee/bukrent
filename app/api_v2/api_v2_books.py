@@ -671,8 +671,10 @@ def update_book_quantity():
          print("oldbook")
          
     if not book: 
+        
         new_book.stock_available = stock_available
         new_book.rentals = rentals
+        print("updated book quantity")
         db.session.commit()
 
         return jsonify({"success": True, "book": new_book.to_json()})
