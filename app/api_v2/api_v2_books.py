@@ -80,15 +80,15 @@ def get_book_set():
         ).all()
         books = [book[0].to_json() for book in books]
         for book in books:
-         try:
-            book['review_count'] = int(book['review_count'].replace(',', ''))
-         except ValueError:
-            book['review_count'] = 0 
+         if isinstance(book['review_count'], str):
+           
+            book['review_count'] = book['review_count'].replace(',', '')
+
        
         if category.name == 'Best Seller - Most Popular': 
             random.shuffle(books)
         else: 
-            books = sorted(books, key=lambda book: int(book['review_count'].replace(',', '')), reverse=True)
+            books = sorted(books, key=lambda book: int(book['review_count']) if isinstance(book['review_count'], int) or book['review_count'].isdigit() else 0, reverse=True)
         if len(books): 
             book_set.append({
                 "category": category.name,
