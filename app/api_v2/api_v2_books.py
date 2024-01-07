@@ -20,9 +20,13 @@ from app.api_v2.utils import api_v2_books
 import os
 import csv
 
+randomoffset=5
+
 @api_v2_books.route('/get-book-set')
 def get_book_set(): 
+    global randomoffset
     age = request.args.get('age')
+
     section_name = request.args.get('section_name')
     start = request.args.get('start')
     end = request.args.get('end')
@@ -46,9 +50,21 @@ def get_book_set():
         NewCategory.min_age <= age,
         NewCategory.max_age >= age
     ).order_by(NewCategory.category_order)
+    
+    if start==0:
+     best_seller_category = NewCategory.query.filter_by(name='Best Seller - Most Popular').first()
     if start is not None and end is not None: 
-        categories_query = categories_query.limit(end - start).offset(start)
+        categories_query = categories_query.limit(end - start).offset(start+randomoffset)
+        if randomoffset > 50:
+            randomoffset = 0
+        
+        
+        
+        
     categories = categories_query.all()
+    if start==0:
+     categories.append(best_seller_category)
+   
     book_set = []
     if len(categories) > 1: 
         shuffled_categories = categories[1:]
