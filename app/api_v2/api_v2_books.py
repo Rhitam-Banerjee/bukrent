@@ -54,7 +54,7 @@ def get_book_set():
     if start==0:
      best_seller_category = NewCategory.query.filter_by(name='Best Seller - Most Popular').first()
     if start is not None and end is not None: 
-        categories_query = categories_query.limit(end - start).offset(start+randomoffset)
+        categories_query = categories_query.limit(end - start).offset(start+10)
         if randomoffset > 50:
             randomoffset = 0
         
