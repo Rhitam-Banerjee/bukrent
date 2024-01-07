@@ -20,7 +20,7 @@ from app.api_v2.utils import api_v2_books
 import os
 import csv
 
-randomoffset=5
+randomoffset=10
 
 @api_v2_books.route('/get-book-set')
 def get_book_set(): 
