@@ -20,11 +20,10 @@ from app.api_v2.utils import api_v2_books
 import os
 import csv
 
-randomoffset=10
+
 
 @api_v2_books.route('/get-book-set')
 def get_book_set(): 
-    global randomoffset
     age = request.args.get('age')
 
     section_name = request.args.get('section_name')
@@ -54,9 +53,8 @@ def get_book_set():
     if start==0:
      best_seller_category = NewCategory.query.filter_by(name='Best Seller - Most Popular').first()
     if start is not None and end is not None: 
-        categories_query = categories_query.limit(end - start).offset(start+10)
-        if randomoffset > 50:
-            randomoffset = 0
+        categories_query = categories_query.limit(end - start).offset(start)
+      
         
         
         
