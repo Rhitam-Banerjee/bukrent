@@ -674,7 +674,9 @@ def update_book_quantity():
         
         new_book.stock_available = stock_available
         new_book.rentals = rentals
-        print("updated book quantity")
+        
+        print(new_book.stock_available)
+        print(new_book.rentals)
         db.session.commit()
         print(new_book.stock_available)
         print(new_book.rentals)
