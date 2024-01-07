@@ -24,9 +24,7 @@ randomoffset=5
 
 @api_v2_books.route('/get-book-set')
 def get_book_set(): 
-    global randomoffset
     age = request.args.get('age')
-
     section_name = request.args.get('section_name')
     start = request.args.get('start')
     end = request.args.get('end')
@@ -50,21 +48,9 @@ def get_book_set():
         NewCategory.min_age <= age,
         NewCategory.max_age >= age
     ).order_by(NewCategory.category_order)
-    
-    if start==0:
-     best_seller_category = NewCategory.query.filter_by(name='Best Seller - Most Popular').first()
     if start is not None and end is not None: 
-        categories_query = categories_query.limit(end - start).offset(start+randomoffset)
-        if randomoffset > 50:
-            randomoffset = 0
-        
-        
-        
-        
+        categories_query = categories_query.limit(end - start).offset(start)
     categories = categories_query.all()
-    if start==0:
-     categories.append(best_seller_category)
-   
     book_set = []
     if len(categories) > 1: 
         shuffled_categories = categories[1:]
@@ -79,12 +65,6 @@ def get_book_set():
             NewBook.max_age >= age
         ).all()
         books = [book[0].to_json() for book in books]
-        for book in books:
-         try:
-            book['review_count'] = int(book['review_count'].replace(',', ''))
-         except ValueError:
-            book['review_count'] = 0 
-       
         if category.name == 'Best Seller - Most Popular': 
             random.shuffle(books)
         else: 
@@ -318,7 +298,7 @@ def get_new_books():
         return_date = None
         
         old_book = Book.query.filter_by(isbn=book.isbn).first()
-        
+        print(old_book)
         if old_book is not None:
            if not old_book.stock_available: 
              order = Order.query.filter(
@@ -332,7 +312,7 @@ def get_new_books():
            wishlist_count = Wishlist.query.filter_by(book_id=old_book.id).count()
            previous_count = Dump.query.filter_by(book_id=old_book.id, read_before=True).count() + \
                          Order.query.filter_by(book_id=old_book.id).count()
-        
+            
            books.append({
               **book.to_json(),   
               "return_date": return_date,
