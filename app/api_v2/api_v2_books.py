@@ -23,7 +23,6 @@ import csv
 @api_v2_books.route('/get-book-set')
 def get_book_set(): 
     age = request.args.get('age')
-
     section_name = request.args.get('section_name')
     start = request.args.get('start')
     end = request.args.get('end')
@@ -48,9 +47,7 @@ def get_book_set():
         NewCategory.max_age >= age
     ).order_by(NewCategory.category_order)
     if start is not None and end is not None: 
-        random_offset = random.randint(0, end - start)
-        categories_query = categories_query.limit(end - start).offset(random_offset)
-        
+        categories_query = categories_query.limit(end - start).offset(start)
     categories = categories_query.all()
     book_set = []
     if len(categories) > 1: 
@@ -74,8 +71,8 @@ def get_book_set():
             book_set.append({
                 "category": category.name,
                 "books": books
-            })    
-    random.shuffle(book_set)    
+            })
+        random.shuffle(book_set)    
     return jsonify({"success": True, "book_set": book_set})
 
 @api_v2_books.route('/get-most-popular-set')
