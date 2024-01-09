@@ -316,7 +316,7 @@ def get_new_books():
         return_date = None
         
         old_book = Book.query.filter_by(isbn=book.isbn).first()
-        print(old_book)
+        
         if old_book is not None:
            if not old_book.stock_available: 
              order = Order.query.filter(
@@ -342,7 +342,7 @@ def get_new_books():
     for book in books_query:
   
      if book.id not in book_ids_in_array:
-      
+        print(book.stock_available)
         books.append(book.to_json())
         
     return jsonify({"success": True, "books": books})
