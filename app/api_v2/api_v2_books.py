@@ -700,10 +700,11 @@ def update_book_quantity():
         new_book.rentals = rentals
         
         db.session.commit()
-        print({**book.to_json(),
-            "rentals": rentals,
-            "stock_available": stock_available})
-        return jsonify({"success": True, "book": new_book.to_json()})
+       
+        book_json = book.to_json()
+        book_json["rentals"] = rentals
+        book_json["stock_available"] = stock_available
+        return jsonify({"success": True, "book": book_json})
    
     book.stock_available = stock_available
     book.rentals = rentals
