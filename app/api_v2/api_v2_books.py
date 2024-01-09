@@ -1267,6 +1267,9 @@ def create_xlsx():
     worksheet.write(iterator, 18, "Book Order")
     worksheet.write(iterator, 19, "Book Description")
     worksheet.write(iterator, 20, "Language")
+    worksheet.write(iterator, 21, "hardcoverprice")
+    worksheet.write(iterator, 22, "boardbookprice")
+    worksheet.write(iterator, 23, "paperbackprice")
     
 
     for book in books:
@@ -1332,6 +1335,14 @@ def create_xlsx():
         worksheet.write(iterator, 18, book.book_order)
         worksheet.write(iterator, 19, book.description)
         worksheet.write(iterator, 20, book.language)
+        if book.hardcoverprice is not None: 
+         worksheet.write(iterator, 21, book.hardcoverprice)
+        if book.boardbookprice is not None: 
+         worksheet.write(iterator, 22, book.boardbookprice)
+        if book.paperbackprice is not None: 
+         worksheet.write(iterator, 23, book.paperbackprice) 
+
+        
         
     workbook.close()
     
