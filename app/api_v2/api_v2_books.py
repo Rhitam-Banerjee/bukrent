@@ -342,10 +342,15 @@ def get_new_books():
     for book in books_query:
   
      if book.id not in book_ids_in_array:
-        print(book.stock_available)
-        print(book.to_json())
-        books.append(book.to_json())
+        rentals = book.rentals
+        stock_available = book.stock_available 
         
+        books.append({
+            **book.to_json(),
+            "rentals": rentals,
+            "stock_available": stock_available
+        })
+            
     return jsonify({"success": True, "books": books})
 
 @api_v2_books.route('/search-new-books')
