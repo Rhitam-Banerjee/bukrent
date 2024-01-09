@@ -707,7 +707,7 @@ def update_book_quantity():
     book.rentals = rentals
     
     db.session.commit()
-
+    print(new_book.stock_available)
     return jsonify({"success": True, "book": new_book.to_json()})
 
 @api_v2_books.route('/delete-new-book', methods=['POST'])
