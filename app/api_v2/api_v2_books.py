@@ -342,7 +342,7 @@ def get_new_books():
     for book in books_query:
   
      if book.id not in book_ids_in_array:
-        print(books.to_json())
+        print(book.to_json())
         books.append(book.to_json())
         
     return jsonify({"success": True, "books": books})
