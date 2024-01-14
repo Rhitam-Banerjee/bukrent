@@ -16,7 +16,7 @@ import datetime
 import xlsxwriter
 from app.api_admin.utils import upload_to_aws
 from app.api_v2.utils import api_v2_books
-
+from sqlalchemy import func
 import os
 import csv
 
@@ -25,7 +25,6 @@ import csv
 @api_v2_books.route('/get-book-set')
 def get_book_set(): 
     age = request.args.get('age')
-
     section_name = request.args.get('section_name')
     start = request.args.get('start')
     end = request.args.get('end')
@@ -48,26 +47,22 @@ def get_book_set():
     categories_query = NewCategory.query.filter(
         NewCategory.min_age <= age,
         NewCategory.max_age >= age
-    ).order_by(NewCategory.category_order)
+    ).order_by(func.random())
     
     if start==0:
      best_seller_category = NewCategory.query.filter_by(name='Best Seller - Most Popular').first()
     if start is not None and end is not None: 
         categories_query = categories_query.limit(end - start).offset(start)
-      
-        
-        
-        
         
     categories = categories_query.all()
     if start==0:
      categories.append(best_seller_category)
    
     book_set = []
-    if len(categories) > 1: 
-        shuffled_categories = categories[1:]
-        random.shuffle(shuffled_categories)
-        categories = [categories[0], *shuffled_categories]
+    # if len(categories) > 1: 
+    #     shuffled_categories = categories[1:]
+    #     random.shuffle(shuffled_categories)
+    #     categories = [categories[0], *shuffled_categories]
     for category in categories: 
         books = db.session.query(NewBook, NewCategoryBook).filter(
             NewBook.id == NewCategoryBook.book_id,
@@ -77,22 +72,19 @@ def get_book_set():
             NewBook.max_age >= age
         ).all()
         books = [book[0].to_json() for book in books]
-        for book in books:
-         if isinstance(book['review_count'], str):
-           
-            book['review_count'] = book['review_count'].replace(',', '')
-
-       
-        if category.name == 'Best Seller - Most Popular': 
-            random.shuffle(books)
-        else: 
-            books = sorted(books, key=lambda book: int(book['review_count']) if isinstance(book['review_count'], int) or book['review_count'].isdigit() else 0, reverse=True)
+        # for book in books:
+        #  if isinstance(book['review_count'], str):
+        #     book['review_count'] = book['review_count'].replace(',', '')
+        # if category.name == 'Best Seller - Most Popular': 
+        #     random.shuffle(books)
+        # else: 
+        #     books = sorted(books, key=lambda book: int(book['review_count']) if isinstance(book['review_count'], int) or book['review_count'].isdigit() else 0, reverse=True)
         if len(books): 
             book_set.append({
                 "category": category.name,
                 "books": books
             })
-        random.shuffle(book_set)    
+        # random.shuffle(book_set)    
     return jsonify({"success": True, "book_set": book_set})
 
 @api_v2_books.route('/get-most-popular-set')
