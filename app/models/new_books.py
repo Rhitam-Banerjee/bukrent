@@ -238,7 +238,7 @@ class NewBook(db.Model):
     categories = db.relationship('NewCategory', secondary=NewCategoryBook.__table__)
 
     @staticmethod
-    def create(name, image, isbn, rating, review_count, min_age, max_age, language,genre,pages,lexile_measure,description,publisher,publication_date,paperbackprice,boardbookprice,hardcoverprice,authors): 
+    def create(name, image, isbn, rating=3.0, review_count=100, min_age=5, max_age=8, price=None, language=None ,genre=None,pages=None,lexile_measure=None,description=None,publisher=None,publication_date=None,paperbackprice=None,boardbookprice=None,hardcoverprice=None,authors=None): 
         temp = NewBook.query.filter_by(isbn=str(isbn))
         if temp.count():
             print("Count is ", temp.count())
@@ -262,7 +262,8 @@ class NewBook(db.Model):
             paperbackprice=paperbackprice,
             boardbookprice=boardbookprice,
             hardcoverprice=hardcoverprice,
-            authors=authors
+            authors=authors,
+            price=price
         )
         new_book_obj = NewBook(**book_dict)
         db.session.add(new_book_obj)

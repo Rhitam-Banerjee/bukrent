@@ -98,8 +98,8 @@ class Book(db.Model):
     publishers = db.relationship('Publisher', secondary=BookPublisher.__table__)
 
     @staticmethod
-    def create(name, image, isbn, rating, review_count, book_format, language, price, description, stock_available,
-               series_id, bestseller_json, borrowed_json, suggestion_json):
+    def create(name, image, isbn, rating=None, review_count=0, book_format="", language="", price=None, description="", stock_available=0,
+               series_id=None, bestseller_json=None, borrowed_json=None, suggestion_json=None):
         if Book.query.filter_by(isbn=isbn).count():
             return
         book_dict = dict(

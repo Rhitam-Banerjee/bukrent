@@ -777,7 +777,7 @@ def add_books_from_csv():
 
         if 'isbn' not in book or 'name' not in book:
             continue
-
+        book['isbn'] = str(book['isbn'])
         isbn = str(book['isbn'])
 
         if book['price'] == 'null':
@@ -789,15 +789,21 @@ def add_books_from_csv():
         new_book_attr = {key: value for key, value in book.items() if key in new_book_columns}
         fetch_book = NewBook.query.filter_by(isbn=isbn).first()
         if fetch_book:
-            update_new_book = update(NewBook).where(NewBook.isbn == isbn).values(**new_book_attr)
-            db.engine.execute(update_new_book)
+            update_new_book = update(NewBook).where(NewBook.isbn == isbn).values(**new_book_attr).returning(NewBook.id)
+            updated_id = db.engine.execute(update_new_book).fetchone()
+            fetch_category_book = NewCategoryBook.query.filter_by(book_id=updated_id[0]).first()
+            db.engine.execute(update(NewCategory).where(NewCategory.id == fetch_category_book.category_id).values(name=book['categories'], category_order=book['order'], min_age=book['min_age'], max_age=book['max_age']))
             update_book = update(Book).where(Book.isbn == isbn).values(**book_attr)
             db.engine.execute(update_book)
             added_isbns.append(isbn)
+            print("UPDATED", isbn)
         else:
             new_book_instance = NewBook.create(**new_book_attr)
-            book_instance = Book(**book_attr)
+            book_instance = Book.create(**book_attr)
+            category_id = NewCategory.create(book['categories'], book['order'] or 0, book['min_age'], book['max_age'])
+            NewCategoryBook.create(category_id, new_book_instance, 1)
             added_isbns.append(isbn)
+            print("ADDED", isbn)
         db.session.commit()
     try:
         os.remove(filename)
