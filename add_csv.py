@@ -1,19 +1,47 @@
 from app import create_app, db
-from app.models.new_books import NewBook, Book, NewCategory, NewCategoryBook, NewBookSection, Book
-import csv
+from app.models.new_books import NewBook, Book, NewCategory, NewCategoryBook, NewBookSection, Book, NewBookImage
+import openpyxl 
 
 app = create_app()
 db.init_app(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost:5432/bukrent'
 
 with app.app_context():
-    csv_file_path = '/home/ubuntu/bukrent/Books.csv'
-    with open(csv_file_path, 'r') as file:
-        csv_reader = csv.reader(file)
-        header = next(csv_reader)
-        for row in csv_reader:
-            book_id = NewBook.create(row[1], row[2], row[0], row[3], row[4], row[5], row[6], row[7], "", None, "",row[13], "", None, None, None, None, row[12])
-            Book.create(row[1], row[2], row[0], row[3], row[4], row[11], row[7], row[9], row[13], 0, None, None, None, None)
-            category_id = NewCategory.create(row[8], 0, row[5], row[6])
-            NewCategoryBook.create(category_id, book_id, 1)
-            print("ADDED", book_id, category_id)
+    csv_file_path = 'Books.xlsx'
+    books = []
+    workbook = openpyxl.load_workbook(csv_file_path)
+    sheet = workbook.active
+    iterator = sheet.iter_rows()
+    header_row = next(iterator)
+    header_row = {i: header_row[i].value.lower() for i in range(len(header_row))}
+    for row in iterator:
+        temp = {}
+        for i in header_row:
+            string_values = {"name", "genres", "category", "size", "author 1", "publication", "author 2", "author 3", "author 4", "book description", "image", "side image 1", "side image 2", "side image 3", "side image 4"}
+            integer_values = {"rating", "review_count", "min_age", "max_age", "isbn"}
+            pages = {"pages"}
+            if header_row[i] in string_values:
+                temp[header_row[i]] = ""
+            elif header_row[i] in integer_values:
+                temp[header_row[i]] = 0
+            elif header_row[i] in pages:
+                temp[header_row[i]] = "0 pages"
+        for cell in range(len(row)):
+            if row[cell].value != None:
+                if isinstance(row[cell].value, float):
+                    row[cell].value = int(row[cell].value)
+                temp[header_row[cell]] = row[cell].value
+        if temp and "available" in temp and temp['available'].strip() == "New":
+            temp['isbn'] = str(temp['isbn'])
+            books.append(temp['isbn'])
+            Book.create(temp['name'], temp['image'], temp['isbn'], temp['rating'], temp['review_count'], "", "", None, temp['book description'], 0, None, None, None, None)
+            new_book_instance = NewBook.create(temp['name'], temp['image'], temp['isbn'], temp['rating'], temp['review_count'], temp['min_age'], temp['max_age'],None, None, temp['genres'], int(temp['pages'].split(" ")[0]), None, temp['book description'], temp['publication'], None, None, None, None, ",".join([x for x in [temp['author 1'], temp['author 2'], temp['author 3'], temp['author 4']] if x]))
+            category_id = NewCategory.create(temp['category'], 0, temp['min_age'], temp['max_age'])
+            NewCategoryBook.create(category_id, new_book_instance, 1)
+            for side_image in [temp['side image 1'], temp['side image 2'], temp['side image 3'], temp['side image 4']]:
+                if side_image:
+                    NewBookImage.create(side_image, new_book_instance, 0)
+            print(temp['isbn'])
+    print(len(books), books)
+            
+
