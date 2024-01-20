@@ -2,6 +2,7 @@ from app import create_app, db
 from app.models.new_books import NewBook, Book, NewCategory, NewCategoryBook, NewBookSection, Book, NewBookImage
 import openpyxl 
 from sqlalchemy import update
+import sys 
 
 app = create_app()
 db.init_app(app)
@@ -34,15 +35,23 @@ with app.app_context():
                 temp[header_row[cell]] = row[cell].value
         if temp:
             # Existing books logic
+            try:
+                split = temp['image'].split(".")
+                split[-2] = split[-2].replace('600', '218')
+                temp['image'] = "".join(split)
+            except: 
+                print(temp)
+                pass
             isbn = str(temp['isbn'])
             fetch_book = NewBook.query.filter_by(isbn=isbn).first()
-            print("available" in temp)
-            if fetch_book and "available" not in temp:
+            if fetch_book:
                 update_new_book = update(NewBook).where(NewBook.isbn == isbn).values(name=temp['name'], image=temp['image'], isbn = temp['isbn'], rating=temp['rating'], review_count=temp['review_count'], min_age=temp['min_age'], max_age=temp['max_age'], pages=int(temp['pages'].split(" ")[0]), dimensions=temp['size'], publisher=temp['publication'], authors=",".join([x for x in [temp['author 1'], temp['author 2'], temp['author 3'], temp['author 4']] if x]), description=temp['book description']).returning(NewBook.id)
                 updated_id = db.engine.execute(update_new_book).fetchone()
                 update_book = update(Book).where(Book.isbn == isbn).values(name=temp['name'], image=temp['image'], isbn=temp['isbn'], rating=temp['rating'], review_count=temp['review_count'], description=temp['book description'])
                 db.engine.execute(update_book)
                 print("UPDATED", isbn)
+            
+
             # New books that were to be added 
             # temp['isbn'] = str(temp['isbn'])
             # books.append(temp['isbn'])
