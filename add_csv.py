@@ -38,7 +38,7 @@ with app.app_context():
             try:
                 split = temp['image'].split(".")
                 split[-2] = split[-2].replace('600', '218')
-                temp['image'] = "".join(split)
+                temp['image'] = ".".join(split)
             except: 
                 print(temp)
                 pass
