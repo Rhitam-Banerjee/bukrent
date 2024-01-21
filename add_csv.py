@@ -49,6 +49,12 @@ with app.app_context():
                 updated_id = db.engine.execute(update_new_book).fetchone()
                 update_book = update(Book).where(Book.isbn == isbn).values(name=temp['name'], image=temp['image'], isbn=temp['isbn'], rating=temp['rating'], review_count=temp['review_count'], description=temp['book description'])
                 db.engine.execute(update_book)
+
+                for side_image in [temp['side image 1'], temp['side image 2'], temp['side image 3'], temp['side image 4']]:
+                    if side_image.strip():
+                        split = side_image.split(".")
+                        split[-2] = split[-2].replace('600', '218')
+                        NewBookImage.create(".".join(split), updated_id[0], 0)
                 print("UPDATED", isbn)
             
 
@@ -59,8 +65,6 @@ with app.app_context():
             # new_book_instance = NewBook.create(temp['name'], temp['image'], temp['isbn'], temp['rating'], temp['review_count'], temp['min_age'], temp['max_age'],None, None, temp['genres'], int(temp['pages'].split(" ")[0]), None, temp['book description'], temp['publication'], None, None, None, None, ",".join([x for x in [temp['author 1'], temp['author 2'], temp['author 3'], temp['author 4']] if x]))
             # category_id = NewCategory.create(temp['category'], 0, temp['min_age'], temp['max_age'])
             # NewCategoryBook.create(category_id, new_book_instance, 1)
-            # for side_image in [temp['side image 1'], temp['side image 2'], temp['side image 3'], temp['side image 4']]:
-            #     if side_image:
-            #         NewBookImage.create(side_image, new_book_instance, 0)
+            
             
 
