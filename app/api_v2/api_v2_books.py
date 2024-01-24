@@ -1261,7 +1261,7 @@ def create_xlsx():
     worksheet.write(iterator, 14, "Authors")
     worksheet.write(iterator, 15, "Video")
     worksheet.write(iterator, 16, "Primary Image")
-    worksheet.write(iterator, 17, "Secondary Images")
+    worksheet.write(iterator, 24, "Secondary Images")
     worksheet.write(iterator, 18, "Book Order")
     worksheet.write(iterator, 19, "Book Description")
     worksheet.write(iterator, 20, "Language")
@@ -1311,10 +1311,11 @@ def create_xlsx():
           worksheet.write(iterator, 15, book_video.source)
           
         sources = NewBookImage.query.filter_by(book_id=book.id).all()   
-        source_values = [source.source for source in sources]
-        result = ', '.join(source_values)
         
-        worksheet.write(iterator, 17, result)        
+        for index, source in enumerate(sources):
+         worksheet.write(iterator, 24 + index, source.source)
+        
+           
         worksheet.write(iterator, 0, book.isbn)
         worksheet.write(iterator, 1, book.name)
         worksheet.write(iterator, 2, book.review_count)

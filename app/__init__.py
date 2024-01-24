@@ -11,7 +11,7 @@ migrate = Migrate()
 
 def create_app(script_info=None):
     app = Flask(__name__)
-    #app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost:5432/bukrent'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Lakshay@localhost:5432/postgres'
     
 
     app_settings = os.getenv('APP_SETTINGS')
