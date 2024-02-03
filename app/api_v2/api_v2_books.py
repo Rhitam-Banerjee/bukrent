@@ -1422,3 +1422,25 @@ def get_books_by_age_and_genre():
     }
 
     return jsonify(response_data)
+
+
+@api_v2_books.route('/update-stock', methods=['GET'])
+def update_stock():
+    
+   books_to_update = NewBook.query.filter_by(stock_available=0, rentals=0).all()
+
+   for book in books_to_update:
+        book.stock_available = 1
+    
+   old_books_to_update=Book.query.filter_by(stock_available=0, rentals=0).all() 
+   for book in old_books_to_update:
+        book.stock_available = 1
+
+    # Commit the changes to the database
+   db.session.commit()
+ 
+   response_data = {
+        "done":"done"
+    }
+
+   return jsonify(response_data)
